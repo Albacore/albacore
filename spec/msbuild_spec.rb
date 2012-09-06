@@ -230,4 +230,17 @@ describe MSBuild, "when specifying nologo" do
   end
 end
 
+describe MSBuild, "when specifying max cpu count" do
+  include_context "prepping msbuild"
+
+  before :all do
+    @msbuild.max_cpu_count = 2
+    @msbuild.solution = @testdata.solution_path
+    @msbuild.execute
+  end
+
+  it "should call msbuild with maxcpucount option set" do
+    @msbuild.system_command.should include("/maxcpucount:2")
+  end
+end
 
