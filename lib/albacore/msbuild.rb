@@ -18,6 +18,10 @@ class MSBuild
   def execute
     build_solution(@solution)
   end
+
+  def nologo
+    @nologo = true     
+  end
   
   def build_solution(solution)
     check_solution solution
@@ -26,6 +30,7 @@ class MSBuild
     command_parameters << "\"#{solution}\""
     command_parameters << "\"/verbosity:#{@verbosity}\"" if @verbosity != nil
     command_parameters << "\"/logger:#{@loggermodule}\"" if @loggermodule != nil
+    command_parameters << "\"/nologo\"" if @nologo
     command_parameters << build_properties if @properties != nil
     command_parameters << "\"/target:#{build_targets}\"" if @targets != nil
     

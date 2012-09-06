@@ -216,4 +216,18 @@ describe MSBuild, "when specifying a loggermodule" do
   end
 end
 
+describe MSBuild, "when specifying nologo" do
+  include_context "prepping msbuild"
+
+  before :all do
+    @msbuild.nologo
+    @msbuild.solution = @testdata.solution_path
+    @msbuild.execute
+  end
+
+  it "should call msbuild with nologo option" do
+    @msbuild.system_command.should include("/nologo")
+  end
+end
+
 
