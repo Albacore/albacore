@@ -2,3 +2,9 @@
 #ruby-gemset=albacore
 source 'http://rubygems.org'
 gemspec
+gem 'nokogiri'
+gem 'jekyll'
+gem 'guard'
+gem 'guard-rspec'
+gem 'rake'
+gem 'rspec'
