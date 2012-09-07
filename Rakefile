@@ -30,10 +30,4 @@ namespace :specs do
   desc "excludes ncover  and ndepend specs"
   task :except_ncover => exceptNCov
 
-  desc "MSDeploy functional specs"
-  RSpec::Core::RakeTask.new :msdeploy do |t|
-    t.pattern = 'spec/msdeploy*_spec.rb'
-    t.rspec_opts = @rspec_opts
-  end
-
 end
