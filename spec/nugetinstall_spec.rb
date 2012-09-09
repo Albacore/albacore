@@ -11,16 +11,17 @@ describe NuGetInstall do
 
   context "when no path to NuGet is specified" do
     it "assumes NuGet is in the path" do
-      @nugetupdate.command.should == "NuGet.exe"
+      @nugetinstall.command.should == "NuGet.exe"
     end
   end
 
   it "generates the correct command-line parameters" do
     @nugetinstall.package = "Hircine"
-    @nugetinstall.source = "source1", "source2"
+    @nugetinstall.sources = "source1", "source2"
     @nugetinstall.version = "0.1.1-pre"
     @nugetinstall.no_cache = false
     @nugetinstall.prerelease = true
+    @nugetinstall.exclude_version = true
     @nugetinstall.output_directory = "customdir"
     
     params = @nugetinstall.generate_params
@@ -33,7 +34,7 @@ describe NuGetInstall do
     params.should include("-Prerelease")
     params.should_not include("-NoCache")
     
-    @nugetinstall.exclude_version = true
+    @nugetinstall.no_cache = true
     params = @nugetinstall.generate_params
     params.should include("-NoCache")
   end

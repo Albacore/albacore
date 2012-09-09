@@ -28,8 +28,6 @@ class NuGetInstall
 	end
 
 	def execute
-		fail_with_message 'A NuGet package must be specified.' if @package.nil?
-
 		params = generate_params
 
 		@logger.debug "Build NuGet Install Command Line: #{merged_params}"
@@ -40,6 +38,8 @@ class NuGetInstall
 	end
 
 	def generate_params
+		fail_with_message 'A NuGet package must be specified.' if @package.nil?
+
 		params = []
 		params << "install"
 		params << package
@@ -54,10 +54,6 @@ class NuGetInstall
 	end
 
 	def build_package_sources
-		source_list = []
-    	@sources.each do |value|
-      		source_list << "\"#{value}\""
-  		end
-  		source_list.join(";")
+		"\"#{@sources.join(';')}\""
 	end
 end
