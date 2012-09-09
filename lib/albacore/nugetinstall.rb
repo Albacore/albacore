@@ -28,8 +28,18 @@ class NuGetInstall
 	end
 
 	def execute
-		fail_with_message 'package must be specified.' if @package.nil?
+		fail_with_message 'A NuGet package must be specified.' if @package.nil?
 
+		params = generate_params
+
+		@logger.debug "Build NuGet Install Command Line: #{merged_params}"
+		result = run_command "NuGet", params
+
+		failure_message = "Nuget Install for package #{@package} failed. See Build log for details."
+		fail_with_message failure_message if !result
+	end
+
+	def generate_params
 		params = []
 		params << "install"
 		params << package
@@ -41,12 +51,6 @@ class NuGetInstall
 		params << "-Source #{build_package_sources}" unless @sources.nil? || @sources.empty?
 
 		merged_params = params.join(' ')
-
-		@logger.debug "Build NuGet Install Command Line: #{merged_params}"
-		result = run_command "NuGet", merged_params
-
-		failure_message = "Nuget Install for package #{@package} failed. See Build log for details."
-		fail_with_message failure_message if !result
 	end
 
 	def build_package_sources
