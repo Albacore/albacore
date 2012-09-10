@@ -131,7 +131,7 @@ describe MSBuild, "when building a visual studio solution for a specified config
     @testdata= MSBuildTestData.new("Release")
     @msbuild = @testdata.msbuild
 
-    @msbuild.properties :configuration => :Release
+    @msbuild.properties :configuration => :Release, :platform => 'Any CPU'
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
   end
@@ -181,7 +181,7 @@ describe MSBuild, "when specifying multiple configuration properties" do
     File.delete(@testdata.output_path) if File.exist?(@testdata.output_path)
     
     @msbuild.targets :Clean, :Build
-    @msbuild.properties :configuration => :Debug, :DebugSymbols => true 
+    @msbuild.properties :configuration => :Debug, :DebugSymbols => true, :platform => 'Any CPU'
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
   end
