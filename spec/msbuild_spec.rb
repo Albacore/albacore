@@ -10,6 +10,7 @@ shared_context "prepping msbuild" do
     @strio = StringIO.new
     @msbuild.log_device = @strio
     @msbuild.log_level = :diagnostic
+    @msbuild.properties :platform => 'Any CPU'
  end
 end
 
