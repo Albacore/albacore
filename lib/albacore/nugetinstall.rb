@@ -30,7 +30,7 @@ class NuGetInstall
 	def execute
 		params = generate_params
 
-		@logger.debug "Build NuGet Install Command Line: #{merged_params}"
+		@logger.debug "Build NuGet Install Command Line: #{params}"
 		result = run_command "NuGet", params
 
 		failure_message = "Nuget Install for package #{@package} failed. See Build log for details."
