@@ -3,7 +3,6 @@ require 'albacore/msbuild'
 require 'albacore/config/msbuildconfig'
 require 'msbuildtestdata'
 
-
 shared_context "prepping msbuild" do
   before :all do
     @testdata = MSBuildTestData.new
@@ -28,7 +27,7 @@ describe MSBuild, "when building a solution with verbose logging turned on" do
   end
 
   it "should log the msbuild command line being called" do
- com = @log_data.downcase().should include("Executing MSBuild: \"C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe\"".downcase())
+    com = @log_data.downcase().should include("Executing MSBuild: \"C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe\"".downcase())
   end
 end
 
@@ -130,7 +129,7 @@ describe MSBuild, "when building a visual studio solution for a specified config
   before :all do
     @testdata= MSBuildTestData.new("Release")
     @msbuild = @testdata.msbuild
-    
+
     @msbuild.properties :configuration => :Release
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
@@ -243,4 +242,3 @@ describe MSBuild, "when specifying max cpu count" do
     @msbuild.system_command.should include("/maxcpucount:2")
   end
 end
-
