@@ -8,7 +8,7 @@ class MSBuild
   
   attr_accessor :solution, :verbosity, :loggermodule, :max_cpu_count
   attr_array :targets
-  attr_hash :properties
+  attr_hash :properties, :other_switches
   
   def initialize
     super()
@@ -33,6 +33,7 @@ class MSBuild
     command_parameters << "\"/maxcpucount:#{@max_cpu_count}\"" if @max_cpu_count != nil
     command_parameters << "\"/nologo\"" if @nologo
     command_parameters << build_properties if @properties != nil
+    command_parameters << build_switches if @other_switches != nil
     command_parameters << "\"/target:#{build_targets}\"" if @targets != nil
     
     result = run_command "MSBuild", command_parameters.join(" ")
@@ -40,7 +41,7 @@ class MSBuild
     failure_message = 'MSBuild Failed. See Build Log For Detail'
     fail_with_message failure_message if !result
   end
-  
+
   def check_solution(file)
     return if file
     msg = 'solution cannot be nil'
@@ -57,5 +58,21 @@ class MSBuild
       option_text << "/p:#{key}\=\"#{value}\""
     end
     option_text.join(" ")
+  end
+
+  def build_switches
+    switch_text = []
+    @other_switches.each do |key, value|
+      switch_text << print_switch(key, value)
+    end
+    switch_text.join(" ")
+  end
+
+  def print_switch(key, value)
+    pure_switch?(value) ? "/#{key}" : "/#{key}:\"#{value}\""
+  end
+
+  def pure_switch?(value)
+    value.is_a?(TrueClass) || value == :true
   end
 end

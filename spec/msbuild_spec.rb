@@ -243,3 +243,45 @@ describe MSBuild, "when specifying max cpu count" do
     @msbuild.system_command.should include("/maxcpucount:2")
   end
 end
+
+describe MSBuild, "when including a TrueClass switch" do
+  include_context "prepping msbuild"
+
+  before :all do
+    @msbuild.other_switches :noconsolelogger => true
+    @msbuild.solution = @testdata.solution_path
+    @msbuild.execute
+  end
+
+  it 'should call msbuild with the noconsolelogger switch' do
+    @msbuild.system_command.should include('/noconsolelogger')
+  end
+end
+
+describe MSBuild, "when including a true symbol switch" do
+  include_context "prepping msbuild"
+
+  before :all do
+    @msbuild.other_switches :noconsolelogger => :true
+    @msbuild.solution = @testdata.solution_path
+    @msbuild.execute
+  end
+
+  it 'should call msbuild with the noconsolelogger switch' do
+    @msbuild.system_command.should include('/noconsolelogger')
+  end
+end
+
+describe MSBuild, "when including a switch with value" do
+  include_context "prepping msbuild"
+
+  before :all do
+    @msbuild.other_switches :toolsVersion => 3.5
+    @msbuild.solution = @testdata.solution_path
+    @msbuild.execute
+  end
+
+  it 'should call msbuild with the noconsolelogger switch' do
+    @msbuild.system_command.should include("/toolsVersion:\"3.5\"")
+  end
+end
