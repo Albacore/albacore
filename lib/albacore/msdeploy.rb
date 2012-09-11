@@ -47,18 +47,19 @@ class MSDeploy
     end
 
     #check the environment variables
-
-    #check if it's in registry
-    msdeploy_path = ENV['MSDeployPath']    
-    if msdeploy_path == nil || !File.exist?("#{msdeploy_path}msdeploy.exe")
-      Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\IIS Extensions\MSDeploy\2') do |reg|
-        reg_typ, reg_val = reg.read('InstallPath') # no checking for x86 here.
-        msdeploy_path = reg_val
-      end
+    if ENV['MSDeployPath']
+      msdeploy_path = File.join(ENV['MSDeployPath'], 'msdeploy.exe')
+      return msdeploy_path if File.exists?(msdeploy_path)
     end
 
-    fail_with_message 'MSDeploy could not be found is it installed?' if !File.exist?("#{msdeploy_path}msdeploy.exe")
-    return "#{msdeploy_path}msdeploy.exe"
+    #check if it's in registry
+    Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\IIS Extensions\MSDeploy\2') do |reg|
+      reg_typ, reg_val = reg.read('InstallPath') # no checking for x86 here.
+      msdeploy_path = reg_val
+      return msdeploy_path if File.exists?(msdeploy_path)
+    end
+
+    fail_with_message 'MSDeploy could not be found is it installed?'
   end
  
  def get_package
