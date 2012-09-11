@@ -18,7 +18,6 @@ class MSDeploy
   end
     
   def execute
-    
     if(@command.nil?)
       @command = get_msdeploy_path
     end
@@ -38,27 +37,28 @@ class MSDeploy
   
     failure_msg = 'MSDeploy Failed.  See build log for details'
     fail_with_message failure_msg if !result
-    end
+  end
   
   def get_msdeploy_path
-    
     #check path directory
     ENV['PATH'].split(';').each do |folder| 
       if(File.exists?(folder+'/msdeploy.exe'))
         return folder+'/msdeploy.exe'
       end      
-    end    
+    end
+
     #check if it's in registry
     msdeploy_path = ENV['MSDeployPath']    
     if(msdeploy_path == nil || !File.exist?("#{msdeploy_path}msdeploy.exe"))      
       Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\IIS Extensions\MSDeploy\2') do |reg|
           reg_typ, reg_val = reg.read('InstallPath') # no checking for x86 here.
           msdeploy_path = reg_val
-        end     
-   end
-   fail_with_message 'MSDeploy could not be found is it installed?' if !File.exist?("#{msdeploy_path}msdeploy.exe")
-   return "#{msdeploy_path}msdeploy.exe"    
- end
+      end
+    end
+
+    fail_with_message 'MSDeploy could not be found is it installed?' if !File.exist?("#{msdeploy_path}msdeploy.exe")
+    return "#{msdeploy_path}msdeploy.exe"
+  end
  
  def get_package
    #is it a direct file
