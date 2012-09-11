@@ -40,19 +40,20 @@ class MSDeploy
   end
   
   def get_msdeploy_path
-    #check path directory
-    ENV['PATH'].split(';').each do |folder| 
-      if File.exists?(folder+'/msdeploy.exe')
-        return folder+'/msdeploy.exe'
-      end      
+    #check the environment paths
+    ENV['PATH'].split(';').each do |path|
+      msdeploy_path = File.join(path, 'msdeploy.exe')
+      return msdeploy_path if File.exists?(msdeploy_path)
     end
+
+    #check the environment variables
 
     #check if it's in registry
     msdeploy_path = ENV['MSDeployPath']    
     if msdeploy_path == nil || !File.exist?("#{msdeploy_path}msdeploy.exe")
       Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\IIS Extensions\MSDeploy\2') do |reg|
-          reg_typ, reg_val = reg.read('InstallPath') # no checking for x86 here.
-          msdeploy_path = reg_val
+        reg_typ, reg_val = reg.read('InstallPath') # no checking for x86 here.
+        msdeploy_path = reg_val
       end
     end
 
