@@ -7,8 +7,8 @@ module Albacore
     attr_accessor :command, :working_directory
     attr_array :parameters
 
-    def initialize command = nil, parameters = [], working_directory = nil
-      @working_directory = working_directory || Dir.pwd
+    def initialize command = nil, parameters = [], working_directory = Dir.pwd
+      @working_directory = working_directory
       @parameters = parameters || []
       @command = command unless command.nil?
       super()
