@@ -11,77 +11,69 @@ class RunCommandObject
   end
 end
 
-describe "when setting the command" do
-  before :all do
-    @runme = RunCommandObject.new
-    @runme.extend SystemPatch
+shared_context 'mocked system' do
+  subject { RunCommandObject.new 'test.exe' }
+  before(:all) { subject.extend SystemPatch }
+end
 
-    @runme.command = "test.exe"
-    @runme.execute
-  end
-
-  it "should execute the specified command, quoted" do
-    @runme.system_command.should == "\"test.exe\""
-  end
+describe "the most simplistic call to run_command" do
+  include_context 'mocked system'
+  before(:all) { subject.execute }
+  it("should quote the cmd") { subject.system_command.should eq(%{"test.exe"}) }
 end
 
 describe "when specifying a parameter to a command" do
+  include_context 'mocked system'
   before :all do
-    @runme = RunCommandObject.new
-    @runme.extend SystemPatch
-    @runme.command = "test.exe"
-    @runme.parameters "param1"
-    @runme.execute
+    subject.parameters "param1"
+    subject.execute
   end
-
   it "should separate the parameters from the command" do
-    @runme.system_command.should == "\"test.exe\" param1"
+    subject.system_command.should eq(%{"test.exe" param1})
   end
 end
 
 describe "when specifying multiple parameters to a command" do
+
+  include_context 'mocked system'
+
   before :all do
-    @runme = RunCommandObject.new
-    @runme.extend SystemPatch
-    @runme.command = "test.exe"
-    @runme.parameters "param1", "param2", "param3"
-    @runme.execute
+    subject.parameters "param1", "param2", "param3"
+    subject.execute
   end
 
   it "should separate all parameters by a space" do
-    @runme.system_command.should == "\"test.exe\" param1 param2 param3"
+    subject.system_command.should eq(%{"test.exe" param1 param2 param3})
   end
 end
 
 describe "when executing a runcommand object twice" do
-  before :all do
-    @runmeone = RunCommandObject.new
-    @runmetwo = @runmeone
-    @runmeone.extend SystemPatch
-    @runmeone.command = "test.exe"
-    @runmeone.parameters "1", "2", "3"
 
-    @runmeone.execute
-    @runmetwo.execute
+  include_context 'mocked system'
+
+  before :all do
+    subject.parameters "1", "2", "3"
+    subject.execute
+    subject.execute
   end
 
   it "should only pass the parameters to the command once for the first execution" do
-    @runmeone.system_command.should == "\"test.exe\" 1 2 3"
+    subject.system_command.should eq(%{"test.exe" 1 2 3})
   end
 
   it "should only pass the parameters to the command once for the second execution" do
-    @runmetwo.system_command.should == "\"test.exe\" 1 2 3"
+    subject.system_command.should eq(%{"test.exe" 1 2 3})
   end
 end
 
 describe "when the command exists relative to the project root" do
-  before :all do
-    @runme = RunCommandObject.new
-    @runme.extend SystemPatch
+  include_context 'mocked system'
 
-    File.open('test.exe', 'w') {}
-    @runme.command = "test.exe"
-    @runme.execute
+  before :all do
+    File.open('test.exe', 'w+') do |f|
+      f.puts ' '
+    end
+    subject.execute
   end
 
   after :all do
@@ -89,6 +81,6 @@ describe "when the command exists relative to the project root" do
   end
 
   it "should expand the path" do
-    @runme.system_command.should == "\"#{File.expand_path('test.exe')}\""
+    subject.system_command.should == "\"#{File.expand_path('test.exe')}\""
   end
 end

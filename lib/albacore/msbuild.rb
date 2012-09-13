@@ -5,39 +5,39 @@ class MSBuild
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::MSBuild
-  
+
   attr_accessor :solution, :verbosity, :loggermodule, :max_cpu_count
   attr_array :targets
   attr_hash :properties, :other_switches
-  
+
   def initialize
     super()
     update_attributes msbuild.to_hash
   end
-  
+
   def execute
     build_solution(@solution)
   end
 
   def nologo
-    @nologo = true     
+    @nologo = true
   end
-  
+
   def build_solution(solution)
     check_solution solution
-    
+
     command_parameters = []
     command_parameters << "\"#{solution}\""
-    command_parameters << "\"/verbosity:#{@verbosity}\"" if @verbosity != nil
-    command_parameters << "\"/logger:#{@loggermodule}\"" if @loggermodule != nil
-    command_parameters << "\"/maxcpucount:#{@max_cpu_count}\"" if @max_cpu_count != nil
+    command_parameters << "\"/verbosity:#{@verbosity}\"" unless @verbosity.nil?
+    command_parameters << "\"/logger:#{@loggermodule}\"" unless @loggermodule.nil?
+    command_parameters << "\"/maxcpucount:#{@max_cpu_count}\"" unless @max_cpu_count.nil?
     command_parameters << "\"/nologo\"" if @nologo
-    command_parameters << build_properties if @properties != nil
-    command_parameters << build_switches if @other_switches != nil
-    command_parameters << "\"/target:#{build_targets}\"" if @targets != nil
-    
-    result = run_command "MSBuild", command_parameters.join(" ")
-    
+    command_parameters << build_properties unless @properties.nil?
+    command_parameters << build_switches unless @other_switches.nil?
+    command_parameters << "\"/target:#{build_targets}\"" unless @targets.nil?
+
+    result = run_command ["MSBuild", "XBuild"], command_parameters
+
     failure_message = 'MSBuild Failed. See Build Log For Detail'
     fail_with_message failure_message if !result
   end
@@ -47,7 +47,7 @@ class MSBuild
     msg = 'solution cannot be nil'
     fail_with_message msg
   end
-  
+
   def build_targets
     @targets.join ";"
   end
