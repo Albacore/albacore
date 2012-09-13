@@ -66,21 +66,11 @@ describe "when executing a runcommand object twice" do
   end
 end
 
-describe "when the command exists relative to the project root" do
+describe 'when passing failover names' do
+  
   include_context 'mocked system'
 
   before :all do
-    File.open('test.exe', 'w+') do |f|
-      f.puts ' '
-    end
-    subject.execute
-  end
-
-  after :all do
-    FileUtils.rm_f('test.exe')
-  end
-
-  it "should expand the path" do
-    subject.system_command.should == "\"#{File.expand_path('test.exe')}\""
+    
   end
 end

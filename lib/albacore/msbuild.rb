@@ -16,14 +16,14 @@ class MSBuild
   end
 
   def execute
-    build_solution(@solution)
+    build_solution @solution
   end
 
   def nologo
     @nologo = true
   end
 
-  def build_solution(solution)
+  def build_solution solution
     check_solution solution
 
     command_parameters = []
@@ -36,7 +36,7 @@ class MSBuild
     command_parameters << build_switches unless @other_switches.nil?
     command_parameters << "\"/target:#{build_targets}\"" unless @targets.nil?
 
-    result = run_command ["MSBuild", "XBuild"], command_parameters
+    result = run_command 'MSBuild', command_parameters
 
     failure_message = 'MSBuild Failed. See Build Log For Detail'
     fail_with_message failure_message if !result
