@@ -1,22 +1,20 @@
-# Albacore task for installing NuGet packages
-
 require 'albacore/albacoretask'
 require 'albacore/support/supportlinux'
 
 class NuGetInstall
 	include Albacore::Task
-  	include Albacore::RunCommand
-  	include SupportsLinuxEnvironment
+ 	include Albacore::RunCommand
+ 	include SupportsLinuxEnvironment
 
-  	attr_accessor	:command,
-  					:package,
-  					:output_directory,
-  					:version,
-  					:exclude_version,
-  					:prerelease,
-  					:no_cache
+ 	attr_accessor	:command,
+                :package,
+                :output_directory,
+                :version,
+                :exclude_version,
+                :prerelease,
+                :no_cache
 
-	attr_array		:sources
+	attr_array :sources
 
 	def initialize(command="NuGet.exe")
 		super()
