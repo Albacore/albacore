@@ -16,7 +16,7 @@ class NuGetInstall
 
 	attr_array :sources
 
-	def initialize(command="NuGet.exe")
+	def initialize(command='NuGet.exe')
 		super()
 		@sources = []
 		@command = command
@@ -39,7 +39,7 @@ class NuGetInstall
 		fail_with_message 'A NuGet package must be specified.' if @package.nil?
 
 		params = []
-		params << "install"
+		params << 'install'
 		params << package
 		params << "-Version #{version}" unless @version.nil?
 		params << "-OutputDirectory #{output_directory}" unless @output_directory.nil?
