@@ -6,6 +6,7 @@ class VbNetEngine < AssemblyInfoEngine
     @start_token = "<"
     @end_token   = ">"
     @assignment  = ":="
+    @statement_termitator  = ""
   end
   
   def build_attribute_re(attr_name)

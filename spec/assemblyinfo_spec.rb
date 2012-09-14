@@ -195,7 +195,7 @@ end
 
 { :no => { :engine => nil,              :lang => "no", :start_token => "[", :end_token => "]",     :using => "using " },
   :cs => { :engine => CSharpEngine.new, :lang => "the C#", :start_token => "[", :end_token => "]",     :using => "using " },
-  :vb => { :engine => VbNetEngine.new,  :lang => "the VB.Net", :start_token => "<", :end_token => ">", :using => "Imports " },
+  :vb => { :engine => VbNetEngine.new,  :lang => "the VB.Net", :start_token => "<", :end_token => ">", :using => "Imports ", :statement_terminator => "" },
   :fs => { :engine => FSharpEngine.new, :lang => "the F#", :start_token => "[<", :end_token => ">]",   :using => "open " },
   :cpp=> { :engine => CppCliEngine.new, :lang => "the C++", :start_token => "[", :end_token => "]",    :using => "using namespace ", :nsdelim => "::" }
 }.each do |key, settings|
@@ -223,23 +223,24 @@ end
     let(:e) { settings[:end_token] }
     let(:using) { settings[:using] }
     let(:d) { settings[:nsdelim] || '.' }
+    let(:t) { settings[:statement_terminator] || ';'}
 
     subject { @tester.build_and_read_assemblyinfo_file @asm }
 
     it "should use the system.reflection namespace" do
-      subject.scan(%Q|#{using}System#{d}Reflection|).length.should == 1
+      subject.scan(%Q|#{using}System#{d}Reflection#{t}|).length.should == 1
     end
 
     it "should use the system.runtime.interopservices namespace" do
-      subject.scan(%Q|#{using}System#{d}Runtime#{d}InteropServices|).length.should == 1
+      subject.scan(%Q|#{using}System#{d}Runtime#{d}InteropServices#{t}|).length.should == 1
     end
 
     it "should use custom namespaces" do
-      subject.scan(%Q|#{using}My#{d}Name#{d}Space|).length.should == 1
+      subject.scan(%Q|#{using}My#{d}Name#{d}Space#{t}|).length.should == 1
     end
 
     it "shold be using the other custom namespace, too" do
-      subject.scan(%Q|#{using}Another#{d}Namespace#{d}GoesHere|).length.should == 1
+      subject.scan(%Q|#{using}Another#{d}Namespace#{d}GoesHere#{t}|).length.should == 1
     end
 
     it "should contain the specified version information" do
