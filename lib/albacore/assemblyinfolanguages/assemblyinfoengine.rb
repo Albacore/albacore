@@ -36,6 +36,6 @@ class AssemblyInfoEngine
   end
 
   def build_using_statement(namespace)
-    "#{@using} #{namespace};"
+    "#{@using} #{namespace}#{@statement_terminator}"
   end
 end
