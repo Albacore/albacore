@@ -196,7 +196,7 @@ end
 { :no => { :engine => nil,              :lang => "no", :start_token => "[", :end_token => "]",     :using => "using " },
   :cs => { :engine => CSharpEngine.new, :lang => "the C#", :start_token => "[", :end_token => "]",     :using => "using " },
   :vb => { :engine => VbNetEngine.new,  :lang => "the VB.Net", :start_token => "<", :end_token => ">", :using => "Imports ", :statement_terminator => "" },
-  :fs => { :engine => FSharpEngine.new, :lang => "the F#", :start_token => "[<", :end_token => ">]",   :using => "open " },
+  :fs => { :engine => FSharpEngine.new, :lang => "the F#", :start_token => "[<", :end_token => ">]",   :using => "open ", :statement_terminator => "" },
   :cpp=> { :engine => CppCliEngine.new, :lang => "the C++", :start_token => "[", :end_token => "]",    :using => "using namespace ", :nsdelim => "::" }
 }.each do |key, settings|
 
