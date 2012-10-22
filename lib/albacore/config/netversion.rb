@@ -12,6 +12,8 @@ module Configuration
           version = "v3.5"
         when :net4, :net40
           version = "v4.0.30319"
+		when :net45
+		  version = "v4.0.30319"
         else
           fail "#{netversion} is not a supported .net version"
       end
