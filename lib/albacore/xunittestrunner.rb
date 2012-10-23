@@ -15,6 +15,10 @@ class XUnitTestRunner
     @command = command unless command.nil?
   end
 
+  def skip_test_failures
+    @skip_test_fail = true
+  end
+
   def get_command_line
     command_params = []
     command_params << @command
