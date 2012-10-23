@@ -13,7 +13,7 @@ module Configuration
         when :net4, :net40, :net45
           version = 'v4.0.30319'
         else
-          fail "#{netversion} is not a supported .NET version"
+          fail "The .NET Framework #{netversion} is not supported"
       end
       
       File.join win_dir, 'Microsoft.NET', 'Framework', version
