@@ -1,7 +1,7 @@
 module Configuration
   module NetVersion
     def win_dir
-      @win_dir ||= ENV['windir'] || ENV['WINDIR'] || 'C:/Windows'
+      ENV['windir'] || ENV['WINDIR'] || 'C:/Windows'
     end
    
     def get_net_version(netversion)
@@ -15,7 +15,8 @@ module Configuration
         else
           fail "#{netversion} is not a supported .NET version"
       end
-      File.join win_dir.dup, 'Microsoft.NET', 'Framework', version
+      
+      File.join win_dir, 'Microsoft.NET', 'Framework', version
     end
   end
 end
