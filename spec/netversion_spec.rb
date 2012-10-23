@@ -41,3 +41,13 @@ describe :NetVersion, 'when getting the net version' do
     @subject.get_net_version(:net45).should include 'v4.0'
   end
 end
+
+describe :NetVersion, 'when getting an unsupported net version' do
+  before do 
+    @subject = NetVersionTest.new
+  end
+  
+  it 'should fail' do
+    lambda { @subject.get_net_version :fake }.should raise_error
+  end
+end
