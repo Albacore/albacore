@@ -4,7 +4,6 @@ require 'ostruct'
 require 'fileutils'
 
 class OutputBuilder
-  include FileUtils
   include ::Rake::DSL if defined?(::Rake::DSL)
   
   def initialize(dir_to, dir_from)
@@ -13,7 +12,7 @@ class OutputBuilder
   end
   
   def dir(dir)
-    cp_r "#{@dir_from}/#{dir}", @dir_to
+    FileUtils.cp_r "#{@dir_from}/#{dir}", @dir_to
   end
   
   def file(f)
@@ -23,7 +22,7 @@ class OutputBuilder
   def file(f, ft)
     #todo find more elegant way to create base dir if missing for file.
     initialize_to_path(ft)
-    cp "#{@dir_from}/#{f}", "#{@dir_to}/#{ft}"
+    FileUtils.cp "#{@dir_from}/#{f}", "#{@dir_to}/#{ft}"
   end
   
   def erb(f, ft, locals)
@@ -33,15 +32,15 @@ class OutputBuilder
   end
   
   def self.output_to(dir_to, dir_from)
-    rmtree dir_to
-    mkdir dir_to
+    FileUtils.rmtree dir_to
+    FileUtils.mkdir dir_to
     yield OutputBuilder.new(dir_to, dir_from)
   end
   
 private
   def initialize_to_path(ft)
     topath = File.dirname("#{@dir_to}/#{ft}")
-    mkdir_p topath unless File.exist? topath
+    FileUtils.mkdir_p topath unless File.exist? topath
     topath
   end
 end
