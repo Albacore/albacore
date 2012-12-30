@@ -1,0 +1,13 @@
+language: ruby
+rvm:
+  - 1.9.3
+  - jruby
+script: "bundle exec rake"
+branches:
+  only:
+    - clean_slate
+#env:
+notifications:
+  email: false
+
+gemfile: Gemfile
