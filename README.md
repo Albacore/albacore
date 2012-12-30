@@ -7,6 +7,12 @@ project and extracting tasks and patterns as I go.
 Henrik
 
 
+### Current Build Status
+
+Since this is work in progress, I don't mind breaking the build once in a while...
+
+[![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
+
 ## Links
 
  * http://guides.rubygems.org/make-your-own-gem/
