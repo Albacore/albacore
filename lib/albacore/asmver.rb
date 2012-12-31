@@ -1,0 +1,80 @@
+# -*- encoding: utf-8 -*-
+
+require 'semver'
+require 'set'
+require 'albacore/logging'
+require 'albacore/cross_platform_cmd'
+require 'albacore/errors/unfilled_property_error'
+
+module Albacore
+  module AsmVer
+    class Cmd
+      include Logging
+      def initialize project
+        trace "intializing cmd with #{project.inspect}"
+        @parameters = Set.new
+      end
+      def execute
+        
+      end
+    end
+    class Config
+      attr_accessor :version, :files
+      
+      def initialize
+        @files_config = proc {}
+      end
+      
+      # lets the Rakefile configure the path to the Assembly Info
+      def out_file &config_block
+        @files_config = config_block
+      end
+      
+      Project = Struct.new(:file_path, :dir_path, :lang_ext, :version, :asminfo_path)
+    
+      # return all project meta-datas
+      def projects
+        raise ArgumentError, "config.files must respond to #each/1" unless @files.respond_to? :each
+        raise UnfilledPropertyError, "version", "must be set: ver.version = '2.4.5'" unless @version
+        @files.collect { |f|
+          proj = Project.new(f, File.dirname(f), guess_lang_ext(f), @version)
+          proj.asminfo_path = @files_config.call proj.dir_path, proj
+          proj
+        }
+      end
+      
+      private
+      def guess_lang_ext path
+        case File.extname path
+          when ".fsproj" then ".fs"
+          when ".csproj" then ".cs"
+          when ".vbproj" then ".vb"
+        end
+      end
+    end
+    class Task
+      def initialize cmd
+        @cmd = cmd
+      end
+      def execute
+        @cmd.execute
+      end
+    end
+  end
+end
+
+# a rake task type for outputting assembly versions
+def asmver *args
+  args ||= []
+  c = Albacore::AsmVer::Config.new
+  yield c
+  
+  body = proc {
+    c.projects.each { |p|
+      cmd = Albacore::AsmVer::Cmd.new p
+      Albacore::AsmVer::Task.new(cmd).execute
+    }
+  }
+  
+  Rake::Task.define_task *args, &body
+end
