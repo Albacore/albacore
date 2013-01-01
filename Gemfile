@@ -5,7 +5,7 @@ source "http://rubygems.org"
 
 # Windows Rubies (RubyInstaller)
 platforms :mswin, :mingw do
-  gem 'wdm'
+  gem 'wdm' # for listening to Windows Directory Notifications
 end
 
 gemspec

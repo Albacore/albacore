@@ -20,7 +20,9 @@ EOF
 
   s.rubyforge_project = 'albacore'
   
-  s.add_development_dependency 'rake', '~>10.0.2'
+  s.add_dependency 'rake', '~>10.0.2' # this gem builds on rake
+  s.add_dependency 'map', '~>6.2.0' # https://github.com/ahoward/map for options handling
+  
   s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
   s.add_development_dependency 'guard', '~>1.6.1'
   s.add_development_dependency 'guard-rspec', '~>2.3.3'
