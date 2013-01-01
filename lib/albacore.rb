@@ -2,7 +2,7 @@
 
 require 'albacore/version'
 
-require 'albacore/albasemver'
+require 'albacore/asmver'
 require 'albacore/asminfo'
 require 'albacore/build'
 require 'albacore/nugets_restore'
