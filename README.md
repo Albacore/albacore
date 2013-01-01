@@ -6,6 +6,10 @@ project and extracting tasks and patterns as I go.
 
 Henrik
 
+In your Gemfile:
+
+`gem "albacore", :git => "git://github.com/Albacore/albacore.git", :branch => 'clean_slate'`
+
 
 ### Current Build Status
 
