@@ -22,6 +22,7 @@ EOF
   
   s.add_dependency 'rake', '~>10.0.2' # this gem builds on rake
   s.add_dependency 'map', '~>6.2.0' # https://github.com/ahoward/map for options handling
+  s.add_dependency 'nokogiri'
   
   s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
   s.add_development_dependency 'guard', '~>1.6.1'
