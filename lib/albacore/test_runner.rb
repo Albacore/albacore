@@ -43,8 +43,7 @@ def test_runner *args
   body = proc {
     # Albacore::Paths.normalize_slashes p
     command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.files
-      Albacore::TestRunner::Task.new(command).execute
-	  end
+    Albacore::TestRunner::Task.new(command).execute
   }
 
   Rake::Task.define_task(*args, &body)
