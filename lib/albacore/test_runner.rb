@@ -13,7 +13,7 @@ module Albacore
       include CrossPlatformCmd
       def initialize work_dir, executable, files
         @work_dir, @executable = work_dir, executable
-        @parameters = files
+        @parameters = [files]
       end
       def execute
         sh @work_dir, make_command
@@ -21,7 +21,14 @@ module Albacore
     end
     class Config
       include CmdConfig
-      attr_accessor :files
+      attr_writer :files
+      def files
+        if @files.respond_to? :each
+          @files
+        else
+          [@files]
+        end
+      end
     end
     class Task
       def initialize command_line
@@ -42,8 +49,10 @@ def test_runner *args
 
   body = proc {
     # Albacore::Paths.normalize_slashes p
-    command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.files
-    Albacore::TestRunner::Task.new(command).execute
+    c.files.each { |dll|
+      command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, dll
+      Albacore::TestRunner::Task.new(command).execute
+    }
   }
 
   Rake::Task.define_task(*args, &body)
