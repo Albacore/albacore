@@ -14,7 +14,7 @@ module Albacore
   class << self
     # Set the global albacore logging level
     def log_level= level
-      @level = level.is_a? Logging::LogLevel ? level : Logging::LogLevel.new(level)
+      @level = level.is_a?(Albacore::Logging::LogLevel) ? level : Albacore::Logging::LogLevel.new(level)
     end
   end
 end
