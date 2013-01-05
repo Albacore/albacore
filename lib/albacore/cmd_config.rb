@@ -24,6 +24,11 @@ module Albacore
       @parameters
     end
     
+    # add a parameter to the list of parameters to pass to the executable
+    def add_parameter param
+      parameters.add param
+    end
+    
     # helper method that joins the path segments with
     # respect to the work_dir.
     private
