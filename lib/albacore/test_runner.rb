@@ -11,9 +11,9 @@ module Albacore
     class Cmd
       include Logging
       include CrossPlatformCmd
-      def initialize work_dir, executable, files
+      def initialize work_dir, executable, parameters, file
         @work_dir, @executable = work_dir, executable
-        @parameters = [files]
+        @parameters = parameters.unshift(file)
       end
       def execute
         sh @work_dir, make_command
@@ -50,7 +50,7 @@ def test_runner *args
   body = proc {
     # Albacore::Paths.normalize_slashes p
     c.files.each { |dll|
-      command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, dll
+      command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.parameters, dll
       Albacore::TestRunner::Task.new(command).execute
     }
   }
