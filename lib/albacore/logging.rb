@@ -6,7 +6,7 @@ module Albacore
       # puts str
     end
     def debug str
-      # puts str
+      puts str
     end
     def info str
       puts str
