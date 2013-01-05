@@ -13,7 +13,7 @@ module Albacore
       include CrossPlatformCmd
       def initialize work_dir, executable, parameters, file
         @work_dir, @executable = work_dir, executable
-        @parameters = parameters.unshift(file)
+        @parameters = parameters.to_a.unshift(file)
       end
       def execute
         sh @work_dir, make_command
