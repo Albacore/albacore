@@ -34,7 +34,7 @@ module Albacore
   end
 end
 
-def testrunner *args
+def test_runner *args
   args ||= []
   
   c = Albacore::TestRunner::Config.new
