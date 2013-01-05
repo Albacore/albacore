@@ -1,6 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-require 'semver'
 require 'set'
 require 'albacore/logging'
 require 'albacore/cross_platform_cmd'
