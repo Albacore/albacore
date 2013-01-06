@@ -41,7 +41,7 @@ module Albacore
         raise "unable to find MsBuild or XBuild" unless @exe
 
         logging "minimal"
-        cores Facts.processor_count
+        cores Facts.processor_count unless @exe.include? "xbuild"
       end
 
       # the sln file to build
