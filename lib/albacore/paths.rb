@@ -11,7 +11,7 @@ module Albacore
         raise ArgumentError, "path is nil" if path.nil?
         ::Rake::Win32.windows? ? path.gsub('/', '\\') : path.gsub('\\', '/')
       end
-      
+
       def make_command executable, parameters
         raise ArgumentError, "executable is nil" if executable.nil?
         params = parameters.collect{|p| '"' + p + '"'}.join ' '

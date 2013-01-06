@@ -20,25 +20,26 @@ module Albacore
         sh @work_dir, make_command
       end
     end
-    
+
     # The configuration class for xbuild and msbuild. MSDN docs at: http://msdn.microsoft.com/en-us/library/vstudio/ms164311.aspx
     class Config
       include CmdConfig
       include Logging
-      
+
       attr_accessor :sln, :file, :target, :properties
-      
+
       def initialize
         @parameters = Set.new
-        
-        w = lambda { |e| CrossPlatformCmd.which e ? e : nil }
-        
+
+        w = lambda { |e| CrossPlatformCmd.which(e) ? e : nil }
+
         @exe = w.call( "msbuild" ) ||
                w.call( "xbuild" )  ||
                heuristic_executable
+
         debug "build using '#{@exe}'"
         raise "unable to find MsBuild or XBuild" unless @exe
-        
+
         logging "minimal"
         cores Facts.processor_count
       end
@@ -48,25 +49,25 @@ module Albacore
         @parameters.add val
         @sln = val
       end
-      
+
       def sln
         @sln
       end
-      
+
       def file= val
         @parameters.add val
         @file = val
       end
-      
+
       def file
         @file
       end
-      
+
       # see target method for docs
       def target= t
         target t
       end
-      
+
       # Call for each target that you want to add, or pass an array or
       # strings. Only unique targets will be passed to MsBuild.
       #
@@ -81,9 +82,9 @@ module Albacore
       def target t
         update_array_prop "target", method(:make_target), :targets, t
       end
-      
+
       # Allows you to add properties to MsBuild; example:
-      # 
+      #
       # b.prop 'WarningLevel', 2
       # b.prop 'BuildVersion', '3.5.0'
       #
@@ -99,7 +100,7 @@ module Albacore
         @properties[k] = v
         @parameters.add "/property:#{make_props}"
       end
-      
+
       # Specifies the amount of information to display in the build log. 
       # Each logger displays events based on the verbosity level that you set for that logger.
       # You can specify the following verbosity levels: q[uiet], m[inimal], 
@@ -109,17 +110,17 @@ module Albacore
         @parameters.subtract modes
         @parameters.add "/verbosity:#{mode}"
       end
-      
+
       def logging= mode
         logging mode
       end
-      
+
       # Specifies the number of parallel worker processes to build with
       # Defaults to the number of logical cores
       def cores num
         @parameters.add "/maxcpucount:#{num}"
       end
-      
+
       # Pass the parameters that you specify to the console logger, which displays build information in the console window. You can specify the following parameters:
       # * PerformanceSummary. Show the time that’s spent in tasks, targets, and projects.
       # * Summary. Show the error and warning summary at the end.
@@ -138,17 +139,17 @@ module Albacore
       def clp param
         update_array_prop "consoleloggerparameters", method(:make_clp), :clp, param
       end
-      
+
       # Set logging verbosity to quiet
       def be_quiet
         logging "quiet"
       end
-      
+
       # Don't display the startup banner or the copyright message.
       def nologo
         @parameters.add "/nologo"
       end
-      
+
       private
       def update_array_prop prop_name, callable_prop_val, field_sym, value
         field = :"@#{field_sym}"
@@ -166,21 +167,21 @@ module Albacore
         # @parameters.add "/target:#{make_target}"
         @parameters.add "/#{prop_name}:#{callable_prop_val.call}"
       end
-      
+
       def make_target
         @targets.join(';')
       end
-      
+
       def make_props
         @properties.collect { |k, v|
           "#{k}=#{v}"
         }.join(';')
       end
-      
+
       def make_clp
         @clp.join(';')
       end
-      
+
       def heuristic_executable
         if ::Rake::Win32.windows?
           trace 'build tasktype finding msbuild.exe'
@@ -206,7 +207,7 @@ end
 
 def build *args
   args ||= []
-  
+
   c = Albacore::Build::Config.new
   yield c
 
