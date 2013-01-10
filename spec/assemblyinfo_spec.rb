@@ -213,6 +213,7 @@ end
       @asm.com_visible = @tester.com_visible
       @asm.com_guid = @tester.com_guid
       @asm.file_version = @tester.file_version
+      @asm.informational_version = @tester.informational_version
       @asm.trademark = @tester.trademark
       @asm.company_name = @tester.company_name
 
@@ -279,6 +280,10 @@ end
     it "should contain the trademark information" do
       subject.scan(%Q|#{s}assembly: AssemblyTrademark("#{@tester.trademark}")#{e}|).length.should == 1
     end
+
+    it "should contain the informational version information" do
+      subject.scan(%Q|#{s}assembly: AssemblyInformationalVersion("#{@tester.informational_version}")#{e}|).length.should == 1
+    end
   end
 end
 
@@ -324,6 +329,10 @@ describe AssemblyInfo, "when generating an assembly info file with no attributes
 
   it "should not contain the trademark information" do
     subject.scan(%Q|[assembly: AssemblyTrademark("#{@tester.trademark}")]|).should be_empty
+  end
+
+  it "should not contain the informational version information" do
+    subject.scan(%Q|[assembly: AssemblyInformationalVersion("#{@tester.informational_version}")]|).should be_empty
   end
 end
 
