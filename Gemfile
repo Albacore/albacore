@@ -8,3 +8,5 @@ gem 'guard'
 gem 'guard-rspec'
 gem 'rake'
 gem 'rspec'
+gem 'rb-inotify', '~> 0.8.8'
+

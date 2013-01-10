@@ -3,27 +3,27 @@ require 'albacore/support/attrmethods'
 module Albacore
   module RunCommand
     extend AttrMethods
-    
+
     attr_accessor :command, :working_directory
     attr_array :parameters
-    
-    def initialize
-      @working_directory = Dir.pwd
-      @parameters = []
+
+    def initialize command = nil, parameters = [], working_directory = Dir.pwd
+      @working_directory = working_directory
+      @parameters = parameters || []
+      @command = command unless command.nil?
       super()
     end
-    
-    def run_command(name="Command Line", parameters=nil)
+
+    def run_command name="TaskName", parameters=[]
+      raise(ArgumentError, "Don't pass nil as parameters.") if parameters.nil?
+      params = parameters
+      params << @parameters unless @parameters.empty?
+
       begin
-        params = Array.new
-        params << parameters unless parameters.nil?
-        params << @parameters unless (@parameters.nil? || @parameters.length==0)
-        
-        cmd = get_command(params)
-        @logger.debug "Executing #{name}: #{cmd}"
-        
         Dir.chdir(@working_directory) do
-          return system(cmd)
+          cmd = get_command params
+          @logger.debug "Executing #{name}: #{cmd}"
+          return system cmd
         end
 
       rescue Exception => e
@@ -32,14 +32,17 @@ module Albacore
       end
     end
 
-    def get_command(params)
+    def get_command params
       executable = @command
       unless command.nil?
         executable = File.expand_path(@command) if File.exists?(@command)
       end
-      cmd = "\"#{executable}\""
-      cmd +=" #{params.join(' ')}" if params.length > 0
-      cmd
+
+      if params.length > 0
+        %{"#{executable}" #{params.join(' ')}}
+      else
+        %{"#{executable}"}
+      end
     end
   end
 end
