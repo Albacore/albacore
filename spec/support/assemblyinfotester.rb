@@ -15,6 +15,7 @@ class AssemblyInfoTester < AssemblyInfo
     @product_name = "my product, yo."
     @file_version = "1.0.0.0"
     @trademark = "some trademark info goes here"
+    @informational_version = "0.0.0.1-Pre"
 
     @input_file = nil
   end
