@@ -31,9 +31,9 @@ class OutputBuilder
     File.open("#{@dir_to}/#{ft}", 'w') {|f| f.write erb.result(ErbBinding.new(locals).get_binding)}
   end
   
-  def self.output_to(dir_to, dir_from)
-    FileUtils.rmtree dir_to
-    FileUtils.mkdir dir_to
+  def self.output_to(dir_to, dir_from, remove_dir_to)
+    FileUtils.rmtree dir_to if remove_dir_to
+    FileUtils.mkdir dir_to unless Dir.exists? dir_to
     yield OutputBuilder.new(dir_to, dir_from)
   end
   
@@ -55,22 +55,24 @@ end
 class Output
   include Albacore::Task
 
+  attr_accessor :remove_dir_to
   def initialize
     super()
-    
+
+    @remove_dir_to = true
     @files = []
     @erbs = []
     @directories = []
   end
-    
+
   def execute()
     fail_with_message 'No base dir' if @from_dir.nil?
     fail_with_message 'No output dir' if @to_dir.nil?
-    
-    OutputBuilder.output_to(@to_dir, @from_dir)  do |o|
-        @directories.each { |f| o.dir f }
-        @files.each { |f| o.file *f }
-        @erbs.each { |f| o.erb *f }
+
+    OutputBuilder.output_to(@to_dir, @from_dir, @remove_dir_to)  do |o|
+      @directories.each { |f| o.dir f }
+      @files.each { |f| o.file *f }
+      @erbs.each { |f| o.erb *f }
     end
   end
   
