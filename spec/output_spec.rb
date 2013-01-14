@@ -35,6 +35,17 @@ describe Output, 'when having a from and to set' do
        
         File.exist?("#{OutputTestData.to}/test.txt").should be_true
       end
+
+      it "should not remove dir_to if remove_dir_to flag is set to false" do
+        FileUtils.mkdir(OutputTestData.to)
+        FileUtils.touch("#{OutputTestData.to}/existing.txt")
+        @o.file 'test.txt'
+        @o.remove_dir_to = false
+
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/existing.txt").should be_true
+      end
     end
     
     
