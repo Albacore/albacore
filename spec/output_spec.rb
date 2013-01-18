@@ -80,6 +80,15 @@ describe Output, 'when having a from and to set' do
         File.exist?("#{OutputTestData.to}/subdir/foo").should be_true
         File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
       end
+
+      it "should create nested directory if specified in to" do
+        @o.to "#{OutputTestData.to}/subdir/"
+        @o.dir 'subdir/*'
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
+
+      end
     end
     
     
