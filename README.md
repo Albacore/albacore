@@ -16,6 +16,7 @@ In your Gemfile:
 Since this is work in progress, I don't mind breaking the build once in a while...
 
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
+[![Dependency Status](https://gemnasium.com/Albacore/albacore.png)](https://gemnasium.com/Albacore/albacore)
 
 ## Links
 
