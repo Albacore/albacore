@@ -19,17 +19,17 @@ Gem::Specification.new do |s|
 EOF
 
   s.rubyforge_project = 'albacore'
-  
+
   s.add_dependency 'rake', '~>10.0.2' # this gem builds on rake
   s.add_dependency 'map', '~>6.2.0' # https://github.com/ahoward/map for options handling
   s.add_dependency 'nokogiri', '~>1.5.6' # used to manipulate and read *proj files
-  
+
   s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
   s.add_development_dependency 'guard', '~>1.6.1'
-  s.add_development_dependency 'guard-rspec', '~>2.3.3'
+  s.add_development_dependency 'guard-rspec', '~>2.4.0'
   s.add_development_dependency 'rspec', '~>2.12.0'
   s.add_development_dependency 'vagrant', '~>1.0.5'
-  s.add_development_dependency 'vagrant-vbguest', '~>0.5.1'
+  s.add_development_dependency 'vagrant-vbguest', '~>0.6.3'
   s.add_development_dependency 'bundler', '~>1.2.3'
 
   s.files         = `git ls-files`.split("\n")
