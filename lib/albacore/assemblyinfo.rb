@@ -12,7 +12,7 @@ class AssemblyInfo
   attr_accessor :input_file, :output_file, :language,
    :version, :title, :description, :custom_attributes,
    :copyright, :com_visible, :com_guid, :company_name, :product_name,
-   :file_version, :trademark, :lang_engine
+   :file_version, :trademark, :lang_engine, :informational_version
   
   attr_array :namespaces, :custom_data
   attr_hash :custom_attributes
@@ -105,6 +105,7 @@ class AssemblyInfo
     
     build_attribute(data, "AssemblyVersion", @version)
     build_attribute(data, "AssemblyFileVersion", @file_version)
+    build_attribute(data, "AssemblyInformationalVersion", @informational_version)
     
     data << ""
     if @custom_attributes != nil
