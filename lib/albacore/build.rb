@@ -17,7 +17,7 @@ module Albacore
         @parameters = parameters
       end
       def execute
-        sh @work_dir, make_command
+        sh_succ @work_dir, make_command
       end
     end
 

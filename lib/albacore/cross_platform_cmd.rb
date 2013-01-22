@@ -11,22 +11,21 @@ module Albacore
     class << self
       include Logging
 
-      def sh work_dir = nil, cmd
+      def sh work_dir = nil, cmd, &block
         raise ArgumentError, "cmd is nil" unless cmd
         sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
-        unless work_dir.nil?
-          trace "pushd #{work_dir}"
-          debug cmd
-          Dir.chdir work_dir do sys.call cmd end
-          trace "popd"
-        else
-          debug cmd
-          sys.call cmd do |res, ok|
-            p res
-            res
-          end
+        debug "Running '#{cmd}' in dir '#{work_dir}'"
+        sh_chdir work_dir do
+          return sys.call cmd, &block
         end
       end
+      def sh_chdir wd, &block
+        return block.call if wd.nil?
+        Dir.chdir wd do
+          return block.call
+        end
+      end
+      
       def which executable
         raise ArgumentError, "executable is nil" unless executable
 
@@ -60,8 +59,17 @@ module Albacore
     #             directory.
     #
     # cmd      :: the command to run, nil if you want to have the method call make_command for you
-    def sh work_dir = nil, cmd = nil
-      CrossPlatformCmd.sh work_dir, (cmd || make_command)
+    def sh work_dir = nil, cmd = nil, &block
+      CrossPlatformCmd.sh work_dir, (cmd || make_command), &block
+    end
+    
+    # run a command and assert that it was successful
+    def sh_succ work_dir = nil, cmd = nil, &block
+      CrossPlatformCmd.sh work_dir, (cmd || make_command) do |res, ok|
+        fatal "Failed to execute '#{cmd}', exited with code '#{res}'!" unless ok
+        fail "Failed to execute '#{cmd}', exited with code '#{res}'!" unless ok
+        return [res, ok]
+      end
     end
   end
 end
