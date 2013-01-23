@@ -17,7 +17,7 @@ module Albacore
         @parameters = parameters
       end
       def execute
-        sh_succ @work_dir, make_command
+        sh @work_dir, make_command
       end
     end
 
@@ -37,7 +37,7 @@ module Albacore
                w.call( "xbuild" )  ||
                heuristic_executable
 
-        debug "build using '#{@exe}'"
+        debug "build using '#{@exe}"
         raise "unable to find MsBuild or XBuild" unless @exe
 
         logging "minimal"

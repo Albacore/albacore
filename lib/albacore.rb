@@ -9,6 +9,9 @@ require 'albacore/build'
 require 'albacore/nugets_restore'
 require 'albacore/restore_hint_paths'
 require 'albacore/test_runner'
+require 'albacore/cross_platform_cmd'
+
+include Albacore::CrossPlatformCmd
 
 module Albacore
   class << self
