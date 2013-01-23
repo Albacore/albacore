@@ -1,12 +1,10 @@
-# -*- encoding: utf-8 -*-
-
 require 'rake'
 require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
 
 module Albacore
-  module NuGetsRestore
+  module NugetsRestore
     class Cmd
       include CrossPlatformCmd
       def initialize work_dir, executable, package, out
@@ -39,21 +37,4 @@ module Albacore
       end
     end
   end
-end
-
-def restore_nugets *args
-  args ||= []
-  
-  c = Albacore::NuGetsRestore::Config.new
-  yield c
-
-  body = proc {
-    c.packages.each do |p|
-      normalized_p = Albacore::Paths.normalize_slashes p
-      command = Albacore::NuGetsRestore::Cmd.new(c.work_dir, c.exe, normalized_p, c.out)
-      Albacore::NuGetsRestore::Task.new(command).execute
-	  end
-  }
-
-  Rake::Task.define_task(*args, &body)
 end

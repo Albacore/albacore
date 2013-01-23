@@ -37,7 +37,7 @@ module Albacore
                w.call( "xbuild" )  ||
                heuristic_executable
 
-        debug "build using '#{@exe}"
+        debug "build using '#{@exe}'"
         raise "unable to find MsBuild or XBuild" unless @exe
 
         logging "minimal"
@@ -203,18 +203,4 @@ module Albacore
       end
     end
   end
-end
-
-def build *args
-  args ||= []
-
-  c = Albacore::Build::Config.new
-  yield c
-
-  body = proc {
-    command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.parameters)
-    Albacore::Build::Task.new(command).execute
-  }
-
-  Rake::Task.define_task *args, &body
 end

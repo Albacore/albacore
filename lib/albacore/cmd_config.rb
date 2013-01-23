@@ -51,16 +51,5 @@ module Albacore
         yield
       end     
     end
-    
-    # so far not used:
-    def self.param sym, required, &on_set
-      raise ArgumentError, "sym needs to be a symbol" unless sym.is_a? Symbol
-      @required = Set.new unless @required
-      @required.add sym if required
-      prop = sym.to_s
-      define_method prop do
-        instance_eval "@#{prop}="
-      end
-    end
   end
 end

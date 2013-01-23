@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 require 'rake'
 require 'set'
 require 'albacore/paths'
@@ -39,21 +37,4 @@ module Albacore
       end
     end
   end
-end
-
-def test_runner *args
-  args ||= []
-  
-  c = Albacore::TestRunner::Config.new
-  yield c
-
-  body = proc {
-    # Albacore::Paths.normalize_slashes p
-    c.files.each { |dll|
-      command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.parameters, dll
-      Albacore::TestRunner::Task.new(command).execute
-    }
-  }
-
-  Rake::Task.define_task(*args, &body)
 end

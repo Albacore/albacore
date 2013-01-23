@@ -183,17 +183,3 @@ module Albacore
     end
   end
 end
-
-def restore_hint_paths *args
-  args ||= []
-  
-  c = Albacore::RestoreHintPaths::Config.new
-  yield c
-  
-  body = proc {
-    t = Albacore::RestoreHintPaths::Task.new c
-    t.execute
-  }
-  
-  Rake::Task.define_task(*args, &body)
-end

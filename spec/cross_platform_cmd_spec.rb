@@ -6,7 +6,7 @@ describe "expectations on Kernel#system and Rake::Win32#rake_system" do
   it("returns true if the command was successful") { res.should be_true }
 end
 
-describe Albacore::CrossPlatformCmd.method(":system"), "#system" do
+describe Albacore::CrossPlatformCmd.method(:system), "#system" do
   it "should be callable" do
     subject.should respond_to(:call)
   end

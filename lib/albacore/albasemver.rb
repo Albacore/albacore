@@ -47,16 +47,3 @@ module Albacore
     end
   end
 end
-
-def semver *args
-  args ||= []
-  c = Albacore::AlbaSemVer::Config.new
-  yield c
-  
-  body = proc {
-    cmd = Albacore::AlbaSemVer::Cmd.new
-    Albacore::AlbaSemVer::Task.new(cmd).execute
-  }
-  
-  Rake::Task.define_task *args, &body
-end
