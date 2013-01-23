@@ -6,9 +6,6 @@ module Albacore
     include Albacore::CrossPlatformCmd
     
     private
-    def testing
-      fail "oh noes  ... "
-    end
 
     # a rake task type for outputting assembly versions
     def asmver *args, &block
