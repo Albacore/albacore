@@ -44,7 +44,7 @@ module Albacore
     end
 
     def nugets_restore *args, &block
-      require 'albacore/restore_nugets'
+      require 'albacore/nugets_restore'
       args ||= []
       
       c = Albacore::NugetsRestore::Config.new
