@@ -61,19 +61,3 @@ module Albacore
     end
   end
 end
-
-# a rake task type for outputting assembly versions
-def asmver *args
-  args ||= []
-  c = Albacore::AsmVer::Config.new
-  yield c
-  
-  body = proc {
-    c.projects.each { |p|
-      cmd = Albacore::AsmVer::Cmd.new p
-      Albacore::AsmVer::Task.new(cmd).execute
-    }
-  }
-  
-  Rake::Task.define_task *args, &body
-end
