@@ -22,7 +22,7 @@ module Albacore
         }
       }
       
-      Rake::Task.define_task *args, &body
+      Albacore.define_task *args, &body
     end
 
     def build *args, &block
@@ -37,7 +37,7 @@ module Albacore
         Albacore::Build::Task.new(command).execute
       }
 
-      Rake::Task.define_task *args, &body
+      Albacore.define_task *args, &body
     end
 
     def nugets_restore *args, &block
@@ -55,7 +55,7 @@ module Albacore
         end
       }
 
-      Rake::Task.define_task(*args, &body)
+      Albacore.define_task(*args, &body)
     end
 
     def restore_hint_paths *args, &block
@@ -70,7 +70,7 @@ module Albacore
         t.execute
       }
       
-      Rake::Task.define_task(*args, &body)
+      Albacore.define_task(*args, &body)
     end
 
     def test_runner *args, &block
@@ -88,7 +88,7 @@ module Albacore
         }
       }
 
-      Rake::Task.define_task(*args, &body)
+      Albacore.define_task(*args, &body)
     end
   end
 end
