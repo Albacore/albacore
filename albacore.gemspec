@@ -26,8 +26,6 @@ EOF
   s.add_dependency 'facter', '~>1.6.17' # used to gather system data
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
-  s.add_development_dependency 'guard', '~>1.6.1'
-  s.add_development_dependency 'guard-rspec', '~>2.4.0'
   s.add_development_dependency 'rspec', '~>2.12.0'
   s.add_development_dependency 'vagrant', '~>1.0.5'
   s.add_development_dependency 'vagrant-vbguest', '~>0.6.3'

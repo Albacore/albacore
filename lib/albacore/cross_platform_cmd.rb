@@ -42,7 +42,7 @@ module Albacore
       sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
       block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
       chdir work_dir do
-        debug cmd
+        debug "!#{cmd}"
         res = sys.call cmd
         return block.call(res, $?)
       end
