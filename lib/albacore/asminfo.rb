@@ -2,6 +2,5 @@
 
 module Albacore
   module AsmInfo
-    
   end
 end

@@ -1,14 +1,17 @@
-# -*- encoding: utf-8 -*-
-
 require 'rake'
 require 'map'
+
 require 'albacore/logging'
 
 module Albacore
   # module for normalizing slashes across operating systems
   # and running commands
   module CrossPlatformCmd
-    private
+    include Logging
+
+    class << self
+      include CrossPlatformCmd
+    end
 
     def normalize_slashes path
       Paths.normalize_slashes path
@@ -17,10 +20,6 @@ module Albacore
     # create
     def make_command
       Paths.make_command @executable, @parameters
-    end
-
-    def testing
-      fail "oh noes  ... "
     end
     
     # run process - cmd should be appropriately quoted
@@ -31,7 +30,6 @@ module Albacore
     def system cmd, *opts
       opts = Map.options(opts || {})
       sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
-      res = nil
       chdir opts[:work_dir] do
         debug cmd
         return sys.call cmd
@@ -76,7 +74,7 @@ module Albacore
         "#{Paths.make_command 'where', parameters} >NUL 2>&1" :
         "#{Paths.make_command 'which', parameters} >/dev/null 2>&1"
       
-      CrossPlatformCmd.system which
+      system which
     end
     
     def chdir wd, &block

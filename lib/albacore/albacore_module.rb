@@ -1,4 +1,5 @@
 require 'albacore/application'
+require 'albacore/dsl'
 
 module Albacore
   class << self
