@@ -61,6 +61,7 @@ class Output
     @files = []
     @erbs = []
     @directories = []
+    @keep_to = false
   end
 
   def execute()
