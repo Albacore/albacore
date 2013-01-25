@@ -40,7 +40,7 @@ module Albacore
         debug "build using '#{@exe}'"
 
         logging "minimal"
-        cores Facts.processor_count unless @exe.include? "xbuild"
+        cores Facts.processor_count unless @exe.nil? || @exe.include? "xbuild"
       end
 
       # the sln file to build
