@@ -33,6 +33,7 @@ module Albacore
       yield c
 
       body = proc {
+        fail "unable to find MsBuild or XBuild" unless c.exe
         command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.parameters)
         Albacore::Build::Task.new(command).execute
       }

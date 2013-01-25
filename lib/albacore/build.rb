@@ -38,7 +38,6 @@ module Albacore
                heuristic_executable
 
         debug "build using '#{@exe}'"
-        raise "unable to find MsBuild or XBuild" unless @exe
 
         logging "minimal"
         cores Facts.processor_count unless @exe.include? "xbuild"
