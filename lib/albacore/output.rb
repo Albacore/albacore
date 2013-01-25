@@ -31,9 +31,9 @@ class OutputBuilder
     File.open("#{@dir_to}/#{ft}", 'w') {|f| f.write erb.result(ErbBinding.new(locals).get_binding)}
   end
   
-  def self.output_to(dir_to, dir_from)
-    FileUtils.rmtree dir_to
-    FileUtils.mkdir_p dir_to
+  def self.output_to(dir_to, dir_from, keep_to)
+    FileUtils.rmtree dir_to unless keep_to
+    FileUtils.mkdir_p dir_to unless Dir.exists? dir_to
     yield OutputBuilder.new(dir_to, dir_from)
   end
   
@@ -57,20 +57,21 @@ class Output
 
   def initialize
     super()
-    
+
     @files = []
     @erbs = []
     @directories = []
+    @keep_to = false
   end
-    
+
   def execute()
     fail_with_message 'No base dir' if @from_dir.nil?
     fail_with_message 'No output dir' if @to_dir.nil?
-    
-    OutputBuilder.output_to(@to_dir, @from_dir)  do |o|
-        @directories.each { |f| o.dir f }
-        @files.each { |f| o.file *f }
-        @erbs.each { |f| o.erb *f }
+
+    OutputBuilder.output_to(@to_dir, @from_dir, @keep_to)  do |o|
+      @directories.each { |f| o.dir f }
+      @files.each { |f| o.file *f }
+      @erbs.each { |f| o.erb *f }
     end
   end
   
@@ -79,6 +80,9 @@ class Output
     @files << [f,f_to]
   end
 
+  def keep_to
+   @keep_to = true
+  end
   def erb(f, opts={})
     f_to = opts[:as] || f
     @erbs << [f,f_to,opts[:locals]||{}]
