@@ -195,6 +195,7 @@ module Albacore
           FileUtils.cp globbed, lib
         end
         @command_line.execute nuspec
+        ... Albacore.publish :nuget_artifact, nuspec # TODO
       end
     end
   end
