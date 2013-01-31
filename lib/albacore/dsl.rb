@@ -58,6 +58,10 @@ module Albacore
 
       Albacore.define_task(*args, &body)
     end
+    
+    def nugets_path *args, &block
+      
+    end
 
     def restore_hint_paths *args, &block
       require 'albacore/restore_hint_paths'
