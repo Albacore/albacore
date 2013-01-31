@@ -69,7 +69,7 @@ module Albacore
       body = proc {
         c.files.each do |f|
           command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.out, c.opts)
-          Albacore::NugetsPack::Task.new(command).execute
+          Albacore::NugetsPack::Task.new(command, c, f).execute
         end
       } 
 

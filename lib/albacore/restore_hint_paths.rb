@@ -90,11 +90,15 @@ module Albacore
     def has_packages_config?
       File.exists? package_config
     end
+
+    def declared_packages
+      doc = Nokogiri.XML(open(package_config))
+      doc.xpath("//packages/package")
+    end
     
     # returns enumerable Package
     def find_packages
-      doc = Nokogiri.XML(open(package_config))
-      doc.xpath("//packages/package").collect do |package|
+      declared_packages.collect do |package|
         guess = PackageRepo.new('./src/packages').find_latest package['id']
         debug "guess: #{guess}"
         guess

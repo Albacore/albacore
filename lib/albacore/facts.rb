@@ -2,6 +2,7 @@
 
 module Albacore
   module Facts
+    
     def self.processor_count
       case RbConfig::CONFIG['host_os']
       when /darwin9/
