@@ -16,6 +16,10 @@ module Albacore
         sh @work_dir, make_command
       end
     end
+    
+    # #work_dir: optional
+    # #exe: required NuGet.exe path
+    # #out: required location of 'packages' folder
     class Config
       include CmdConfig
     
