@@ -23,7 +23,27 @@ describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
     begin
       subject.call("nonexistent")
     rescue RuntimeError => re
-      re.message.should include("Command failed with status (")
+      re.message.should include("Command failed with status (127)")
+    end
+  end
+end
+
+describe Albacore::CrossPlatformCmd.method(:shie), "#shie" do
+  let(:fun) { Albacore::CrossPlatformCmd.method(:shie) }
+  context "invoking non existing binary" do
+    subject { "nonexisting" }
+    let(:ret) { fun.call(subject) }
+    it "should be indexable" do
+      ret.should respond_to(:"[]")
+    end
+    it "should return failure first: res[0] = false" do
+      ret[0].should be_false
+    end
+    it "should return something with an exit status" do
+      ret[1].exitstatus.should be(127)
+    end
+    it "should return something with a pid" do
+      ret[1].pid.should > 1000
     end
   end
 end
