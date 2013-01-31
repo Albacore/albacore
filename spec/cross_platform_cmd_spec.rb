@@ -43,7 +43,11 @@ describe Albacore::CrossPlatformCmd.method(:shie), "#shie" do
       ret[1].exitstatus.should be(127)
     end
     it "should return something with a pid in user mode" do
-      ret[1].pid.should > 1000
+			if ::Rake::Win32.windows?
+			  ret[1].pid.should eq(0)
+			else
+        ret[1].pid.should > 1000
+		  end
     end
   end
   context "invoking existing binary" do
