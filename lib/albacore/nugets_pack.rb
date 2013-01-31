@@ -154,7 +154,7 @@ module Albacore
       end
       def prepare_nuspec filename, dependencies
         fpkg = File.join @config.out, filename
-        lib = File.join fpkg, 'lib'
+        lib = File.join fpkg, 'lib', 'net4'
         FileUtils.mkdir_p lib
 
         p = @package

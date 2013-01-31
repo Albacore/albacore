@@ -12,7 +12,7 @@ end
 
 puts "X has methods: #{X.new.private_methods.inspect}"
 
-%w[nugets_restore asmver build test_runner restore_hint_paths].each { |sym|
+%w[nugets_restore nugets_pack asmver build test_runner restore_hint_paths].each { |sym|
   method = :"#{sym}"
   describe "that #{method}(*args, &block) is included when doing `require 'albacore'`" do
    subject { X.new }
