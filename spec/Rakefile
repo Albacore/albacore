@@ -1,2 +1,5 @@
 require 'albacore'
-
+task :default do
+  sh "ruby --version"
+  sh "oh noes"
+end
