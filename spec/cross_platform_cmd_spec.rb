@@ -42,7 +42,20 @@ describe Albacore::CrossPlatformCmd.method(:shie), "#shie" do
     it "should return something with an exit status" do
       ret[1].exitstatus.should be(127)
     end
-    it "should return something with a pid" do
+    it "should return something with a pid in user mode" do
+      ret[1].pid.should > 1000
+    end
+  end
+  context "invoking existing binary" do
+    subject { "ruby --version" }
+    let(:ret) { fun.call(subject) }
+    it "should return successful" do
+      ret[0].should be_true
+    end
+    it "should exit with zero as exit status" do
+      ret[1].exitstatus.should eq(0)
+    end
+    it "should return something with a pid in user mode" do
       ret[1].pid.should > 1000
     end
   end
