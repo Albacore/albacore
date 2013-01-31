@@ -59,8 +59,21 @@ module Albacore
       Albacore.define_task(*args, &body)
     end
     
-    def nugets_path *args, &block
+    def nugets_pack *args, &block
+      require 'albacore/nugets_pack'
+      args ||= []
       
+      c = Albacore::NugetsPack::Config.new
+      yield c
+      
+      body = proc {
+        c.files.each do |f|
+          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.out, c.opts)
+          Albacore::NugetsPack::Task.new(command).execute
+        end
+      } 
+
+      Albacore.define_task(*args, &body)
     end
 
     def restore_hint_paths *args, &block
