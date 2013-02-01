@@ -34,12 +34,10 @@ module Albacore
         # purely M.m.p format
         ENV['FORMAL_VERSION'] = "#{ SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
         
-        body = proc {
-          # tell teamcity our decision
-          puts %Q[##teamcity[buildNumber '#{ENV["BUILD_VERSION"]}']]
-        }
+        body = proc {}
 
         Albacore.define_task *sym, &body
+        Albacore.publish :build_version, ENV['BUILD_VERSION']
       end
 
       # load the commit data

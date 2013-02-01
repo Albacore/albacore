@@ -7,6 +7,11 @@ module Albacore
         Albacore.subscribe :artifact do |artifact|
           puts "##teamcity[publishArtifacts '#{artifact[:nupkg]}']"
         end
+        Albacore.subscribe :build_version do |version|
+          # tell teamcity our decision
+          puts %Q[##teamcity[buildNumber '#{ENV["BUILD_VERSION"]}']]
+        end
+
       end
     end
   end
