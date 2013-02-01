@@ -34,10 +34,16 @@ module Albacore
         # purely M.m.p format
         ENV['FORMAL_VERSION'] = "#{ SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
         
-        body = proc {}
+        body = proc {
+          Albacore.publish :build_version, OpenStruct.new(
+            :build_number   => revision,
+            :build_version  => ENV['BUILD_VERSION'],
+            :semver         => ver,
+            :formal_version => ENV['FORMAL_VERSION']
+          )
+        }
 
         Albacore.define_task *sym, &body
-        Albacore.publish :build_version, ENV['BUILD_VERSION']
       end
 
       # load the commit data
