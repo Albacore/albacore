@@ -1,5 +1,6 @@
 require 'rake'
 require 'nokogiri'
+require 'albacore'
 require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
@@ -194,8 +195,13 @@ module Albacore
           debug "cp #{globbed} #{lib}"
           FileUtils.cp globbed, lib
         end
+
         @command_line.execute nuspec
-        ... Albacore.publish :nuget_artifact, nuspec # TODO
+
+        Albacore.publish :artifact, {
+          :nuspec => nuspec,
+          :nupkg  => File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+        }
       end
     end
   end
