@@ -94,6 +94,14 @@ module Albacore
         sh make_command
       end
     end
+
+    # example:
+    # nugets_pack :pack => ['build/pkg', :versioning] do |p|
+    #   p.files   = FileList['src/**/*.csproj']
+    #   p.out     = 'build/pkg'
+    #   p.exe     = 'buildsupport/NuGet.exe'
+    #   p.version = ENV['NUGET_VERSION']
+    # end
     class Config
       include CmdConfig
 
