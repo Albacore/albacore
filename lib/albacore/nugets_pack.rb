@@ -12,11 +12,11 @@ module Albacore
     class Metadata
       include Logging
 
-      attr_accessor :id, 
-        :version, 
-        :authors, 
+      attr_accessor :id,
+        :version,
+        :authors,
         :description,
-        :language, 
+        :language,
         :project_url,
         :license_url,
         :release_notes
@@ -106,7 +106,7 @@ module Albacore
       include CmdConfig
 
       # id is taken from the AssemblyName element in the csproj file.
-      
+
       # the output directory to place the newfangled nugets in
       attr_accessor :out
 
@@ -177,8 +177,8 @@ module Albacore
 
         p.add_file 'lib\\**', 'lib', ''
 
-        dependencies.each { |d| 
-          p.metadata.add_depenency d.id, d.version 
+        dependencies.each { |d|
+          p.metadata.add_depenency d.id, d.version
         }
 
         nuspec = File.join fpkg, (filename + ".nuspec")
