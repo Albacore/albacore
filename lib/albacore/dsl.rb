@@ -51,7 +51,7 @@ module Albacore
       body = proc {
         c.packages.each do |p|
           normalized_p = Albacore::Paths.normalize_slashes p
-          command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, normalized_p, c.out, c.parameters)
+          command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, normalized_p, c.out)
           Albacore::NugetsRestore::Task.new(command).execute
         end
       }
