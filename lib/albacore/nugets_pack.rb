@@ -47,6 +47,11 @@ module Albacore
             x.projectUrl   @project_url
             x.licenseUrl   @license_url
             x.releaseNotes @release_notes
+            x.dependencies {
+              @dependencies.each { |d|
+                x.dependency(:id => d.id, :version => d.version)
+              }
+            }
           }
         end
       end
