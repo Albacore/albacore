@@ -196,6 +196,7 @@ module Albacore
       def execute
         filename = File.basename(@file, File.extname(@file))
         dependencies = prepare_dependencies
+        debug "found #{dependencies.inspect} for dependencies"
         nuspec, lib = prepare_nuspec filename, dependencies
         project_glob = prepare_glob filename
         debug "glob: #{project_glob}"
