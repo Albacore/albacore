@@ -21,7 +21,6 @@ module Albacore
     # returns a Set with parameters
     def parameters
       @parameters ||= Set.new
-      @parameters
     end
     
     # add a parameter to the list of parameters to pass to the executable

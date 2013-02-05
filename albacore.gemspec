@@ -24,6 +24,7 @@ EOF
   s.add_dependency 'map', '~>6.2.0' # https://github.com/ahoward/map for options handling
   s.add_dependency 'nokogiri', '~>1.5.6' # used to manipulate and read *proj files
   s.add_dependency 'facter', '~>1.6.17' # used to gather system data
+  s.add_dependency 'semver2', '~>3.1.2'
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
   s.add_development_dependency 'rspec', '~>2.12.0'

@@ -7,10 +7,10 @@ module Albacore
   module NugetsRestore
     class Cmd
       include CrossPlatformCmd
-      def initialize work_dir, executable, package, out
+      def initialize work_dir, executable, package, out, parameters
         @work_dir = work_dir
         @executable = executable
-        @parameters = %W{install #{package} -OutputDirectory #{out}}
+        @parameters = [%W{install #{package} -OutputDirectory #{out}}, parameters.to_a].flatten
       end
       def execute
         sh @work_dir, make_command

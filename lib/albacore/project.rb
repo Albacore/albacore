@@ -1,3 +1,6 @@
+require 'nokogiri'
+require 'albacore/semver'
+
 module Albacore
   # a project encapsulates the properties from a xxproj file.
   class Project
@@ -47,7 +50,13 @@ module Albacore
     def declared_packages
       return [] unless has_packages_config?
       doc = Nokogiri.XML(open(package_config))
-      doc.xpath("//packages/package")
+      doc.xpath("//packages/package").collect { |p|
+        OpenStruct.new(:id => p[:id], 
+          :version => p[:version], 
+          :target_framework => p[:targetFramework],
+          :semver => Albacore::SemVer.parse(p[:version], '%M.%m.%p', false)
+        )
+      }
     end
     
     # returns enumerable Package
