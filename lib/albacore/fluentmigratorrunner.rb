@@ -5,7 +5,7 @@ class FluentMigratorRunner
 	include Albacore::Task
 	include Albacore::RunCommand
 
-	attr_accessor :target, :provider, :connection, :namespace, :output, :output_filename, :preview, :steps, :task, :version, :verbose, :script_directory, :profile, :timeout, :show_help
+	attr_accessor :target, :provider, :connection, :namespace, :output, :output_filename, :preview, :steps, :tags, :task, :version, :verbose, :script_directory, :profile, :timeout, :show_help
 
 	def initialize(command=nil)
 		super()
@@ -38,6 +38,7 @@ class FluentMigratorRunner
       params << " /wd=\"#{@script_directory}\"" unless @script_directory.nil?
       params << " /profile=#{@profile}" unless @profile.nil?
       params << " /timeout=#{@timeout}" unless @timeout.nil?
+      params << " /tags=#{@tags}" unless @tags.nil?
     end 
     params
 	end
