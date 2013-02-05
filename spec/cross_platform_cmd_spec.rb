@@ -60,7 +60,11 @@ describe Albacore::CrossPlatformCmd.method(:shie), "#shie" do
       ret[1].exitstatus.should eq(0)
     end
     it "should return something with a pid in user mode" do
-      ret[1].pid.should > 1000
+			if ::Rake::Win32.windows?
+			  ret[1].pid.should > 0
+			else
+        ret[1].pid.should > 1000
+		  end
     end
   end
 end
