@@ -76,6 +76,10 @@ DSL block, but don't do side-effects other than fail bad config. Remember that
 multiple interactions with the `Config` object is desired. Do side-effects when
 the task is run.
 
+Give your `Cmd` objects this signature:
+
+    def initialize work_dir, executable, *args
+
 Provide further blocks/lambdas/procs, passed from the `Config` to the `Task` or
 even `Cmd` if you need to decide values when the task is run. This makes it
 easier to compose tasks.
