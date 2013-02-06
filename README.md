@@ -51,6 +51,55 @@ You can now run:
 
     rake
 
+## hack guidelines
+
+Use pair-of-three: `Cmd`, `Config` and `Task`. Add Rakefile-methods in `dsl.rb`.
+You can `include CmdConfig` in your `Config` to get access to parameters, and do
+`include CrossPlatformCmd` in your `Cmd` to get correct cross-platform, logging
+and invocation of system and shell statements.
+
+Read the READMEs in the `lib/ext` and `lib/tasks` folders. Write unit-tests for
+your functionality. Try to make the execution of the command that you have
+prepared be a single line of code that does something like: `sh make_command`
+thereby delegating to `CrossPlatformCmd`. To ignore exit codes, call `shie`
+instead.
+
+Use and document `attr_accessor` in `Config` with [TomDoc](http://tomdoc.org/),
+so that docs can be automatically generated. Have sane defaults. If an option is
+true/false, have a sane default and provide a method that sets the opposite.
+Document the default. Document required properties to set. Don't set properties
+by providing single-parameter methods, because it's confusing with regards to
+reading those same properties.
+
+'Execute' the configuration as much as possible when configuring it through the
+DSL block, but don't do side-effects other than fail bad config. Remember that
+multiple interactions with the `Config` object is desired. Do side-effects when
+the task is run.
+
+Provide further blocks/lambdas/procs, passed from the `Config` to the `Task` or
+even `Cmd` if you need to decide values when the task is run. This makes it
+easier to compose tasks.
+
+I use a vague concept of 'core albacore' for tasktypes (nugets_restore,
+nugets_pack, build) and 'extensions' for things that depend on published
+symbols, and 'tasks' for things that can be instantiated (added to the Rake
+Tasks collection) in the Rakefile. Your extension probably is a 'task' or
+'extension'.
+
+When using `Cmd` and its `@parameters`; unless you use `#make_command`, remember
+to normalize slashes (e.g. Paths#normalize_slashes).
+
+Provide a very basic example in TomDoc on top of your `Config` class.
+
+Use ideomatic ruby. If you have more than 3 levels of indentation in a method,
+you're probably not being ideomatic. Can you use a higher-level language
+construct or the null-object pattern or some functional programming concept that
+makes the code easier to read, reason about and maintain? Don't mutate unless
+you have to - code that doesn't mutate much can be gotten by using the builder
+pattern (`Config` is the builder most of the time); then, a lot of the logic of
+how to construct the command-line/expression to run, can be done in the
+constructor (`Cmd#initialize`), rather than when executing it.
+
 ## Links
 
  * http://guides.rubygems.org/make-your-own-gem/
