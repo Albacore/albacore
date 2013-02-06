@@ -8,7 +8,7 @@ module Albacore
     module TeamCity
       def self.configure
         Albacore.subscribe :artifact do |artifact|
-          puts "##teamcity[publishArtifacts '#{artifact[:nupkg]}']"
+          puts "##teamcity[publishArtifacts '#{artifact.location}']"
         end
         Albacore.subscribe :build_version do |version|
           # tell teamcity our decision

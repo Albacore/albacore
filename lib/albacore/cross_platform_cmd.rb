@@ -1,5 +1,6 @@
 require 'rake'
 require 'map'
+require 'processpilot/processpilot'
 
 require 'albacore/logging'
 
@@ -33,6 +34,14 @@ module Albacore
       chdir opts[:work_dir] do
         debug cmd
         return sys.call cmd
+      end
+    end
+    
+    def system_control cmd, *opts, &block
+      opts = Map.options(opts || {})
+      chdir opts[:work_dir] do
+        debug "#{cmd}"
+        ProcessPilot::pilot cmd, opts, &block
       end
     end
 

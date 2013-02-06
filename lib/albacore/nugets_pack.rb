@@ -100,13 +100,19 @@ module Albacore
       end
     end
 
-    # example:
-    # nugets_pack :pack => ['build/pkg', :versioning] do |p|
-    #   p.files   = FileList['src/**/*.csproj']
-    #   p.out     = 'build/pkg'
-    #   p.exe     = 'buildsupport/NuGet.exe'
-    #   p.version = ENV['NUGET_VERSION']
-    # end
+    # This tasktype allows you to quickly package project files to nuget
+    # packages.
+    #
+    # Point files to the project files, that should be in MsBuild XML.
+    #
+    # Examples
+    #
+    #  nugets_pack :pack => ['build/pkg', :versioning] do |p|
+    #    p.files   = FileList['src/**/*.csproj']
+    #    p.out     = 'build/pkg'
+    #    p.exe     = 'buildsupport/NuGet.exe'
+    #    p.version = ENV['NUGET_VERSION']
+    #  end
     class Config
       include CmdConfig
 
@@ -212,10 +218,12 @@ module Albacore
 
         @command_line.execute nuspec
 
-        Albacore.publish :artifact, {
-          :nuspec => nuspec,
-          :nupkg  => File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
-        }
+        path = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+        Albacore.publish :artifact, OpenStruct.new(
+          :nuspec   => nuspec,
+          :nupkg    => path,
+          :location => path
+        ) 
       end
     end
   end
