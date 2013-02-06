@@ -7,6 +7,13 @@ module ShInterceptor
     @wd = wd
     @received = args
   end
+  def system_calls
+    @system_control_calls || 0
+  end
+  def system *args, &block
+    @received = args[0]
+    @system_calls = system_calls + 1
+  end
   def system_control_calls
     @system_control_calls || 0
   end

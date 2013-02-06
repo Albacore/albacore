@@ -45,7 +45,7 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
     cmd
   }
 
-  it "should have called #system_control" do
-    subject.system_control_calls.should eq(1)
+  it "should have called #system" do
+    subject.system_calls.should eq(1)
   end
 end

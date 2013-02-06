@@ -23,24 +23,43 @@ module Albacore
       Paths.make_command @executable, @parameters
     end
     
+    # extended make command - pass:
+    # exe - executable to run
+    # pars - parameters
+    def make_command_e exe, pars
+      Paths.make_command exe, pars
+    end
+
     # run process - cmd should be appropriately quoted
     #
     # options:
     #  :work_dir => a file path
     #
-    def system cmd, *opts
-      opts = Map.options(opts || {})
+    def system *opts, &block
+      cmd = opts[0]
+      opts = Map.options(opts[1..-1] || {})
       sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
+
+      block = lambda { |ok, status| 
+        debug "[#{cmd}] => #{status}" if opts.getopt(:verbose, false)
+        return ok unless opts.getopt(:ensure_success, false)
+        ok or fail(format_failure(cmd, status))
+      } unless block_given?
+
       chdir opts[:work_dir] do
+        opts.delete :work_dir if opts.has_key? :work_dir
         debug cmd
-        return sys.call cmd
+        res = sys.call cmd
+        return block.call(res, $?)
       end
     end
     
     def system_control cmd, *opts, &block
-      opts = Map.options(opts || {})
+      cmd = opts[0]
+      opts = Map.options(opts[1..-1] || {})
       chdir opts[:work_dir] do
-        debug "#{cmd}"
+        debug cmd
+        opts.delete :work_dir if opts.has_key? :work_dir
         ProcessPilot::pilot cmd, opts, &block
       end
     end
@@ -51,7 +70,7 @@ module Albacore
       sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
       block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
       chdir work_dir do
-        debug "#{cmd}"
+        debug cmd
         res = sys.call cmd
         return block.call(res, $?)
       end

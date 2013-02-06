@@ -1,4 +1,5 @@
 require 'rake'
+require 'nokogiri'
 require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
@@ -18,51 +19,63 @@ module Albacore
         @opts = opts
 
         pars = opts.getopt(:parameters, :default => [])
-        if opts.has_key?(:password) && opts.has_key?(:username)
+        if opts.has_key?(:password) && opts.has_key?(:username) && opts.has_key?(:source)
           @authenticate = true
           @username = opts.getopt(:username)
           @password = opts.getopt(:password)
+          @source = opts.getopt(:source)
         else
           @authenticate = false
         end
         @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
       end
-      def write_and_read to_write, stdin, stdout
-        to_write.each_char {|c| 
-          # initialize buffer for NuGet to write to
-          written = ''
-
-          # first write the character
-          debug 'writing char'
-          stdout.write c
-          
-          # then read what the process wrote (NuGet will output a '*' after a char is written)
-          # http://www.ruby-doc.org/core-1.9.3/IO.html#method-i-read
-          # this will be passed to the options for IO#read
-          debug 'reading char'
-          written = stdin.readchar
-          #stdin.read 1, written, :time_out_secs => 1
-        
-          # echo that
-          debug 'writing to stdout'
-          STDOUT.write written if written.length > 0
-        }
+      def ensure_target_file file_path
+        return if File.size? file_path
+        debug "ensure target NuGet.config at #{file_path}"
+        builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
+          x.configuration {
+            x.packageSources {
+              x.add(:key => "NuGet-official", :value => "https://nuget.org/api/v2/")
+            }
+            x.disabledPackageSources nil
+          }
+        end
+        xml = builder.to_xml
+        puts xml 
+        File.open file_path, 'w' do |io|
+          io.write xml
+          io.flush
+        end
       end
       def execute
         if @authenticate
-          debug 'nugets authentication mode - puppeteering NuGet.exe'
           # omg haxxx ;) - feature request to the NuGet team: consume ENV variables
           # so I can avoid hacking like this.
-          system_control make_command, :work_dir => @work_dir do |stdin, stdout, stderr, child_proc|
-            STDOUT.write(stdout.gets) # => Please provide credentials for ...
-            STDOUT.write(stdout.read("Username: ".length, :time_out_secs => 1))
-            stdin.puts @username
-            STDOUT.puts @username
-            debug "reading..."
-            STDOUT.write(stdout.read)
-            pass = "#{@password}\n"
-            debug "writing password..."
-            write_and_read pass, stdin, stdout
+          system make_command_e(
+                  @executable,
+                  %W[sources remove -name #{@source.name} -source #{@source.uri}]),
+            :verbose => true
+          system make_command_e(
+                  @executable, 
+                  %W[sources add -name #{@source.name} 
+                     -source #{@source.uri}
+                     -user #{@username}
+                     -password #{@password}
+                  ]), 
+            :ensure_success => true
+
+          source = Nokogiri.XML(open(File.join(ENV['APPDATA'], 'NuGet', 'NuGet.config')))
+          creds = source.at_css('configuration').clone
+          chdir @work_dir do
+            target_file = @executable + '.config' 
+            ensure_target_file target_file
+            debug "writing auth details to #{target_file}"
+            target = Nokogiri.XML(open(target_file, 'w+'))
+            target.at_css('configuration') << creds
+            target.save
+
+            system make_command
+
           end
         else
           debug 'nuget in non-authenticated mode'
@@ -83,6 +96,9 @@ module Albacore
       # the output directory passed to nuget when restoring the nugets
       attr_writer :out
     
+      # nuget source 
+      attr_accessor :source
+
       def packages
         list_spec = File.join '**', 'packages.config'
         # it seems FileList doesn't care about the curr dir
@@ -93,9 +109,10 @@ module Albacore
         map = Map.new({ :pkgcfg     => Albacore::Paths.normalize_slashes(pkg),
                         :out        => @out,
                         :parameters => parameters })
-        if username && password
+        if username && password && source
           map.set :username, username
           map.set :password, password
+          map.set :source, source
         end 
         map
       end
