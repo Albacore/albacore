@@ -10,8 +10,7 @@ module Albacore
     #  * NUGET_VERSION
     #  * FORMAL_VERSION
     #
-    # Writes teamcity buildNumber variable in format MAJOR.MINOR.PATCH-SPECIAL.COMMIT
-    #
+    # Publishes symbol :build_version
     module Versionizer
 
       # adds a new task with the given symbol to the Rake/Albacore application
