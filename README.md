@@ -13,43 +13,43 @@ Henrik
 
 In a command prompt, run:
 
-  @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%systemdrive%\chocolatey\bin
+    @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%systemdrive%\chocolatey\bin
 
 Then start a new powershell, cygwin or mingw32 shell. You can now install the
 Ruby framework:
 
-  cinst ruby.devkit
+    cinst ruby.devkit
 
 Now, restart your shell or reload its path variable. You now have rake
 installed. Now you can install Albacore, the collection of tasktypes, tasks and
 extension points aimed to make your life as a .Net developer easier:
 
-  gem install bundler
+    gem install bundler
 
 Bundler is a tool that fetches gems for you. Now, specify what ruby gems your
 build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
-  source 'http://rubygems.org'
-  gem "albacore", :git => "git://github.com/Albacore/albacore.git", :branch => 'clean_slate'
+    source 'http://rubygems.org'
+    gem "albacore", :git => "git://github.com/Albacore/albacore.git", :branch => 'clean_slate'
 
 Now, install albacore from this repository by running:
 
-  bundle
+    bundle
 
 In order to build your project, you need to create a `Rakefile`, with contents
 like these:
 
-  require 'bundler/setup'
-  require 'albacore'
+    require 'bundler/setup'
+    require 'albacore'
 
-  build :build do |x|
-    x.sln = 'src/MyProj.sln'
-  end
+    build :build do |x|
+      x.sln = 'src/MyProj.sln'
+    end
  
 You can now run:
 
-  rake
+    rake
 
 ## Links
 
