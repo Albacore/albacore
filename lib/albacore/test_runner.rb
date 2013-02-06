@@ -1,13 +1,11 @@
 require 'rake'
 require 'set'
-require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
 
 module Albacore
   module TestRunner
     class Cmd
-      include Logging
       include CrossPlatformCmd
       def initialize work_dir, executable, parameters, file
         @work_dir, @executable = work_dir, executable

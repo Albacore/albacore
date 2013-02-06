@@ -28,24 +28,3 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
     zipped.each{|i1, i2| i1.should eq(i2)}
   end
 end 
-describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
-  subject { 
-    cfg = Albacore::NugetsRestore::Config.new
-    cfg.username = 'usr'
-    cfg.password = 'pass'
-    cfg.out = 'src/packages'
-    cfg.add_parameter '-Source' 
-    cfg.add_parameter 'http://localhost:8081'
-
-    cmd = Albacore::NugetsRestore::Cmd.new nil, 
-            'NuGet.exe', 
-            cfg.opts_for_pkgcfg('src/Proj/packages.config')
-    cmd.extend(ShInterceptor)
-    cmd.execute
-    cmd
-  }
-
-  it "should have called #system" do
-    subject.system_calls.should eq(1)
-  end
-end
