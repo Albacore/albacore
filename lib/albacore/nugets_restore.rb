@@ -29,24 +29,7 @@ module Albacore
         end
         @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
       end
-      def ensure_target_file file_path
-        return if File.size? file_path
-        debug "ensure target NuGet.config at #{file_path}"
-        builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
-          x.configuration {
-            x.packageSources {
-              x.add(:key => "NuGet-official", :value => "https://nuget.org/api/v2/")
-            }
-            x.disabledPackageSources nil
-          }
-        end
-        xml = builder.to_xml
-        puts xml 
-        File.open file_path, 'w' do |io|
-          io.write xml
-          io.flush
-        end
-      end
+
       def execute
         if @authenticate
           # omg haxxx ;) - feature request to the NuGet team: consume ENV variables
@@ -63,24 +46,10 @@ module Albacore
                      -password #{@password}
                   ]), 
             :ensure_success => true
-
-          source = Nokogiri.XML(open(File.join(ENV['APPDATA'], 'NuGet', 'NuGet.config')))
-          creds = source.at_css('configuration').clone
-          chdir @work_dir do
-            target_file = @executable + '.config' 
-            ensure_target_file target_file
-            debug "writing auth details to #{target_file}"
-            target = Nokogiri.XML(open(target_file, 'w+'))
-            target.at_css('configuration') << creds
-            target.save
-
-            system make_command
-
-          end
         else
           debug 'nuget in non-authenticated mode'
-          sh @work_dir, make_command
         end
+        sh @work_dir, make_command
       end
     end
     
@@ -92,11 +61,18 @@ module Albacore
     class Config
       include CmdConfig # => :exe, :work_dir, @parameters, #add_parameter
       include NugetsAuthentication # => :username, :password
+      include Logging
+
+      OFFICIAL_REPO = 'https://nuget.org/api/v2/'
+
+      def initialize
+        @include_official = false
+      end
 
       # the output directory passed to nuget when restoring the nugets
       attr_writer :out
     
-      # nuget source 
+      # nuget source, when other than MSFT source
       attr_accessor :source
 
       def packages
@@ -105,10 +81,19 @@ module Albacore
         in_work_dir do FileList[Dir.glob(list_spec)] end
       end
 
+      # whether to include the official
+      # defaults to true
+      attr_accessor :include_official
+
       def opts_for_pkgcfg pkg
+        pars = parameters.to_a
+        debug "include_official nuget repo: #{include_official}"
+        pars << %W[-source #{OFFICIAL_REPO}] if include_official
+        
         map = Map.new({ :pkgcfg     => Albacore::Paths.normalize_slashes(pkg),
                         :out        => @out,
-                        :parameters => parameters })
+                        :parameters => pars })
+
         if username && password && source
           map.set :username, username
           map.set :password, password
