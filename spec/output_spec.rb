@@ -35,6 +35,27 @@ describe Output, 'when having a from and to set' do
        
         File.exist?("#{OutputTestData.to}/test.txt").should be_true
       end
+
+      it "should not remove to directory content if keep to is set" do
+        FileUtils.mkdir(OutputTestData.to)
+        FileUtils.touch("#{OutputTestData.to}/existing.txt")
+        @o.file 'test.txt'
+        @o.keep_to
+
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/existing.txt").should be_true
+      end
+      
+      it "should remove to directory if keep to is not set" do
+        FileUtils.mkdir(OutputTestData.to)
+        FileUtils.touch("#{OutputTestData.to}/existing.txt")
+        @o.file 'test.txt'
+
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/existing.txt").should be_false
+      end
     end
     
     
@@ -79,6 +100,15 @@ describe Output, 'when having a from and to set' do
        
         File.exist?("#{OutputTestData.to}/subdir/foo").should be_true
         File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
+      end
+
+      it "should create nested directory if specified in to" do
+        @o.to "#{OutputTestData.to}/subdir/"
+        @o.dir 'subdir/.'
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
+
       end
     end
     

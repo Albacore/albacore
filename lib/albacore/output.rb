@@ -4,7 +4,6 @@ require 'ostruct'
 require 'fileutils'
 
 class OutputBuilder
-  include FileUtils
   include ::Rake::DSL if defined?(::Rake::DSL)
   
   def initialize(dir_to, dir_from)
@@ -13,7 +12,7 @@ class OutputBuilder
   end
   
   def dir(dir)
-    cp_r "#{@dir_from}/#{dir}", @dir_to
+    FileUtils.cp_r "#{@dir_from}/#{dir}", @dir_to
   end
   
   def file(f)
@@ -23,7 +22,7 @@ class OutputBuilder
   def file(f, ft)
     #todo find more elegant way to create base dir if missing for file.
     initialize_to_path(ft)
-    cp "#{@dir_from}/#{f}", "#{@dir_to}/#{ft}"
+    FileUtils.cp "#{@dir_from}/#{f}", "#{@dir_to}/#{ft}"
   end
   
   def erb(f, ft, locals)
@@ -32,16 +31,16 @@ class OutputBuilder
     File.open("#{@dir_to}/#{ft}", 'w') {|f| f.write erb.result(ErbBinding.new(locals).get_binding)}
   end
   
-  def self.output_to(dir_to, dir_from)
-    rmtree dir_to
-    mkdir dir_to
+  def self.output_to(dir_to, dir_from, keep_to)
+    FileUtils.rmtree dir_to unless keep_to
+    FileUtils.mkdir_p dir_to unless Dir.exists? dir_to
     yield OutputBuilder.new(dir_to, dir_from)
   end
   
 private
   def initialize_to_path(ft)
     topath = File.dirname("#{@dir_to}/#{ft}")
-    mkdir_p topath unless File.exist? topath
+    FileUtils.mkdir_p topath unless File.exist? topath
     topath
   end
 end
@@ -58,20 +57,21 @@ class Output
 
   def initialize
     super()
-    
+
     @files = []
     @erbs = []
     @directories = []
+    @keep_to = false
   end
-    
+
   def execute()
     fail_with_message 'No base dir' if @from_dir.nil?
     fail_with_message 'No output dir' if @to_dir.nil?
-    
-    OutputBuilder.output_to(@to_dir, @from_dir)  do |o|
-        @directories.each { |f| o.dir f }
-        @files.each { |f| o.file *f }
-        @erbs.each { |f| o.erb *f }
+
+    OutputBuilder.output_to(@to_dir, @from_dir, @keep_to)  do |o|
+      @directories.each { |f| o.dir f }
+      @files.each { |f| o.file *f }
+      @erbs.each { |f| o.erb *f }
     end
   end
   
@@ -80,6 +80,9 @@ class Output
     @files << [f,f_to]
   end
 
+  def keep_to
+   @keep_to = true
+  end
   def erb(f, opts={})
     f_to = opts[:as] || f
     @erbs << [f,f_to,opts[:locals]||{}]

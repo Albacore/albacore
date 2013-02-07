@@ -93,6 +93,44 @@ describe "xunit with defined paths" do
     end
   end
 
+  describe XUnitTestRunner, 'when skipping test fail' do
+    before :all do
+      xunit = XUnitTestRunner.new @xunitpath
+
+      xunit.extend FailPatch
+      xunit.extend SystemPatch
+      xunit.disable_system = true
+
+      xunit.assembly = 'xyz'
+      xunit.skip_test_fail = true
+      
+      xunit.execute
+    end
+
+    it 'should not fail' do
+      $task_failed.should be_false
+    end
+  end
+
+  describe XUnitTestRunner, 'when skipping test failures' do
+    before :all do
+      xunit = XUnitTestRunner.new @xunitpath
+      
+      xunit.extend FailPatch
+      xunit.extend SystemPatch
+      xunit.disable_system = true
+      
+      xunit.assembly = 'xyz'
+      xunit.skip_test_failures
+      
+      xunit.execute
+    end
+
+    it 'should not fail' do
+      $task_failed.should be_false
+    end
+  end
+
   describe XUnitTestRunner, "when html_output is specified" do
     before :each do
       FileUtils.mkdir @working_dir unless File.exist?(@working_dir)
