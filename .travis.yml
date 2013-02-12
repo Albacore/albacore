@@ -2,7 +2,7 @@ language: ruby
 rvm:
   - 1.9.3
   - jruby
-script: "bundle exec rake"
+script: "bundle exec rake spec"
 branches:
   only:
     - clean_slate

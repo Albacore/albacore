@@ -23,7 +23,7 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
   }
 
   it "should run the correct thing" do
-    expected = %W["NuGet.exe" "install" "src/Proj/packages.config" "-OutputDirectory" "src/packages" "-Source" "http://localhost:8081"].join(' ')
+    expected = %W["NuGet.exe" "install" "src\\Proj\\packages.config" "-OutputDirectory" "src/packages" "-Source" "http://localhost:8081"].join(' ')
     zipped = [expected].zip(subject.received_args)
     zipped.each{|i1, i2| i1.should eq(i2)}
   end
