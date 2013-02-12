@@ -6,7 +6,22 @@ module Albacore
     # (see http://confluence.jetbrains.com/display/TCD7/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-artPublishing)
     # to STDOUT.
     module TeamCity
+      # Escaped the progress message
+      # (see http://confluence.jetbrains.com/display/TCD7/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-ServiceMessages)
+      # The Unicode symbol escape is not implemented
+      # Character                                  Should be escaped as
+      # ' (apostrophe)                             |'
+      # \n (line feed)                             |n
+      # \r (carriage return)                       |r
+      # \uNNNN (unicode symbol with code 0xNNNN)   |0xNNNN
+      # | (vertical bar)                           ||
+      # [ (opening bracket)                        |[
+      # ] (closing bracket)                        |]
+      def self.escape message
+        message.gsub(/([\[|\]|\|'])/, '|\1').gsub(/\n/, '|n').gsub(/\r/, '|r')
+      end
       def self.configure
+
         Albacore.subscribe :artifact do |artifact|
           puts "##teamcity[publishArtifacts '#{artifact.location}']"
         end
@@ -14,6 +29,33 @@ module Albacore
           # tell teamcity our decision
           puts "##teamcity[buildNumber '#{version.build_version}']"
         end
+        Albacore.subscribe :progress do |p|
+          # tell teamcity of our progress
+          puts "##teamcity[progressMessage '#{escape p.message}']"
+        end
+        Albacore.subscribe :start_progress do |p|
+          # tell teamcity of our progress
+          start_progress p.message
+        end
+        Albacore.subscribe :finish_progress do |p|
+          # tell teamcity of our progress
+          finish_progress p.message
+        end
+      end
+      private
+      PROGRESS_QUEUE = []
+      # Starts a new progress block
+      def self.start_progress(name)
+        PROGRESS_QUEUE.push name
+        puts "##teamcity[progressStart '#{escape name}']"
+      end
+      # Finishes the progress block and all child progress blocks
+      def self.finish_progress(name = '')
+        loop {
+          p = PROGRESS_QUEUE.pop
+          puts "##teamcity[progressFinish '#{escape p}']" unless p.nil?
+          break unless !p.nil? || name == p || name == ''
+        }
       end
     end
   end
