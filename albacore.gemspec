@@ -31,7 +31,6 @@ EOF
   s.add_development_dependency 'rspec', '~>2.12.0'
   s.add_development_dependency 'vagrant', '~>1.0.5'
   s.add_development_dependency 'vagrant-vbguest', '~>0.6.3'
-  s.add_development_dependency 'bundler', '~>1.2.3'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
