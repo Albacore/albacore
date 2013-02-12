@@ -169,7 +169,7 @@ module Albacore
         @project.
           declared_packages.
           collect { |d| 
-            OpenStruct.new(:id => d['id'], :version => d['version'])
+            OpenStruct.new(:id => d.id, :version => d.version)
           }
       end
       def prepare_nuspec filename, dependencies
