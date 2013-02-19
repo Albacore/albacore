@@ -11,10 +11,14 @@ class OutputBuilder
     @dir_from = dir_from
   end
   
-  def dir(dir)
-    FileUtils.cp_r "#{@dir_from}/#{dir}", @dir_to
+  def dir(d)
+    dir(d,d)
   end
-  
+
+  def dir(dir, dir_to)
+    FileUtils.cp_r "#{@dir_from}/#{dir}", "#{@dir_to}/#{dir_to}"
+  end
+
   def file(f)
     file(f,f)
   end
@@ -69,7 +73,7 @@ class Output
     fail_with_message 'No output dir' if @to_dir.nil?
 
     OutputBuilder.output_to(@to_dir, @from_dir, @keep_to)  do |o|
-      @directories.each { |f| o.dir f }
+      @directories.each { |d| o.dir *d }
       @files.each { |f| o.file *f }
       @erbs.each { |f| o.erb *f }
     end
@@ -88,8 +92,9 @@ class Output
     @erbs << [f,f_to,opts[:locals]||{}]
   end
   
-  def dir(d)
-    @directories << d
+  def dir(d, opts={})
+    d_to = opts[:as]
+    @directories << [d,d_to]
   end
   
   def from(from_dir)

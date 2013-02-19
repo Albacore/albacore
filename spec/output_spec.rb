@@ -80,6 +80,22 @@ describe Output, 'when having a from and to set' do
         File.exist?("#{OutputTestData.to}/subdir/test.txt").should be_true
       end
     end
+
+    describe 'and when outputting directories to renamed target directory' do
+      before :each do
+        subdir = "#{OutputTestData.from}/subdir/foo"
+        FileUtils.mkdir_p(subdir) unless File.exists? subdir
+        File.open("#{OutputTestData.from}/subdir/foo/test.txt", "w"){|f| f.write "test_sub" }
+      end
+
+      it 'should rename the path, but keep the nested structure' do
+        @o.dir 'subdir', :as => 'bar'
+        @o.execute
+
+        File.exist?("#{OutputTestData.to}/bar").should be_true
+        File.exist?("#{OutputTestData.to}/bar/foo/test.txt").should be_true
+      end
+    end
     
     describe 'and when outputting nested directories' do
       before :each do
