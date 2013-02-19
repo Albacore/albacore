@@ -6,7 +6,7 @@ include Zip
 class Unzip
   include Albacore::Task
   
-  attr_accessor :destination, :file
+  attr_accessor :destination, :file, :force
 
   def initialize
     super()
