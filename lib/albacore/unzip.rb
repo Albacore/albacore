@@ -18,11 +18,11 @@ class Unzip
     return if @file.nil?
   
     Zip::ZipFile.open(@file) do |zip_f|
-        zip_f.each do |f|
-           out_path = File.join(@destination, f.name)
-           FileUtils.mkdir_p(File.dirname(out_path))
-           zip_f.extract(f, out_path) unless File.exist?(out_path)
-        end
+      zip_f.each do |f|
+        out_path = File.join(@destination, f.name)
+        FileUtils.mkdir_p(File.dirname(out_path))
+        zip_f.extract(f, out_path) unless File.exist?(out_path)
       end
+    end
   end
 end
