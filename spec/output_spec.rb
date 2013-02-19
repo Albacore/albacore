@@ -4,20 +4,20 @@ include ::Rake::DSL if defined?(::Rake::DSL)
 
 describe Output, 'when having a from and to set' do 
 
-      before :each do
-        FileUtils.mkdir(OutputTestData.from) unless File.exists? OutputTestData.from
-        
-        @o = Output.new
-        @o.from OutputTestData.from
-        @o.to OutputTestData.to
-        
-      end
-      after :each do
-        FileUtils.rm_rf OutputTestData.to if File.exists? OutputTestData.to
-        FileUtils.rm_rf OutputTestData.from if File.exists? OutputTestData.from
-      end
-  
-  
+    before :each do
+      FileUtils.mkdir(OutputTestData.from) unless File.exists? OutputTestData.from
+
+      @o = Output.new
+      @o.from OutputTestData.from
+      @o.to OutputTestData.to
+    end
+
+    after :each do
+      FileUtils.rm_rf OutputTestData.to if File.exists? OutputTestData.to
+      FileUtils.rm_rf OutputTestData.from if File.exists? OutputTestData.from
+    end
+
+
     describe 'and when outputting files' do
       before :each do
         File.open("#{OutputTestData.from}/test.txt", "w"){|f| f.write "test" }
