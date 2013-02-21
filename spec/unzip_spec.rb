@@ -5,14 +5,21 @@ describe Unzip, "when providing configuration" do
   let :uz do
     Albacore.configure do |config|
       config.unzip.file = "configured"
-      config.unzip.force = true
     end
     uz = Unzip.new
   end
 
   it "should use the configured values" do
     uz.file.should == "configured"
-    uz.force.should be_true
+  end
+
+  it "should not 'force' by default" do
+    uz.instance_variable_get(:@force).should be_nil
+  end
+  
+  it "should enable 'force' by calling the force() method" do
+    uz.force
+    uz.instance_variable_get(:@force).should be_true
   end
 end
 
@@ -38,14 +45,13 @@ describe Unzip, "when executing the task" do
   it "should delete the destinationfile if forced" do
     File.should_receive(:delete).with('/tmp/foo.txt')
 
-    uz.force = true
+    uz.force
     uz.execute
   end
 
   it "should keep the destination file if not forced" do
     File.should_not_receive(:delete)
 
-    uz.force = false
     uz.execute
   end
 end

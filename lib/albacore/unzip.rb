@@ -6,7 +6,7 @@ include Zip
 class Unzip
   include Albacore::Task
   
-  attr_accessor :destination, :file, :force
+  attr_accessor :destination, :file
 
   def initialize
     super()
@@ -26,5 +26,9 @@ class Unzip
         zip_f.extract(f, out_path) unless File.exist?(out_path)
       end
     end
+  end
+  
+  def force
+    @force = true
   end
 end
