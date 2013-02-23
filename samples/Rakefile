@@ -1,4 +1,4 @@
-$: << File.expand_path('../lib', __FILE__)
+$: << File.expand_path('../lib', File.dirname(__FILE__))
 require 'albacore'
 
 namespace :albacore do
@@ -151,4 +151,9 @@ namespace :albacore do
     migrator.connection = "Data Source=#{db_file};"
   end
 
+  desc "Difference of filesystem and csproj references"
+  csprojfiles do |f|
+    f.ignore_files = [/.*\.user.ncrunch/]
+    f.project = "../spec/support/csprojfiles/correct/aproject.csproj"
+  end
 end
