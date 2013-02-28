@@ -99,6 +99,7 @@ class ZipDirectory
     return if @additional_files.nil?
     @additional_files = Array.[](@additional_files).flatten
     @additional_files.reject{|f| reject_file(f)}.each do |file_path|
+      file_name = file_path
       file_name = file_path.split('/').last if @flatten_zip
       zipfile.add(file_name, file_path)
     end
