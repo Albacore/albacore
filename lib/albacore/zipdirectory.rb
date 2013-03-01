@@ -88,8 +88,7 @@ class ZipDirectory
     return if @directories_to_zip.nil?
     @directories_to_zip.each do |d|
       Dir["#{d}/**/**"].reject{|f| reject_file(f)}.each do |file_path|
-        file_name = file_path
-        file_name = file_path.sub(d + '/','') if @flatten_zip
+        file_name = @flatten_zip ? file_path.sub(d + '/','') : file_path
         zipfile.add(file_name, file_path)
       end
     end
@@ -99,8 +98,7 @@ class ZipDirectory
     return if @additional_files.nil?
     @additional_files = Array.[](@additional_files).flatten
     @additional_files.reject{|f| reject_file(f)}.each do |file_path|
-      file_name = file_path
-      file_name = file_path.split('/').last if @flatten_zip
+      file_name = @flatten_zip ? file_path.split('/').last : file_path
       zipfile.add(file_name, file_path)
     end
   end
