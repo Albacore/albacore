@@ -64,7 +64,9 @@ module Albacore
         proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{elementType}",
           'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
           # links = f.elements.select{ |el| el.name == 'Link' }
-          OpenStruct.new(:include => f[:Include])
+          OpenStruct.new(:include => f[:Include], 
+            :element_type => elementType.downcase
+          )
         }
       }.flatten()
     end
