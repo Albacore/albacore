@@ -59,6 +59,16 @@ module Albacore
       }
     end
     
+    def included_files
+      ['Compile','Content','EmbeddedResource','None'].map { |elementType|
+        proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{elementType}",
+          'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
+          # links = f.elements.select{ |el| el.name == 'Link' }
+          OpenStruct.new(:include => f[:Include])
+        }
+      }.flatten()
+    end
+
     # returns enumerable Package
     def find_packages
       declared_packages.collect do |package|
