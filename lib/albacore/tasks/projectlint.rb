@@ -8,9 +8,12 @@ module Albacore
 
       class Config
         attr_accessor :project
+        # a list of regex patterns for files in the filesystem to ignore
         attr_accessor :ignores
       end
-      
+
+      # since msbuild projects have a habbit of ignoring case differences, lets use downcase for comparison
+      # in windows / and \ can sometimes be used interchangeably 
       class FileReference
         attr_reader :file, :downcase_and_path_replaced
         def initialize file
@@ -37,7 +40,10 @@ module Albacore
           p = Project.new c.project
           ignores = c.ignores 
           ignores = [] if ignores == nil
-          ignores += [/^bin/i, /^obj/, /csproj$/, /fsproj$/, /\.user$/]
+          ignores += [/^bin/i, /^obj/, # bin, obj usually contain result of compilation
+            /csproj$/, /fsproj$/, # project files should not be part of a project file 
+            /\.user$/, /\.suo$/ # user settings, source control user settings 
+          ]
 
           files = p.included_files.map {|file| FileReference.new(file.include) } 
           srcfolder = File.dirname(c.project)
