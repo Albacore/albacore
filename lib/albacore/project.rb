@@ -58,14 +58,15 @@ module Albacore
         )
       }
     end
-    
+
+    # returns a list of the files included in the project
     def included_files
-      ['Compile','Content','EmbeddedResource','None'].map { |elementType|
-        proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{elementType}",
+      ['Compile','Content','EmbeddedResource','None'].map { |item_name|
+        proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{item_name}",
           'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
           # links = f.elements.select{ |el| el.name == 'Link' }
           OpenStruct.new(:include => f[:Include], 
-            :element_type => elementType.downcase
+            :item_name => item_name.downcase
           )
         }
       }.flatten()
