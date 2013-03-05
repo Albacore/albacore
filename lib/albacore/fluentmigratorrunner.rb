@@ -10,7 +10,7 @@ class FluentMigratorRunner
   def initialize(command=nil)
     super()
     update_attributes Albacore.configuration.fluentmigrator.to_hash
-    @command = command unless command.nil?
+    @command = command
   end
 
   def get_command_line
@@ -27,18 +27,18 @@ class FluentMigratorRunner
       params = " /target=\"#{@target}\""
       params << " /provider=#{@provider}"
       params << " /connection=\"#{@connection}\""
-      params << " /ns=#{@namespace}" unless @namespace.nil?
+      params << " /ns=#{@namespace}" unless @namespace
       params << " /out" if @output == true
-      params << " /outfile=\"#{@output_filename}\"" unless @output_filename.nil?
+      params << " /outfile=\"#{@output_filename}\"" unless @output_filename
       params << " /preview" if @preview == true
-      params << " /steps=#{@steps}" unless @steps.nil?
-      params << " /task=#{@task}" unless @task.nil?
-      params << " /version=#{@version}" unless @version.nil?
+      params << " /steps=#{@steps}" unless @steps
+      params << " /task=#{@task}" unless @task
+      params << " /version=#{@version}" unless @version
       params << " /verbose=#{@verbose}" if @verbose == true
-      params << " /wd=\"#{@script_directory}\"" unless @script_directory.nil?
-      params << " /profile=#{@profile}" unless @profile.nil?
-      params << " /timeout=#{@timeout}" unless @timeout.nil?
-      params << " /tag=#{@tag}" unless @tag.nil?
+      params << " /wd=\"#{@script_directory}\"" unless @script_directory
+      params << " /profile=#{@profile}" unless @profile
+      params << " /timeout=#{@timeout}" unless @timeout
+      params << " /tag=#{@tag}" unless @tag
     end 
     params
   end
