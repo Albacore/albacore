@@ -1,9 +1,11 @@
 require 'albacore/albacoretask'
+require 'albacore/config/nugetinstallconfig'
 require 'albacore/support/supportlinux'
 
 class NuGetInstall
 	include Albacore::Task
  	include Albacore::RunCommand
+  include Configuration::NuGetInstall
  	include SupportsLinuxEnvironment
 
  	attr_accessor	:command,
@@ -23,6 +25,7 @@ class NuGetInstall
 		@no_cache = false
 		@prerelease = false
 		@exclude_version = false
+    update_attributes nugetinstall.to_hash
 	end
 
 	def execute

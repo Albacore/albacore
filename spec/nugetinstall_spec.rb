@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'albacore/nugetinstall'
 
-describe NuGetInstall do  
+describe NuGetInstall do
   before :each do
     @nugetinstall = NuGetInstall.new
     @strio = StringIO.new
@@ -23,7 +23,7 @@ describe NuGetInstall do
     @nugetinstall.prerelease = true
     @nugetinstall.exclude_version = true
     @nugetinstall.output_directory = "customdir"
-    
+
     params = @nugetinstall.generate_params
     params.should include("install")
     params.should include(@nugetinstall.package)
@@ -33,7 +33,7 @@ describe NuGetInstall do
     params.should include("-ExcludeVersion")
     params.should include("-Prerelease")
     params.should_not include("-NoCache")
-    
+
     @nugetinstall.no_cache = true
     params = @nugetinstall.generate_params
     params.should include("-NoCache")
@@ -45,3 +45,17 @@ describe NuGetInstall do
   	@strio.string.should include('A NuGet package must be specified.')
   end
 end
+
+describe NuGetInstall, "when providing configuration" do
+  let :nuget do
+    Albacore.configure do |config|
+      config.nugetinstall.exclude_version = true
+    end
+    nuget = NuGetInstall.new
+  end
+
+  it "should use the configured values" do
+    nuget.exclude_version.should be_true
+  end
+end
+
