@@ -27,18 +27,18 @@ class FluentMigratorRunner
       params = " /target=\"#{@target}\""
       params << " /provider=#{@provider}"
       params << " /connection=\"#{@connection}\""
-      params << " /ns=#{@namespace}" unless @namespace
+      params << " /ns=#{@namespace}" if @namespace
       params << " /out" if @output == true
-      params << " /outfile=\"#{@output_filename}\"" unless @output_filename
+      params << " /outfile=\"#{@output_filename}\"" if @output_filename
       params << " /preview" if @preview == true
-      params << " /steps=#{@steps}" unless @steps
-      params << " /task=#{@task}" unless @task
-      params << " /version=#{@version}" unless @version
+      params << " /steps=#{@steps}" if @steps
+      params << " /task=#{@task}" if @task
+      params << " /version=#{@version}" if @version
       params << " /verbose=#{@verbose}" if @verbose == true
-      params << " /wd=\"#{@script_directory}\"" unless @script_directory
-      params << " /profile=#{@profile}" unless @profile
-      params << " /timeout=#{@timeout}" unless @timeout
-      params << " /tag=#{@tag}" unless @tag
+      params << " /wd=\"#{@script_directory}\"" if @script_directory
+      params << " /profile=#{@profile}" if @profile
+      params << " /timeout=#{@timeout}" if @timeout
+      params << " /tag=#{@tag}" if @tag
     end 
     params
   end
