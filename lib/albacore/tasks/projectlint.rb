@@ -45,7 +45,9 @@ module Albacore
             /\.user$/, /\.suo$/ # user settings, source control user settings 
           ]
 
-          files = p.included_files.map {|file| FileReference.new(file.include) } 
+          files = p.included_files.select { |file|
+            file.link == nil
+          }.map {|file| FileReference.new(file.include) } 
           srcfolder = File.dirname(c.project)
           fsfiles = nil
           FileUtils.cd (srcfolder) {

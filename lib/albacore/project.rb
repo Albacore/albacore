@@ -64,9 +64,10 @@ module Albacore
       ['Compile','Content','EmbeddedResource','None'].map { |item_name|
         proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{item_name}",
           'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
-          # links = f.elements.select{ |el| el.name == 'Link' }
+          link = f.elements.select{ |el| el.name == 'Link' }.map { |el| el.content }.first
           OpenStruct.new(:include => f[:Include], 
-            :item_name => item_name.downcase
+            :item_name => item_name.downcase,
+            :link => link
           )
         }
       }.flatten()
