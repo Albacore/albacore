@@ -20,7 +20,7 @@ EOF
 
   s.rubyforge_project = 'albacore'
 
-  s.add_dependency 'rake', '~>10.0.2' # this gem builds on rake
+  s.add_dependency 'rake', '~>10.0.3' # this gem builds on rake
   s.add_dependency 'map', '~>6.2.0' # https://github.com/ahoward/map for options handling
   s.add_dependency 'nokogiri', '~>1.5.6' # used to manipulate and read *proj files
   s.add_dependency 'facter', '~>1.6.17' # used to gather system data
