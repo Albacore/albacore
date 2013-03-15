@@ -28,6 +28,7 @@ module Albacore
           @authenticate = false
         end
         @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
+        mono_command
       end
 
       def execute
@@ -47,7 +48,7 @@ module Albacore
                   ]), 
             :ensure_success => true
         else
-          debug 'nuget in non-authenticated mode'
+          trace 'nuget in non-authenticated mode'
         end
         sh @work_dir, make_command
       end

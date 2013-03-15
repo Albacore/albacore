@@ -10,6 +10,7 @@ module Albacore
       def initialize work_dir, executable, parameters, file
         @work_dir, @executable = work_dir, executable
         @parameters = parameters.to_a.unshift(file)
+        mono_command
       end
       def execute
         sh @work_dir, make_command

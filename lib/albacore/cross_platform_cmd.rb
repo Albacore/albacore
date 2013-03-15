@@ -119,5 +119,15 @@ module Albacore
     def format_failure cmd, status
       "Command failed with status (#{status.exitstatus}): [#{cmd}]"
     end
+
+    # shuffle the executable to be a parameter to
+    # mono, if not on windows.
+    def mono_command
+      unless ::Rake::Win32.windows?
+        executable = @executable
+        @executable = "mono"
+        @parameters.unshift executable
+      end
+    end
   end
 end
