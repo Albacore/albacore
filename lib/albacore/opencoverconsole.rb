@@ -9,13 +9,15 @@ class OpenCoverConsole
 				  :no_default_filters, :return_target_code
 
 	def execute
+		raise ArgumentError if target.to_s.empty?
+
 		command_parameters = []
-		command_parameters << "\"-target:#{target}\"" unless target.nil?
-		command_parameters << "\"-targetdir:#{target_dir}\"" unless target_dir.nil?
-		command_parameters << "\"-targetargs:#{target_args}\"" unless target_args.nil?
-		command_parameters << "\"-output:#{output}\"" unless output.nil?
-		command_parameters << "\"-filter:#{filter}\"" unless filter.nil?
-		command_parameters << "\"-register:#{register}\"" unless register.nil?
+		command_parameters << "\"-target:#{target}\"" 
+		command_parameters << "\"-targetdir:#{target_dir}\"" unless target_dir.to_s.empty?
+		command_parameters << "\"-targetargs:#{target_args}\"" unless target_args.to_s.empty?
+		command_parameters << "\"-output:#{output}\"" unless output.to_s.empty?
+		command_parameters << "\"-filter:#{filter}\"" unless filter.to_s.empty?
+		command_parameters << "\"-register:#{register}\"" unless register.to_s.empty?
 		command_parameters << "-oldStyle" if old_style
 		command_parameters << "-mergebyhash" if merge_by_hash
 		command_parameters << "-nodefaultfilters" if no_default_filters
