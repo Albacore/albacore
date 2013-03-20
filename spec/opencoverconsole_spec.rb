@@ -8,7 +8,7 @@ describe OpenCoverConsole do
 		@occ.disable_system = true
 	end
 
-	it "raises an ArgumentError when the target parameter is empty" do
+	it "raises an ArgumentError if the target parameter is not supplied" do
 		expect { @occ.execute }.to raise_error(ArgumentError)
 	end
 
@@ -23,12 +23,12 @@ describe OpenCoverConsole do
 				@occ.force_system_failure = true
 			end
 
-			it "should return false if the command fails" do
+			it "should return false" do
 				@occ.execute
 			    $task_failed.should == true
 			end
 
-			it "should return the correct message if the command fails" do
+			it "should return the correct message" do
 				strio = StringIO.new
 				@occ.log_device = strio
 				@occ.execute
