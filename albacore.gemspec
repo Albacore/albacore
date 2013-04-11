@@ -20,17 +20,15 @@ EOF
 
   s.rubyforge_project = 'albacore'
 
-  s.add_dependency 'rake', '~>10.0.3' # this gem builds on rake
-  s.add_dependency 'map', '~>6.3.0' # https://github.com/ahoward/map for options handling
-  s.add_dependency 'nokogiri', '~>1.5.6' # used to manipulate and read *proj files
-  s.add_dependency 'facter', '~>1.6.17' # used to gather system data
-  s.add_dependency 'semver2', '~>3.1.2'
-  s.add_dependency 'ProcessPilot', '~> 2.0.0.20120301'
+  s.add_dependency 'rake', '>10' # this gem builds on rake
+  s.add_dependency 'map', '~>6.3' # https://github.com/ahoward/map for options handling
+  s.add_dependency 'nokogiri', '~> 1.5' # used to manipulate and read *proj files
+  s.add_dependency 'facter', '~> 1.6' # used to gather system data
+  s.add_dependency 'semver2', '~> 3.1'
+  s.add_dependency 'ProcessPilot', '~> 2.0'
 	
-  s.add_development_dependency 'rubygems-tasks', '~>0.2.3'
-  s.add_development_dependency 'rspec', '~>2.13.0'
-  s.add_development_dependency 'vagrant', '~>1.0.5'
-  s.add_development_dependency 'vagrant-vbguest', '~>0.6.3'
+  s.add_development_dependency 'rubygems-tasks', '~>0.2'
+  s.add_development_dependency 'rspec', '>= 2.13'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- spec/*`.split("\n")
