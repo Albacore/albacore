@@ -457,3 +457,21 @@ describe AssemblyInfo, "when an input file is provided with no attributes" do
     subject.scan(/[^\n]\n\z/).length.should == 1
   end
 end
+
+describe AssemblyInfo, "when specifying initial comments" do
+
+  include_context "asminfo task"
+
+  before :all do
+    @asm.initial_comments "// foo", "// bar"
+  end
+
+  subject{ @tester.build_and_read_assemblyinfo_file @asm }
+  
+  it "should write the initial comments at the top of the file" do
+    # Top of file is assumed to be before the first attribute. Comments are ignored.
+    s = subject.split($/)
+    s.index(%Q|// foo|).should == 0
+    s.index(%Q|// bar|).should == 1
+  end
+end
