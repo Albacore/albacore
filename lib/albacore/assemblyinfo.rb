@@ -12,9 +12,9 @@ class AssemblyInfo
   attr_accessor :input_file, :output_file, :language,
    :version, :title, :description, :custom_attributes,
    :copyright, :com_visible, :com_guid, :company_name, :product_name,
-   :file_version, :trademark, :lang_engine, :informational_version
+   :file_version, :trademark, :lang_engine, :informational_version   
   
-  attr_array :namespaces, :custom_data
+  attr_array :namespaces, :custom_data, :initial_comments
   attr_hash :custom_attributes
   
   def initialize
@@ -90,7 +90,7 @@ class AssemblyInfo
         data = build_header
     end
 
-    data = build_using_statements(data) + data
+    data = build_initial_comments + build_using_statements(data) + data
 
     build_attribute(data, "AssemblyTitle", @title)
     build_attribute(data, "AssemblyDescription", @description)
@@ -167,6 +167,16 @@ class AssemblyInfo
     @custom_attributes.each do |key, value|
       build_attribute(data, key, value, true)
     end
+  end
+
+  def build_initial_comments
+    @initial_comments = [] if @initial_comments.nil?
+    comments = []
+    @initial_comments.each do |comment|
+        # Do language specific formatting here?
+        comments << comment
+    end
+    comments
   end
   
 end
