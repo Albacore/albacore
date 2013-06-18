@@ -1,4 +1,4 @@
-# Welcome to the Albacore Project [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=dev)](http://travis-ci.org/Albacore/albacore)
+# Albacore [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=dev)](http://travis-ci.org/Albacore/albacore)
 
 Albacore is a suite of Rake tasks for building .NET systems. It's like MSBuild or NAnt... but without all the stabby-bracket XML hell!
 
