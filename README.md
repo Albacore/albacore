@@ -1,6 +1,6 @@
 # Albacore [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=dev)](http://travis-ci.org/Albacore/albacore) [![Gem Version](https://badge.fury.io/rb/albacore.png)](http://badge.fury.io/rb/albacore) [![Dependency Status](https://gemnasium.com/Albacore/albacore.png)](https://gemnasium.com/Albacore/albacore) [![Code Climate](https://codeclimate.com/github/Albacore/albacore.png)](https://codeclimate.com/github/Albacore/albacore) [![Coverage Status](https://coveralls.io/repos/Albacore/albacore/badge.png)](https://coveralls.io/r/Albacore/albacore)
 
-Albacore is a suite of Rake tasks for building .NET systems. It's like MSBuild or NAnt... but without all the stabby-bracket XML hell! Browse the [detailed instructions][1] for each task, or, if you're new to Ruby/Rake, review [the quickstart][2].
+Albacore is a professional quality suite of Rake tasks for building .NET or Mono based systems. It's like MSBuild or NAnt without all the stabby-bracket XML hell! The tasks are built using a test-first approach and all tests are included in the gem. Browse the [detailed instructions][1] for each task in our wiki. Details about goals and releases can be found at [albacorebuild.net](http://albacorebuild.net) and by following [@albacorebuild](https://twitter.com/albacorebuild). If you're new to Ruby/Rake, review [the quickstart][2].
 
 ## Installation
 
