@@ -6,7 +6,7 @@ Details about goals and releases can be found at [albacorebuild.net](http://alba
 
 ## Installation
 
-Add these lines to the Gemfile where you maintain the dependencies for your build:
+Add this line to the Gemfile where you maintain the dependencies for your build:
 
     gem 'albacore'
 
@@ -14,7 +14,7 @@ And then execute
 
     $ bundle
     
-Or install them yourself:
+Or install it yourself:
 
     $ gem install albacore
 
