@@ -8,7 +8,6 @@ Details about goals and releases can be found at [albacorebuild.net](http://alba
 
 Add these lines to the Gemfile where you maintain the dependencies for your build:
 
-    gem 'rake'
     gem 'albacore'
 
 And then execute
@@ -17,7 +16,6 @@ And then execute
     
 Or install them yourself:
 
-    $ gem install rake
     $ gem install albacore
 
 ## Usage
