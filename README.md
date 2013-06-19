@@ -20,7 +20,7 @@ Or install it yourself:
 
 ## Usage
 
-Require the Albacore gem at the top of your rakefile:
+Require the Albacore gem at the top of your rakefile and start using the custom tasks. 
 
     require 'albacore'
 
