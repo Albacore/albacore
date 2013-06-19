@@ -20,11 +20,9 @@ Or install it yourself:
 
 ## Usage
 
-Require the Albacore gem at the top of your rakefile and start using the custom tasks. 
+Require the Albacore gem at the top of your rakefile and start using the custom tasks. Consult the [quick start][3] or the detailed [task instructions][1] for more information on how to use Albacore tasks in your Rake build.
 
     require 'albacore'
-
-Consult the [quick start][3] or the detailed [task instructions][2] for more information on how to use Albacore tasks in your Rake build.
 
 ## Supported Rubies
 
