@@ -12,9 +12,28 @@ Start by [forking the repository][3]. Make your changes in the *dev* branch (or 
 
 Be sure to set your [line-endings][4] correctly for your platform, *before* you start developing.
 
+## Building
+
+tl;dr
+
+``` bash
+$ git clone git://github.com/Albacore/albacore.git -b dev
+$ gem install bundler
+$ bundle
+$ rake install
+```
+
+## Testing
+
+You can get a list of the available spec categories by running `rake -T`, they start with `specs:`. The `specs:all` task will run *all* of the specs. You can colorize the spec run output on your console with RSpec `~>2.7` and [ansicon][5]. We recommend installing the [ansicon package][6] using the [Chocolatey][7] package manager.
+
+The NCover and NDepend specs categories require a valid license to be installed on your system or they will fail. You can ignore those failures or run the special specs category `specs:except_ncover`.
+
 
  [1]: http://github.com/Albacore/albacore/issues 
  [2]: http://groups.google.com/group/albacoredev
  [3]: http://help.github.com/forking/
  [4]: http://help.github.com/dealing-with-lineendings/
- 
+ [5]: http://adoxa.3eeweb.com/ansicon/ 
+ [6]: http://chocolatey.org/packages/ansicon
+ [7]: http://chocolatey.org/
