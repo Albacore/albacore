@@ -63,6 +63,10 @@ $ rake install
 
 You can get a list of the available spec categories by running `rake -T`, they start with `specs:`. The `specs:all` task will run *all* of the specs. You can colorize the spec run output on your console with RSpec `~>2.7` and [ansicon][5]. We recommend installing the [ansicon package][6] using the [Chocolatey][7] package manager.
 
+``` bash
+$ rake specs:all
+```
+
 The NCover and NDepend specs categories require a valid license to be installed on your system or they will fail. You can ignore those failures or run the special specs category `specs:except_ncover`.
 
 
