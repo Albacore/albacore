@@ -2,6 +2,30 @@
 
 Albacore is a suite of Rake tasks for building .NET systems. It's like MSBuild or NAnt... but without all the stabby-bracket XML hell! Browse the [detailed instructions][1] for each task, or, if you're new to Ruby/Rake, review [the quickstart][2].
 
+## Installation
+
+Add these lines to the Gemfile where you maintain the dependencies for your build:
+
+    gem 'rake'
+    gem 'albacore'
+
+And then execute
+
+    $ bundle
+    
+Or install them yourself:
+
+    $ gem install rake
+    $ gem install albacore
+
+## Usage
+
+Require the Albacore gem at the top of your rakefile:
+
+    require 'albacore'
+
+Consult the [quickstart][1] or the detailed [task instructions][2] for more information on how to use Albacore tasks in your Rake build.
+
 ## Supported Rubies
 
 Albacore has been tested against the following versions of Ruby for Windows and Linux. Use unsupported versions at your own risk!
