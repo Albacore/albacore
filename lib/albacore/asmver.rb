@@ -4,6 +4,10 @@ require 'set'
 require 'albacore/logging'
 require 'albacore/cross_platform_cmd'
 require 'albacore/errors/unfilled_property_error'
+require 'albacore/asmver/cs'
+require 'albacore/asmver/vb'
+require 'albacore/asmver/cpp'
+require 'albacore/asmver/fs'
 
 module Albacore
   module AsmVer
@@ -14,14 +18,14 @@ module Albacore
         @parameters = Set.new
       end
       def execute
-        
       end
     end
     class Config
-      attr_accessor :version, :files
+      # :prefix sets the filename prefix (excluding extension) to generate
+      attr_accessor :version, :files, :prefix
       
       def initialize
-        @files_config = proc {}
+        @files_config = proc { |project_root|  }
       end
       
       # lets the Rakefile configure the path to the Assembly Info
