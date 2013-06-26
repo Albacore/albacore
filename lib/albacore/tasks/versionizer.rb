@@ -13,7 +13,6 @@ module Albacore
     #
     # Publishes symbol :build_version
     module Versionizer
-      include Logging
 
       # adds a new task with the given symbol to the Rake/Albacore application
       # You can use this like any other albacore method, such as build,
@@ -56,7 +55,7 @@ module Albacore
           git_date = `git log -1 --date=iso --pretty=format:%ad`
           commit_date = DateTime.parse( git_date ).strftime("%Y-%m-%d %H%M%S")
         rescue Exception => e
-          trace e.inspect
+          Albacore::Logging.trace e.inspect
           commit = (ENV['BUILD_VCS_NUMBER'] || "000000")[0,6]
           commit_date = Time.new.strftime("%Y-%m-%d %H%M%S")
         end
