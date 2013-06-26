@@ -12,10 +12,10 @@ module Albacore
       require 'albacore/asmver'
       args ||= []
 
-      c = Albacore::AsmVer::Config.new
-      yield c if block_given?
-      
       body = proc {
+        c = Albacore::AsmVer::Config.new
+        yield c
+      
         c.projects.each { |p|
           cmd = Albacore::AsmVer::Cmd.new p
           Albacore::AsmVer::Task.new(cmd).execute
@@ -29,10 +29,10 @@ module Albacore
       require 'albacore/build'
       args ||= []
 
-      c = Albacore::Build::Config.new
-      yield c
-
       body = proc {
+        c = Albacore::Build::Config.new
+        yield c
+
         fail "unable to find MsBuild or XBuild" unless c.exe
         command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.parameters)
         Albacore::Build::Task.new(command).execute
@@ -45,10 +45,10 @@ module Albacore
       require 'albacore/nugets_restore'
       args ||= []
       
-      c = Albacore::NugetsRestore::Config.new
-      yield c
-
       body = proc {
+        c = Albacore::NugetsRestore::Config.new
+        yield c
+
         c.packages.each do |p|
           command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, c.opts_for_pkgcfg(p))
           Albacore::NugetsRestore::Task.new(command).execute
@@ -62,10 +62,10 @@ module Albacore
       require 'albacore/nugets_pack'
       args ||= []
       
-      c = Albacore::NugetsPack::Config.new
-      yield c
-      
       body = proc {
+        c = Albacore::NugetsPack::Config.new
+        yield c
+      
         c.files.each do |f|
           command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.out, c.opts)
           Albacore::NugetsPack::Task.new(command, c, f).execute
@@ -79,10 +79,10 @@ module Albacore
       require 'albacore/restore_hint_paths'
       args ||= []
       
-      c = Albacore::RestoreHintPaths::Config.new
-      yield c
-      
       body = proc {
+        c = Albacore::RestoreHintPaths::Config.new
+        yield c
+
         t = Albacore::RestoreHintPaths::Task.new c
         t.execute
       }
@@ -94,11 +94,10 @@ module Albacore
       require 'albacore/test_runner'
       args ||= []
       
-      c = Albacore::TestRunner::Config.new
-      yield c
-
       body = proc {
-        # Albacore::Paths.normalize_slashes p
+        c = Albacore::TestRunner::Config.new
+        yield c
+
         c.files.each { |dll|
           command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.parameters, dll
           Albacore::TestRunner::Task.new(command).execute
