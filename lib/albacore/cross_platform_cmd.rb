@@ -48,7 +48,7 @@ module Albacore
 
       chdir opts[:work_dir] do
         opts.delete :work_dir if opts.has_key? :work_dir
-        debug cmd
+        debug cmd unless opts.getopt(:silent, false)
         res = sys.call cmd
         return block.call(res, $?)
       end
@@ -102,7 +102,7 @@ module Albacore
         "#{Paths.make_command 'where', parameters} >NUL 2>&1" :
         "#{Paths.make_command 'which', parameters} >/dev/null 2>&1"
       
-      system which
+      system which, :silent => true
     end
     
     def chdir wd, &block
