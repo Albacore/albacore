@@ -55,7 +55,6 @@ module Albacore
           git_date = `git log -1 --date=iso --pretty=format:%ad`
           commit_date = DateTime.parse( git_date ).strftime("%Y-%m-%d %H%M%S")
         rescue Exception => e
-          Albacore::Logging.trace e.inspect
           commit = (ENV['BUILD_VCS_NUMBER'] || "000000")[0,6]
           commit_date = Time.new.strftime("%Y-%m-%d %H%M%S")
         end
