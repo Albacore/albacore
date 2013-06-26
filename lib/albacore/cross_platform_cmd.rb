@@ -124,6 +124,7 @@ module Albacore
     # mono, if not on windows.
     def mono_command
       unless ::Rake::Win32.windows?
+        trace 'detected running on mono -- unshifting exe file for mono'
         executable = @executable
         @executable = "mono"
         @parameters.unshift executable

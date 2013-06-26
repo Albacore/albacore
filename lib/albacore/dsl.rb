@@ -49,6 +49,8 @@ module Albacore
         c = Albacore::NugetsRestore::Config.new
         yield c
 
+        c.ensure_authentication! 
+
         c.packages.each do |p|
           command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, c.opts_for_pkgcfg(p))
           Albacore::NugetsRestore::Task.new(command).execute

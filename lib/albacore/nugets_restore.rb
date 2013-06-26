@@ -7,6 +7,33 @@ require 'albacore/nugets_authentication'
 
 module Albacore
   module NugetsRestore
+
+    class RemoveSourceCmd
+      include Logging
+      include CrossPlatformCmd
+      def initialize exe, source, user, pass
+        @executable = exe
+        @parameters = %W[sources remove -name #{source.name} -source #{source.uri}]
+        mono_command
+      end
+      def execute
+        system make_command, :verbose => true
+      end
+    end
+
+    class AddSourceCmd
+      include Logging
+      include CrossPlatformCmd
+      def initialize exe, source, user, pass
+        @executable = exe
+        @parameters = %W[sources add -name #{source.name} -source #{source.uri} -user #{user} -password #{pass}] 
+        mono_command
+      end
+      def execute
+        system make_command, :ensure_success => true
+      end
+    end
+
     class Cmd
       include Logging
       include CrossPlatformCmd
@@ -19,37 +46,11 @@ module Albacore
         @opts = opts
 
         pars = opts.getopt(:parameters, :default => [])
-        if opts.has_key?(:password) && opts.has_key?(:username) && opts.has_key?(:source)
-          @authenticate = true
-          @username = opts.getopt(:username)
-          @password = opts.getopt(:password)
-          @source = opts.getopt(:source)
-        else
-          @authenticate = false
-        end
         @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
         mono_command
       end
 
       def execute
-        if @authenticate
-          # omg haxxx ;) - feature request to the NuGet team: consume ENV variables
-          # so I can avoid hacking like this.
-          system make_command_e(
-                  @executable,
-                  %W[sources remove -name #{@source.name} -source #{@source.uri}]),
-            :verbose => true
-          system make_command_e(
-                  @executable, 
-                  %W[sources add -name #{@source.name} 
-                     -source #{@source.uri}
-                     -user #{@username}
-                     -password #{@password}
-                  ]), 
-            :ensure_success => true
-        else
-          trace 'nuget in non-authenticated mode'
-        end
         sh @work_dir, make_command
       end
     end
@@ -86,6 +87,18 @@ module Albacore
       # defaults to true
       attr_accessor :include_official
 
+      def has_credentials?
+        username && password && source
+      end
+
+      def ensure_authentication!
+        return unless has_credentials?
+        remove = RemoveSourceCmd.new exe, source, username, password
+        readd  = AddSourceCmd.new exe, source, username, password
+        remove.execute
+        readd.execute
+      end
+
       def opts_for_pkgcfg pkg
         pars = parameters.to_a
         debug "include_official nuget repo: #{include_official}"
@@ -95,7 +108,7 @@ module Albacore
                         :out        => @out,
                         :parameters => pars })
 
-        if username && password && source
+        if has_credentials?
           map.set :username, username
           map.set :password, password
           map.set :source, source
