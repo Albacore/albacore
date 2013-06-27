@@ -234,6 +234,35 @@ module Albacore
           :location => path
         ) 
       end
+
+      def self.accept? file
+        File.extname(file).downcase != '.nuspec'
+      end
+    end
+    
+    class NuspecTask
+      include Logging
+
+      def initialize command_line, config, nuspec
+        @config = config
+        @nuspec = nuspec
+        @command_line = command_line
+      end
+      
+      def execute
+        filename = File.basename(@nuspec, File.extname(@nuspec))
+        @command_line.execute @nuspec
+        path = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+        Albacore.publish :artifact, OpenStruct.new(
+          :nuspec   => @nuspec,
+          :nupkg    => path,
+          :location => path
+        )
+      end
+
+      def self.accept? file
+        File.extname(file).downcase == '.nuspec'
+      end
     end
   end
 end
