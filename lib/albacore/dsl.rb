@@ -69,8 +69,8 @@ module Albacore
         yield c
       
         c.files.each do |f|
-          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.out, c.opts)
-          Albacore::NugetsPack::Task.new(command, c, f).execute
+          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.opts)
+          Albacore::NugetsPack::ProjectTask.new(command, c, f).execute
         end
       } 
 

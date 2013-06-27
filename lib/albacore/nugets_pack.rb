@@ -86,17 +86,21 @@ module Albacore
         to_xml_builder.to_xml
       end
     end
+
     class Cmd
       include CrossPlatformCmd
-      def initialize work_dir, executable, out, opts
-        #opts = Map.options(opts)
-        @executable = executable
+      def initialize work_dir, executable, *args
+        opts = Map.options(args)
+        raise ArgumentError, 'out is nil' if opts.getopt(:out).nil?
         @work_dir   = work_dir
-        @parameters = %W{pack -OutputDirectory #{out}}
+        @executable = executable
+        
+        @parameters = [%W{pack -OutputDirectory #{opts.getopt(:out)}}].flatten
+        mono_command
       end
       def execute nuspec_file
         @parameters << nuspec_file
-        sh make_command
+        sh @work_dir, make_command
       end
     end
 
@@ -150,9 +154,14 @@ module Albacore
         @license_url = "https://example.com"
       end
 
-      def opts ; end
+      def opts
+        Map.new({
+          :out => @out
+        })
+      end
     end
-    class Task
+
+    class ProjectTask
       include Logging
 
       # the package under construction
