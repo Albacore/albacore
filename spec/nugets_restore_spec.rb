@@ -25,10 +25,9 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
   it "should run the correct thing" do
 		s = ::Rake::Win32.windows?() ? "\\" : "/" 
     mono = ::Rake::Win32.windows?() ? '' : '"mono"'
-    expected = %W["NuGet.exe" "install" "src#{s}Proj#{s}packages.config" "-OutputDirectory" "src/packages" "-Source" "http://localhost:8081"].
-      unshift(mono).
-      to_a.
-      join(' ')
+    tmp = %W["NuGet.exe" "install" "src#{s}Proj#{s}packages.config" "-OutputDirectory" "src/packages" "-Source" "http://localhost:8081"]
+    expected = mono == '' ? tmp : tmp.unshift(mono)
+    expected = expected.to_a.join(' ')
     expected.should eq(subject.received_args[0])
   end
 end 
