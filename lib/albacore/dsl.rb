@@ -63,14 +63,18 @@ module Albacore
     def nugets_pack *args, &block
       require 'albacore/nugets_pack'
       args ||= []
+      tasks = [
+        Albacore::NugetsPack::ProjectTask,
+        Albacore::NugetsPack::NuspecTask
+      ]
       
       body = proc {
         c = Albacore::NugetsPack::Config.new
         yield c
       
         c.files.each do |f|
-          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.out, c.opts)
-          Albacore::NugetsPack::Task.new(command, c, f).execute
+          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.opts)
+          tasks.each{|t| t.new(command, c, f).execute if t.accept?(f)}
         end
       } 
 
