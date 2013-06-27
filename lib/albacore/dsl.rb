@@ -75,7 +75,6 @@ module Albacore
         c.files.each do |f|
           command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.opts)
           tasks.each{|t| t.new(command, c, f).execute if t.accept?(f)}
-          #Albacore::NugetsPack::ProjectTask.new(command, c, f).execute
         end
       } 
 
