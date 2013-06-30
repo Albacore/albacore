@@ -1,4 +1,4 @@
-require 'albacore'
+require 'spec_helper'
 require 'albacore/nugets_pack'
 require 'albacore/dsl'
 require 'sh_interceptor'

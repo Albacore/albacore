@@ -10,6 +10,7 @@ module Albacore
   # specifically, allows the configuration to have a work_dir and exe field
   # and defined a method that joins paths relative to the work_dir
   module CmdConfig
+    include Logging
     
     # the working directory for this command
     attr_accessor :work_dir
@@ -42,11 +43,11 @@ module Albacore
     def in_work_dir
       unless @work_dir.nil?
         Dir.chdir @work_dir do
-          puts "in work dir '#{@work_dir}'"
+          trace "in work dir '#{@work_dir}'"
           yield
         end
       else
-        puts "not in work dir, because it is nil."
+        trace "not in work dir, because it is nil."
         yield
       end     
     end

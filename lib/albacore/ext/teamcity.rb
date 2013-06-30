@@ -21,17 +21,16 @@ module Albacore
         message.gsub(/([\[|\]|\|'])/, '|\1').gsub(/\n/, '|n').gsub(/\r/, '|r')
       end
       def self.configure
-
         Albacore.subscribe :artifact do |artifact|
-          puts "##teamcity[publishArtifacts '#{artifact.location}']"
+          ::Albacore.puts "##teamcity[publishArtifacts '#{artifact.location}']"
         end
         Albacore.subscribe :build_version do |version|
           # tell teamcity our decision
-          puts "##teamcity[buildNumber '#{version.build_version}']"
+          ::Albacore.puts "##teamcity[buildNumber '#{version.build_version}']"
         end
         Albacore.subscribe :progress do |p|
           # tell teamcity of our progress
-          puts "##teamcity[progressMessage '#{escape p.message}']"
+          ::Albacore.puts "##teamcity[progressMessage '#{escape p.message}']"
         end
         Albacore.subscribe :start_progress do |p|
           # tell teamcity of our progress
@@ -47,15 +46,15 @@ module Albacore
       # Starts a new progress block
       def self.start_progress(name)
         PROGRESS_QUEUE.push name
-        puts "##teamcity[progressStart '#{escape name}']"
+        ::Albacore.puts "##teamcity[progressStart '#{escape name}']"
       end
       # Finishes the progress block and all child progress blocks
       def self.finish_progress(name = '')
-        loop {
+        loop do
           p = PROGRESS_QUEUE.pop
-          puts "##teamcity[progressFinish '#{escape p}']" unless p.nil?
+          ::Albacore.puts "##teamcity[progressFinish '#{escape p}']" unless p.nil?
           break unless !p.nil? || name == p || name == ''
-        }
+        end
       end
     end
   end

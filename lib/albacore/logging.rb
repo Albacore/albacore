@@ -1,35 +1,29 @@
 # -*- encoding: utf-8 -*-
+require 'logger'
+require 'albacore/application'
 
 module Albacore
   module Logging
     def trace str
-      # puts str
+      ::Albacore.application.logger.debug str
     end
     def debug str
-      puts str
+      ::Albacore.application.logger.debug str
     end
     def info str
-      puts str
+      ::Albacore.application.logger.info str
+    end
+    def warn str
+      ::Albacore.application.logger.warn str
     end
     def error str
-      puts str
+      ::Albacore.application.logger.error str
     end
-    
-    class LogLevel
-      attr_reader :level
-      def initialize level
-        @level = level || :trace
-        @levels = {
-          :trace => 0,
-          :debug => 1,
-          :info  => 2,
-          :error => 3
-        }
-      end
-      def <=> other
-        other_level = @levels[other.level]
-        @levels[self.level] <=> other_level
-      end
+    def fatal str
+      ::Albacore.application.logger.fatal str
+    end
+    def puts str
+      ::Albacore.application.puts str
     end
   end
 end

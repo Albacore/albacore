@@ -1,10 +1,8 @@
 module ShInterceptor
-  def sh wd, *args
-    @wd = wd
+  def sh *args
     @received = args
   end
-  def shie wd, *args
-    @wd = wd
+  def shie *args
     @received = args
   end
   def system_calls

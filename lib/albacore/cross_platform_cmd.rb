@@ -1,7 +1,7 @@
 require 'rake'
 require 'map'
 require 'processpilot/processpilot'
-
+require 'albacore/paths'
 require 'albacore/logging'
 
 module Albacore
@@ -10,68 +10,92 @@ module Albacore
   module CrossPlatformCmd
     include Logging
 
+    # Exit status class for times the system just gives us a nil.
+    class PseudoStatus
+      attr_reader :exitstatus
+      def initialize(code=0)
+        @exitstatus = code
+      end
+      def to_i
+        @exitstatus << 8
+      end
+      def >>(n)
+        to_i >> n
+      end
+      def stopped?
+        false
+      end
+      def exited?
+        true
+      end
+    end
+
     class << self
       include CrossPlatformCmd
     end
 
     def normalize_slashes path
-      Paths.normalize_slashes path
+      ::Albacore::Paths.normalize_slashes path
     end
 
     # create
     def make_command
-      Paths.make_command @executable, @parameters
-    end
-    
-    # extended make command - pass:
-    # exe - executable to run
-    # pars - parameters
-    def make_command_e exe, pars
-      Paths.make_command exe, pars
+      ::Albacore::Paths.make_command @executable, @parameters
     end
 
     # run process - cmd should be appropriately quoted
+    # 
+    # options are passed as the last argument
     #
     # options:
     #  :work_dir => a file path
     #
-    def system *opts, &block
-      cmd = opts[0]
-      opts = Map.options(opts[1..-1] || {})
-      sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
+    def system *cmd, &block
+      raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
+      block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
 
-      block = lambda { |ok, status| 
-        debug "[#{cmd}] => #{status}" if opts.getopt(:verbose, false)
-        return ok unless opts.getopt(:ensure_success, false)
-        ok or fail(format_failure(cmd, status))
-      } unless block_given?
+      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
+      cmd = ::Albacore::Paths.make_command cmd[0], cmd[1..-1]
 
-      chdir opts[:work_dir] do
-        opts.delete :work_dir if opts.has_key? :work_dir
-        debug cmd unless opts.getopt(:silent, false)
-        res = sys.call cmd
+      chdir opts.get(:work_dir) do
+        trace "# system( ...,  options: #{opts.to_s})"
+        puts cmd unless opts.get :silent, false # log cmd verbatim
+        begin
+          res = IO.popen(cmd, 'r') { |io| io.readlines }
+        rescue Errno::ENOENT => e
+          return block.call(nil, $?)
+        end
+        puts res unless opts.get :silent, false
         return block.call(res, $?)
       end
     end
     
     def system_control cmd, *opts, &block
       cmd = opts[0]
-      opts = Map.options(opts[1..-1] || {})
+      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
       chdir opts[:work_dir] do
-        debug cmd
-        opts.delete :work_dir if opts.has_key? :work_dir
+        puts cmd
         ProcessPilot::pilot cmd, opts, &block
       end
     end
 
     # run in shell
-    def sh work_dir = nil, cmd, &block
-      raise ArgumentError, "cmd is nil" unless cmd
-      sys = ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system)
+    def sh *cmd, &block
+      raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
       block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
-      chdir work_dir do
-        debug cmd
-        res = sys.call cmd
+
+      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
+      cmd = cmd.join(' ') # shell needs a single string
+
+      chdir opts.get(:work_dir) do
+        trace "# sh( ...,  options: #{opts.to_s})"
+        puts cmd unless opts.get :silent, false # log cmd verbatim
+        begin
+          res = IO.popen(cmd, 'r') { |io| io.readlines }
+        rescue Errno::ENOENT => e
+          return block.call(nil, $?)
+        end
+        puts res unless opts.get :silent, false
         return block.call(res, $?)
       end
     end
@@ -82,10 +106,9 @@ module Albacore
     #  where status:
     #    #exitstatus : Int
     #    #pid      : Int
-    def shie work_dir = nil, cmd, &block
-      raise ArgumentError, "cmd is nil" unless cmd
+    def shie *cmd, &block
       block = lambda { |ok, status| [ok, status] } unless block_given?
-      sh work_dir, cmd, &block
+      sh *cmd, &block
     end
     
     def which executable
@@ -94,23 +117,22 @@ module Albacore
       dir = File.dirname executable
       file = File.basename executable
 
+      cmd = ::Rake::Win32.windows? ? 'where' : 'which'
       parameters = []
       parameters << Paths.normalize_slashes(file) if dir == '.'
       parameters << Paths.normalize_slashes("#{dir}:#{file}") unless dir == '.'
 
-      which = ::Rake::Win32.windows? ?
-        "#{Paths.make_command 'where', parameters} >NUL 2>&1" :
-        "#{Paths.make_command 'which', parameters} >/dev/null 2>&1"
-      
-      system which, :silent => true
+      IO.popen([cmd, *parameters], 'r') do |io|
+        io.read.chomp
+      end
     end
     
     def chdir wd, &block
       return block.call if wd.nil?
       Dir.chdir wd do
-        debug "pushd #{wd}"
+        trace "pushd #{wd}"
         res = block.call
-        debug "popd #{wd}"
+        trace "popd #{wd}"
         return res
       end
     end

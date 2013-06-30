@@ -1,10 +1,11 @@
+require 'spec_helper'
 require 'albacore/semver'
 require 'albacore/project'
 
 describe Albacore::Project, "when loading packages.config" do
   subject {
     p = File.expand_path('../testdata/Project.fsproj', __FILE__)
-    puts "path: #{p}"
+    #puts "path: #{p}"
     Albacore::Project.new(p)
   }
   let(:nlog) { subject.declared_packages.find { |p| p.id == 'NLog' } }

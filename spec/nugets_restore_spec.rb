@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'albacore'
 require 'albacore/nugets_restore'
 require 'albacore/dsl'

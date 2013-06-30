@@ -1,5 +1,4 @@
 require 'albacore/application'
-require 'albacore/dsl'
 
 # The albacore module instance methods.
 module Albacore
@@ -7,9 +6,15 @@ module Albacore
     # Accessor for the Albacore application. Configuration
     # and similar singleton values will be stored in this
     # instance. Multiple calls will yield the same instance.
-    # Albacore::Application is thread-safe.
     def application
       @application ||= Albacore::Application.new
+    end
+
+    # set the application -- good for testing
+    # the infrastructure of albacore by resetting the
+    # state after each test
+    def set_application app
+      @application = app
     end
 
     # Defines a new task with all of what that entails:
@@ -21,7 +26,12 @@ module Albacore
 
     # Set the global albacore logging level.
     def log_level= level
-      @level = level.is_a?(Albacore::Logging::LogLevel) ? level : Albacore::Logging::LogLevel.new(level)
+      application.logger.level = level
+    end
+
+    # Use to write to STDOUT (by default)
+    def puts *args
+      application.puts *args
     end
 
     def events

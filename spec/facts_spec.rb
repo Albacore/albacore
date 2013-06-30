@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'albacore/facts'
 
 describe Albacore::Facts, "when querying processor info" do

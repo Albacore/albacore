@@ -37,6 +37,7 @@ module Albacore
     class Cmd
       include Logging
       include CrossPlatformCmd
+
       def initialize work_dir, executable, *args
         opts = Map.options(args)
         raise ArgumentError, 'pkgcfg is nil' if opts.getopt(:pkgcfg).nil? 
@@ -47,11 +48,12 @@ module Albacore
 
         pars = opts.getopt(:parameters, :default => [])
         @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
+
         mono_command
       end
 
       def execute
-        sh @work_dir, make_command
+        sh make_command, :work_dir => @work_dir
       end
     end
     

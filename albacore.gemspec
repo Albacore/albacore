@@ -26,6 +26,7 @@ EOF
   s.add_dependency 'facter', '~> 1.6' # used to gather system data
   s.add_dependency 'semver2', '~> 3.1'
   s.add_dependency 'ProcessPilot', '~> 2.0'
+  s.add_dependency 'highline', '~> 1.6'
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2'
   s.add_development_dependency 'rspec', '>= 2.13'

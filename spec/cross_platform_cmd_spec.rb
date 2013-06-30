@@ -1,9 +1,20 @@
+require 'spec_helper'
 require 'albacore/cross_platform_cmd'
 
-describe "expectations on Kernel#system and Rake::Win32#rake_system" do
-  subject { ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system) }
-  let(:res) { subject.call "whoami" }
-  it("returns true if the command was successful") { res.should be_true }
+# ignore, because it's an integration test that I can't control the output of
+#describe "expectations on Kernel#system and Rake::Win32#rake_system" do
+#  subject { ::Rake::Win32.windows? ? Rake::Win32.method(:rake_system) : Kernel.method(:system) }
+#  let(:res) { subject.call "whoami" }
+#  it("returns true if the command was successful") { res.should be_true }
+#end
+
+describe Albacore::CrossPlatformCmd.method(:which), "what happens when calling #which" do
+  it "should be callable" do
+    subject.should respond_to(:call)
+  end
+  it "should return a non-null path" do
+    subject.call("ruby").should_not be_empty
+  end
 end
 
 describe Albacore::CrossPlatformCmd.method(:system), "#system" do
@@ -17,7 +28,7 @@ end
 
 describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
   it "should raise Error for nonexisting command" do
-    expect { subject.call("nonexistent") }.to raise_error(RuntimeError)
+    expect { subject.call("nonexistent", :silent => true) }.to raise_error(RuntimeError)
   end
   it "should state that the command failed" do
     begin
