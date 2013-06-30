@@ -23,7 +23,8 @@ module Albacore::Migrate
                         :db            => 'SqlServer2008',
                         :exe           => 'src/packages/FluentMigrator.1.0.6.0/tools/Migrate.exe',
                         :task_override => nil,
-                        :interactive   => true
+                        :interactive   => true,
+                        :work_dir      => nil
 
       e = opts.getopt(:extras)
       opts.set(:extras, e.is_a?(Array) ? e : [e]) 
@@ -43,13 +44,15 @@ module Albacore::Migrate
         unless opts.get :silent
           raise 'didn\'t confirm: exiting migrations' unless confirm opts.get(:direction)
         end
+
       end
 
-      raise ArgumentError, 'cannot execute with empty connection string' if conn.nil? or conn.empty?
+      raise ArgumentError, 'cannot execute with empty connection string' if nil_or_white conn
+      raise ArgumentError, 'cannot execute with no dll file specified' if nil_or_white(opts.get(:dll))
 
       @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn}]
 
-      if opts.get(:task_override).nil?
+      unless opts.get :task_override
         @parameters.push '--task'
         @parameters.push opts.get(:direction)
       else
@@ -58,11 +61,13 @@ module Albacore::Migrate
 
       opts.get(:extras).each{|e| @parameters.push e}
 
+      trace "Running Albacore::Migrate cmd with exe: '#{@executable}', params: #{@parameters}"
+
       mono_command
     end
 
     def execute
-      sh make_command
+      sh make_command, :work_dir => opts.get(:work_dir)
     end
 
     private
@@ -97,6 +102,10 @@ module Albacore::Migrate
         return conn.dup.force_encoding('IBM437').encode('UTF-8')
       end
       return conn
+    end
+
+    def nil_or_white str
+      str.nil? or str.empty? 
     end
 
   end
