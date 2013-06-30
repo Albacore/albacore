@@ -15,6 +15,9 @@ module Albacore
       raise ArgumentError, "output must not be nil" if output.nil?
       @logger = Logger.new log
       @logger.level = Logger::INFO
+      @logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{severity[0]} #{datetime.to_datetime.iso8601(6)}: #{msg}\n"
+      end
       @output = output
     end
 
