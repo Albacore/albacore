@@ -1,3 +1,3 @@
 module Albacore
-  VERSION = "0.5.17"
+  VERSION = "0.6"
 end
