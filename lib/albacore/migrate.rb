@@ -37,12 +37,12 @@ module Albacore::Migrate
       if opts.get :interactive
         conn = ask "Give connection string: " do |q|
           q.validate = /\A.+\Z/
-        end unless conn or opts.get(:silent)
+        end unless opts.get(:silent) or conn
 
         conn = munge_windows conn unless opts.get(:silent)
 
-        unless opts.get :silent
-          raise 'didn\'t confirm: exiting migrations' unless confirm opts.get(:direction)
+        unless opts.get :silent or confirm opts.get(:direction)
+          raise 'didn\'t confirm: exiting migrations'
         end
 
       end
