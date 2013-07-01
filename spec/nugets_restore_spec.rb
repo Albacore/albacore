@@ -42,9 +42,14 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
     cmd = Albacore::NugetsRestore::Cmd.new nil, 'NuGet.exe', cfg.opts_for_pkgcfg('src/Proj/packages.config')
   }
 
+  let (:path) {
+    ::Rake::Win32.windows?() ? 'src\\Proj\\packages.config' : 'src/Proj/packages.config' 
+  }
+
   include_context 'cmd context'
 
-  %w[install src/Proj/packages.config -OutputDirectory src/packages -Source http://localhost:8081].each { |parameter|
+  %W[install -OutputDirectory src/packages -Source http://localhost:8081].each { |parameter|
     it { should include(parameter) }
   }
+  it { should include(path) }
 end 
