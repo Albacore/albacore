@@ -2,11 +2,8 @@
 
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
 
-This branch is where I try to rebuild albacore from the ground up. Initially I
-am targeting my own closed-source project and extracting tasks and patterns as I
-go.
-
-Henrik
+This branch is the next official version. It is currently being used for
+numerous builds for us and is free of known bugs.
 
 ## getting started
 
