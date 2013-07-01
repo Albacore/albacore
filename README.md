@@ -3,7 +3,8 @@
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
 
 This branch is the next official version. It is currently being used for
-numerous builds for us and is free of known bugs.
+numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and
+jRuby.
 
 ## getting started
 
