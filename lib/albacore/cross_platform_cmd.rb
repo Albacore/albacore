@@ -43,7 +43,8 @@ module Albacore
       ::Albacore::Paths.make_command @executable, @parameters
     end
 
-    # run process - cmd should be appropriately quoted
+    # run process
+    # system(cmd, [args array], [opts])
     # 
     # options are passed as the last argument
     #
@@ -53,20 +54,23 @@ module Albacore
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
       block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
-
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
-      cmd = ::Albacore::Paths.make_command cmd[0], cmd[1..-1]
+      pars = cmd[1..-1].flatten
+
+      raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
+
+      exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
+      trace "system( exe=#{exe}, pars=#{pars.join(', ')}, options=#{opts.to_s})"
 
       chdir opts.get(:work_dir) do
-        trace "# system( ...,  options: #{opts.to_s})"
-        puts cmd unless opts.get :silent, false # log cmd verbatim
+        puts %Q{#{exe} #{pars.join(' ')}} unless opts.get :silent, false # log cmd verbatim
         begin
-          res = IO.popen(cmd, 'r') { |io| io.readlines }
+          res = IO.popen([exe, *pars]) { |io| io.readlines }
         rescue Errno::ENOENT => e
-          return block.call(nil, $?)
+          return block.call(nil, 127)
         end
         puts res unless opts.get :silent, false
-        return block.call(res, $?)
+        return block.call($? == 0 && res, $?)
       end
     end
     
@@ -122,9 +126,20 @@ module Albacore
       parameters << Paths.normalize_slashes(file) if dir == '.'
       parameters << Paths.normalize_slashes("#{dir}:#{file}") unless dir == '.'
 
-      IO.popen([cmd, *parameters], 'r') do |io|
+      trace "#{cmd} #{parameters.join(' ')}"
+
+      res = IO.popen([cmd, *parameters]) do |io|
         io.read.chomp
       end
+      
+      unless $? == 0
+        nil
+      else
+        res
+      end
+    rescue Errno::ENOENT => e
+      trace "which/where returned #{$?}: #{e}"
+      nil
     end
     
     def chdir wd, &block

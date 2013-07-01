@@ -8,14 +8,14 @@ module ShInterceptor
   def system_calls
     @system_control_calls || 0
   end
-  def system *args, &block
-    @received = args[0]
+  def system *args
+    @received = args
     @system_calls = system_calls + 1
   end
   def system_control_calls
     @system_control_calls || 0
   end
-  def system_control cmd, *args, &block
+  def system_control cmd, *args
     @wd = Map.options(args).getopt(:work_dir)
     @received = cmd
     @args = args

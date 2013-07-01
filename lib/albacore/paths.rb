@@ -18,6 +18,13 @@ module Albacore
         exe = normalize_slashes executable
         %Q{"#{exe}" #{params}}
       end
+
+      def normalise executable, parameters
+        raise ArgumentError, "executable is nil" if executable.nil?
+        #parameters = parameters.collect{|p| p.include?('"') ? p : ('"' + p + '"')}
+        exe = normalize_slashes executable
+        ["#{exe}", parameters]
+      end
     end
   end
 end

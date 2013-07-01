@@ -18,7 +18,7 @@ describe Albacore::Migrate::Cmd, "when calling #execute" do
 
   # requires a let(:c)
   shared_context 'executing command' do
-    subject { c.execute ; c.received_args[0] }
+    subject { c.execute ; c.received_args[1] }
   end
 
   describe 'calling with no connection' do

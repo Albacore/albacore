@@ -61,16 +61,31 @@ module Albacore::Migrate
 
       opts.get(:extras).each{|e| @parameters.push e}
 
-      trace "Running Albacore::Migrate cmd with exe: '#{@executable}', params: #{@parameters}"
+      trace "Running Albacore::Migrate cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}"
 
       mono_command
     end
 
     def execute
-      sh make_command, :work_dir => opts.get(:work_dir)
+      system @executable, @parameters, :work_dir => opts.get(:work_dir)
     end
 
     private
+
+    def agree txt, default
+      reply = default ? "[Y/n]" : "[y/N]"
+      def_reply = default ? 'y' : 'n'
+      STDOUT.write txt
+      STDOUT.write " #{reply}: "
+      res = STDIN.gets.chomp.downcase
+      if res == ''
+        puts "Chose #{def_reply}"
+        return default
+      else
+        puts "Chose #{res}"
+        return res == 'y'
+      end
+    end
 
     def teamcity?
       ENV['TEAMCITY_VERSION'] ? true : false
@@ -142,10 +157,10 @@ module Albacore::Migrate
 
   class MigrateCmdFactory
     def self.create *args
-      return MigrateCmd.new(*args) unless ENV['FILE']
+      return ::Albacore::Migrate::Cmd.new(*args) unless ENV['FILE']
       trace "Found FILE environment var: #{ENV['FILE']}"
       args = args.push(:file => ENV['FILE'])
-      return BatchMigrateTask.new(*args)
+      return ::Albacore::Migrate::BatchMigrateTask.new(*args)
     end
   end
 end

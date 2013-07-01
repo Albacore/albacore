@@ -15,6 +15,9 @@ describe Albacore::CrossPlatformCmd.method(:which), "what happens when calling #
   it "should return a non-null path" do
     subject.call("ruby").should_not be_empty
   end
+  it "should return nil if nothing was found" do
+    subject.call("notlikelyonsystem").should be_nil
+  end
 end
 
 describe Albacore::CrossPlatformCmd.method(:system), "#system" do

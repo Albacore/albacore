@@ -11,13 +11,13 @@ module Albacore
     class RemoveSourceCmd
       include Logging
       include CrossPlatformCmd
-      def initialize exe, source, user, pass
+      def initialize exe, source
         @executable = exe
         @parameters = %W[sources remove -name #{source.name} -source #{source.uri}]
         mono_command
       end
       def execute
-        system make_command, :verbose => true
+        system @executable, @parameters, :verbose => true
       end
     end
 
@@ -30,7 +30,7 @@ module Albacore
         mono_command
       end
       def execute
-        system make_command, :ensure_success => true
+        system @executable, @parameters, :ensure_success => true
       end
     end
 
@@ -53,7 +53,7 @@ module Albacore
       end
 
       def execute
-        sh make_command, :work_dir => @work_dir
+        system @executable, @parameters, :work_dir => @work_dir
       end
     end
     
@@ -95,7 +95,7 @@ module Albacore
 
       def ensure_authentication!
         return unless has_credentials?
-        remove = RemoveSourceCmd.new exe, source, username, password
+        remove = RemoveSourceCmd.new exe, source
         readd  = AddSourceCmd.new exe, source, username, password
         remove.execute
         readd.execute
