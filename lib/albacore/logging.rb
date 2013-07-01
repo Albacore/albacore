@@ -4,23 +4,23 @@ require 'albacore/application'
 
 module Albacore
   module Logging
-    def trace str
-      ::Albacore.application.logger.debug str
+    def trace *str, &block
+      ::Albacore.application.logger.debug *str, &block
     end
-    def debug str
-      ::Albacore.application.logger.debug str
+    def debug *str, &block
+      ::Albacore.application.logger.debug  *str, &block
     end
-    def info str
-      ::Albacore.application.logger.info str
+    def info *str, &block
+      ::Albacore.application.logger.info *str, &block
     end
-    def warn str
-      ::Albacore.application.logger.warn str
+    def warn *str, &block
+      ::Albacore.application.logger.warn *str, &block
     end
-    def error str
-      ::Albacore.application.logger.error str
+    def error *str, &block
+      ::Albacore.application.logger.error *str, &block
     end
-    def fatal str
-      ::Albacore.application.logger.fatal str
+    def fatal *str, &block
+      ::Albacore.application.logger.fatal *str, &block
     end
     def puts str
       ::Albacore.application.puts str
