@@ -69,7 +69,7 @@ module Albacore
         rescue Errno::ENOENT => e
           return block.call(nil, 127)
         end
-        puts res unless opts.get :silent, false
+        puts res unless opts.get(:silent, false) or not opts.get(:output, true)
         return block.call($? == 0 && res, $?)
       end
     end
@@ -100,7 +100,7 @@ module Albacore
           return block.call(nil, $?)
         end
         puts res unless opts.get :silent, false
-        return block.call(res, $?)
+        return block.call($? == 0 && res, $?)
       end
     end
     
@@ -128,6 +128,7 @@ module Albacore
 
       trace "#{cmd} #{parameters.join(' ')}"
 
+      # TODO: this still prints to STDERR on Windows
       res = IO.popen([cmd, *parameters]) do |io|
         io.read.chomp
       end

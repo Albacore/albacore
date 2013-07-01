@@ -39,7 +39,7 @@ module Albacore
       include CrossPlatformCmd
 
       def initialize work_dir, executable, *args
-        opts = Map.options(args)
+        opts = Map.options args
         raise ArgumentError, 'pkgcfg is nil' if opts.getopt(:pkgcfg).nil? 
         raise ArgumentError, 'out is nil' if opts.getopts(:out).nil?
         @work_dir = work_dir
@@ -53,7 +53,7 @@ module Albacore
       end
 
       def execute
-        system @executable, @parameters, :work_dir => @work_dir
+        system @executable, @parameters, :work_dir => @work_dir, :output => false
       end
     end
     
