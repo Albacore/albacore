@@ -141,6 +141,7 @@ module Albacore::Migrate
     def execute
       File.open(args[:file], "r") do |file_handle|
         file_handle.each_line do |server|
+          server = server.chomp
           unless server.nil? or server.empty?
             info ''
             info " ********** Starting '#{server}' ************ " 
