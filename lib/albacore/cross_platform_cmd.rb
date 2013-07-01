@@ -97,7 +97,7 @@ module Albacore
         begin
           res = IO.popen(cmd, 'r') { |io| io.readlines }
         rescue Errno::ENOENT => e
-          return block.call(nil, $?)
+          return block.call(nil, PseudoStatus.new(127))
         end
         puts res unless opts.get :silent, false
         return block.call($? == 0 && res, $?)
