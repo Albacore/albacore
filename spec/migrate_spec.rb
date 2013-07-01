@@ -3,6 +3,18 @@ require 'albacore/migrate'
 require 'map'
 require 'sh_interceptor'
 
+describe Albacore::Migrate::MigrateCmdFactory, "when constructing" do
+  subject { Albacore::Migrate::MigrateCmdFactory.create :interactive => false, :conn => 'c'}
+  it { should_not be_nil }
+
+  describe 'with :file context' do
+    it 'raises error about file' do
+      expect { Albacore::Migrate::MigrateCmdFactory.create :file => 'migrate_these.txt', :interactive => false, :conn => 'c' }.
+        to raise_error(ArgumentError, /not find/)
+    end
+  end
+end
+
 describe Albacore::Migrate::Cmd, "when calling #execute" do
 
   def cmd *args

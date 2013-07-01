@@ -134,8 +134,8 @@ module Albacore::Migrate
       @args = Map.options args 
       @args.apply :direction => 'migrate:up',
                   :silent    => true
-      raise 'Passed nil file' if @args.get(:file).nil?
-      raise "Could not find file '#{@args.get(:file)}'" unless File.exists? @args.get(:file)
+      raise ArgumentError, 'Passed nil file' if @args.get(:file).nil?
+      raise ArgumentError, "Could not find file '#{@args.get(:file)}'" unless File.exists? @args.get(:file)
     end
 
     def execute
@@ -156,10 +156,18 @@ module Albacore::Migrate
   end
 
   class MigrateCmdFactory
+    def initialize
+      raise "don't create this class"
+    end
     def self.create *args
-      return ::Albacore::Migrate::Cmd.new(*args) unless ENV['FILE']
-      trace "Found FILE environment var: #{ENV['FILE']}"
-      args = args.push(:file => ENV['FILE'])
+      ::Albacore.application.logger.debug "in create"
+      
+      opts = Map.options args
+      opts.apply :file => ENV['FILE']
+      return ::Albacore::Migrate::Cmd.new(*args) unless opts.get( :file )
+
+      ::Albacore.application.logger.debug "Found FILE environment var: #{opts.get :file}"
+      args = args.push(:file => opts.get(:file))
       return ::Albacore::Migrate::BatchMigrateTask.new(*args)
     end
   end
