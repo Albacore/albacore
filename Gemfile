@@ -9,6 +9,6 @@ platforms :mswin, :mingw do
 end
 
 # needed to do development and read the version of albacore
-gem 'nokogiri', '~>1.5.6'
+gem 'nokogiri', '~>1.5'
 
 gemspec
