@@ -15,12 +15,12 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
 
     cmd = Albacore::NugetsPack::Cmd.new nil, 'NuGet.exe', cfg.opts()
     cmd.extend(ShInterceptor)
-    cmd.execute 'src/some.nuspec'
+    cmd.execute './spec/testdata/example.nuspec'
     cmd
   }
 
   it "should run the correct thing" do
-    expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "src/some.nuspec"]
+    expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "./spec/testdata/example.nuspec"]
     expected_args.unshift '"mono"' unless ::Rake::Win32.windows?
     expected_args = expected_args.to_a.join(' ')
     
@@ -49,13 +49,13 @@ describe Albacore::NugetsPack::NuspecTask do
       cmd = Albacore::NugetsPack::Cmd.new nil, 'NuGet.exe', cfg.opts()
       cmd.extend(ShInterceptor)
 
-      task = Albacore::NugetsPack::NuspecTask.new cmd, cfg, 'src/some.nuspec'
+      task = Albacore::NugetsPack::NuspecTask.new cmd, cfg, './spec/testdata/example.nuspec'
       task.execute
       cmd
     }
 
     it "should run the correct thing" do
-      expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "src/some.nuspec"]
+      expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "./spec/testdata/example.nuspec"]
       expected_args.unshift '"mono"' unless ::Rake::Win32.windows?
       expected_args = expected_args.to_a.join(' ')
       

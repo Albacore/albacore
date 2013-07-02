@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Example</id>
+    <version>1.2.3.4</version>
+    <authors>Mr.Example</authors>
+    <owners>Ms.Example</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Example package</description>
+    <releaseNotes>Used for specs</releaseNotes>
+    <copyright>none</copyright>
+    <tags>example spec</tags>
+  </metadata>
+</package>
