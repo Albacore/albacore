@@ -248,11 +248,26 @@ module Albacore
         @nuspec = nuspec
         @command_line = command_line
       end
+
+      def read_version_from_nuspec
+        begin
+          nuspec_file = File.open(@nuspec)
+          xml = Nokogiri::XML(nuspec_file)
+          nuspec_file.close
+          nodes = xml.xpath('.//metadata/version')
+          raise "No <version/> found" if nodes.empty?
+          nodes.first.text()
+        rescue => err
+          puts "Error reading package version from file: #{err}"
+          raise
+        end
+      end
       
       def execute
+        version = read_version_from_nuspec
         filename = File.basename(@nuspec, File.extname(@nuspec))
         @command_line.execute @nuspec
-        path = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+        path = File.join(@config.out, "#{filename}.#{version}.nupkg")
         Albacore.publish :artifact, OpenStruct.new(
           :nuspec   => @nuspec,
           :nupkg    => path,
