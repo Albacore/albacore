@@ -37,12 +37,44 @@ Now, install albacore from this repository by running:
 In order to build your project, you need to create a `Rakefile`, with contents
 like these:
 
-    require 'bundler/setup'
-    require 'albacore'
+  require 'bundler/setup'
 
-    build :build do |x|
-      x.sln = 'src/MyProj.sln'
-    end
+  require 'albacore'
+  require 'albacore/tasks/versionizer'
+  require 'albacore/ext/teamcity'
+
+  Albacore::Tasks::Versionizer.new :versioning
+
+  desc "Perform fast build (warn: doesn't d/l deps)"
+  build :quick_build do |b|
+    b.logging = 'detailed'
+    b.sln = 'src/MyProj.sln'
+  end
+
+  desc "Perform full build"
+  build :build => [:versioning, :restore] do |b|
+    b.sln = 'src/MyProj.sln'
+  end
+
+  directory 'build/pkg'
+
+  nugets_restore :restore do |p|
+    p.out = 'src/packages'
+    p.exe = 'buildsupport/NuGet.exe'
+  end
+
+  desc "package nugets"
+  nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
+    p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
+      exclude('src/Fsharp.Actor/*.nuspec').
+      exclude(/Tests/).
+      exclude(/Spec/).
+      exclude(/sample/).
+      exclude(/packages/)
+    p.out     = 'build/pkg'
+    p.exe     = 'buildsupport/NuGet.exe'
+    p.version = ENV['NUGET_VERSION']
+  end
  
 You can now run:
 
@@ -73,9 +105,18 @@ DSL block, but don't do side-effects other than fail bad config. Remember that
 multiple interactions with the `Config` object is desired. Do side-effects when
 the task is run.
 
-Give your `Cmd` objects this signature:
+How to write commands:
 
-    def initialize work_dir, executable, *args
+  require 'map'
+
+# ...
+
+  def initialize executable, *args
+    opts = Map.options(args)
+    @executable = executable  
+  end
+
+In general: look at the written code and do something similar =).
 
 Provide further blocks/lambdas/procs, passed from the `Config` to the `Task` or
 even `Cmd` if you need to decide values when the task is run. This makes it
@@ -86,11 +127,6 @@ nugets_pack, build) and 'extensions' for things that depend on published
 symbols, and 'tasks' for things that can be instantiated (added to the Rake
 Tasks collection) in the Rakefile. Your extension probably is a 'task' or
 'extension'.
-
-When using `Cmd` and its `@parameters`; unless you use `#make_command`, remember
-to normalize slashes (e.g. Paths#normalize_slashes).
-
-Provide a very basic example in TomDoc on top of your `Config` class.
 
 Use ideomatic ruby. If you have more than 3 levels of indentation in a method,
 you're probably not being ideomatic. Can you use a higher-level language
