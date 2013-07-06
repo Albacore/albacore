@@ -50,6 +50,7 @@ describe FluentMigratorRunner, "the command parameters for an migrator runner" d
       @migrator.script_directory = 'c:\scripts'
       @migrator.profile = 'MyProfile'
       @migrator.timeout = 90
+      @migrator.tag = 'MyTag'
       @command_parameters = @migrator.get_command_parameters
     end
 
@@ -97,6 +98,10 @@ describe FluentMigratorRunner, "the command parameters for an migrator runner" d
       @command_parameters.should include('/timeout')
     end
     
+    it "includes tag" do
+      @command_parameters.should include('/tag')
+    end
+
     it "excludes help" do
       @command_parameters.should_not include("/?")
     end
@@ -232,6 +237,7 @@ describe FluentMigratorRunner, "when configuration has been provided" do
         migrator.script_directory = 'c:\scripts'
         migrator.profile = 'MyProfile'
         migrator.timeout = 90
+        migrator.tag = 'MyTag'
       end
     end
 
@@ -252,5 +258,6 @@ describe FluentMigratorRunner, "when configuration has been provided" do
     @migrator.script_directory.should == 'c:\scripts'
     @migrator.profile.should == 'MyProfile'
     @migrator.timeout.should == 90
+    @migrator.tag.should == 'MyTag'
   end
 end
