@@ -37,44 +37,44 @@ Now, install albacore from this repository by running:
 In order to build your project, you need to create a `Rakefile`, with contents
 like these:
 
-  require 'bundler/setup'
+    require 'bundler/setup'
 
-  require 'albacore'
-  require 'albacore/tasks/versionizer'
-  require 'albacore/ext/teamcity'
+    require 'albacore'
+    require 'albacore/tasks/versionizer'
+    require 'albacore/ext/teamcity'
 
-  Albacore::Tasks::Versionizer.new :versioning
+    Albacore::Tasks::Versionizer.new :versioning
 
-  desc "Perform fast build (warn: doesn't d/l deps)"
-  build :quick_build do |b|
-    b.logging = 'detailed'
-    b.sln = 'src/MyProj.sln'
-  end
+    desc "Perform fast build (warn: doesn't d/l deps)"
+    build :quick_build do |b|
+      b.logging = 'detailed'
+      b.sln = 'src/MyProj.sln'
+    end
 
-  desc "Perform full build"
-  build :build => [:versioning, :restore] do |b|
-    b.sln = 'src/MyProj.sln'
-  end
+    desc "Perform full build"
+    build :build => [:versioning, :restore] do |b|
+      b.sln = 'src/MyProj.sln'
+    end
 
-  directory 'build/pkg'
+    directory 'build/pkg'
 
-  nugets_restore :restore do |p|
-    p.out = 'src/packages'
-    p.exe = 'buildsupport/NuGet.exe'
-  end
+    nugets_restore :restore do |p|
+      p.out = 'src/packages'
+      p.exe = 'buildsupport/NuGet.exe'
+    end
 
-  desc "package nugets"
-  nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
-    p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
-      exclude('src/Fsharp.Actor/*.nuspec').
-      exclude(/Tests/).
-      exclude(/Spec/).
-      exclude(/sample/).
-      exclude(/packages/)
-    p.out     = 'build/pkg'
-    p.exe     = 'buildsupport/NuGet.exe'
-    p.version = ENV['NUGET_VERSION']
-  end
+    desc "package nugets"
+    nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
+      p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
+        exclude('src/Fsharp.Actor/*.nuspec').
+        exclude(/Tests/).
+        exclude(/Spec/).
+        exclude(/sample/).
+        exclude(/packages/)
+      p.out     = 'build/pkg'
+      p.exe     = 'buildsupport/NuGet.exe'
+      p.version = ENV['NUGET_VERSION']
+    end
  
 You can now run:
 
@@ -107,14 +107,14 @@ the task is run.
 
 How to write commands:
 
-  require 'map'
+    require 'map'
 
-# ...
+    # ...
 
-  def initialize executable, *args
-    opts = Map.options(args)
-    @executable = executable  
-  end
+    def initialize executable, *args
+      opts = Map.options(args)
+      @executable = executable  
+    end
 
 In general: look at the written code and do something similar =).
 
