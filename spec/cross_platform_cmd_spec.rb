@@ -30,6 +30,12 @@ describe Albacore::CrossPlatformCmd.method(:system), "#system" do
 end
 
 describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
+
+  let(:prefix) { 
+    folder = File.dirname(__FILE__)
+    ::Rake::Win32.windows? ? folder : "mono #{folder}"
+  }
+
   it "should raise Error for nonexisting command" do
     expect { subject.call("nonexistent", :silent => true) }.to raise_error(RuntimeError)
   end
@@ -39,6 +45,10 @@ describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
     rescue RuntimeError => re
       re.message.should include("Command failed with status (127)")
     end
+  end
+  it "should output from echo" do
+    res = subject.call("#{prefix}/support/echo/echo.exe this is a test")
+    res.should eq(["this is a test \n"])
   end
 end
 

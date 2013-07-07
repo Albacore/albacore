@@ -69,7 +69,7 @@ module Albacore
         rescue Errno::ENOENT => e
           return block.call(nil, 127)
         end
-        puts res unless opts.get(:silent, false) or not opts.get(:output, true)
+        puts res unless opts.get(:silent, false) or not opts.get(:output, false)
         return block.call($? == 0 && res, $?)
       end
     end
