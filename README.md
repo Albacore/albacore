@@ -37,9 +37,8 @@ require 'albacore'
 
 Albacore has been tested against the following versions of Ruby for Windows and Linux. Use unsupported versions at your own risk!
 
-* MRI [ '1.8.7', '1.9.2', '1.9.3' ]
+* MRI [ '1.9.2', '1.9.3' ]
 * JRuby [ '1.6.7' ]
-* IronRuby [ '1.0', '1.1', '1.1.1', '1.1.2', '1.1.3' ]
 
 Due to an incompatibility with the Rubyzip gem, IronRuby does not support the ‘zip’ and ‘unzip’ tasks. If you need support, use a third party tool like [7-zip](http://7-zip.org) or [SharpZipLib](http://sharpdevelop.net/OpenSource/SharpZipLib/).
 
