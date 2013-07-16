@@ -137,6 +137,31 @@ pattern (`Config` is the builder most of the time); then, a lot of the logic of
 how to construct the command-line/expression to run, can be done in the
 constructor (`Cmd#initialize`), rather than when executing it.
 
+### Usage of csprojfiles
+
+    desc "Check the difference between the filesystem and the files referenced in a csproj"
+	csprojfiles do |f|
+		# Files to ignore
+		# for instance if you have source control specific files that are not supposed to be in the project 
+    	f.ignore_files = [/.*\.srccontrol/] 
+    	f.project = "src/MyMvcSite/MyMvcSite.csproj"
+  	end
+
+When you run this task it will report any differences between the filesystem and the csproj file.
+
+Why is this important? It's important to know what resources will be deployed. For instance if you have added an image. If you forgot to include the image in the .csproj, it will show up while developing but not when you do a web deployment (i.e. a release).
+
+It could also be that you have deleted a file, but forgotten to save the project when you send your latest commit to source control&hellip;
+
+How do you use it? The best way is to have it on a CI server in order to get a notification whenever it detects deviations.
+
+The task will fail with a message and rake will return with an non zero exit code. For instance if a file is missing from csproj and another from the filesystem:
+
+    - Files in src/MyMvcSite/MyMvcSite.csproj but not on filesystem: 
+    file_missing_on_filesystem.cshtml
+    + Files not in src/MyMvcSite/MyMvcSite.csproj but on filesystem:
+    file_missing_in_csproj.png
+
 ## Links
 
  * http://guides.rubygems.org/make-your-own-gem/
