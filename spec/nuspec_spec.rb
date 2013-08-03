@@ -1,12 +1,7 @@
 require 'fileutils'
 require 'spec_helper.rb'
 require 'albacore/nuspec.rb'
-
-if IS_IRONRUBY
-  require 'support/ironruby_validator'
-else
-  require 'support/nokogiri_validator'
-end
+require 'support/nokogiri_validator'
 
 describe Nuspec do
   let(:working_dir) do
