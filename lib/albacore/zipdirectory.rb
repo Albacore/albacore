@@ -8,11 +8,10 @@ class ZipDirectory
   include Albacore::Task
   
   attr_accessor :output_path, :output_file
-  attr_accessor :flatten_zip
+  attr_reader :flatten_zip
   attr_array :directories_to_zip, :additional_files, :exclusions
 
   def initialize
-    @flatten_zip = true
     @exclusions = []
     super()
     update_attributes Albacore.configuration.zip.to_hash
@@ -29,6 +28,10 @@ class ZipDirectory
       zip_directory(zipfile)
       zip_additional(zipfile)
     end
+  end
+  
+  def flatten_zip
+    @flatten_zip = true
   end
   
   def clean_directories_names
