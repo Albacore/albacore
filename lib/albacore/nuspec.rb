@@ -99,7 +99,7 @@ class Nuspec
     @frameworkAssemblies.push NuspecFrameworkAssembly.new(name, target_framework)
   end
 
-  def reference
+  def reference (file)
     @references.push NuspecReference.new(file)
   end
   
