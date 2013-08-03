@@ -82,4 +82,51 @@ describe Nuspec do
       @filedata.should include("<file exclude='*.xml' src='#{dll}' target='lib\\net40'/>")
     end
   end
+  
+  describe "references" do
+    let(:dll) { File.expand_path(File.join(working_dir, '../', 'somedll.dll')) }
+
+    let(:nuspec) do
+      nuspec = Nuspec.new
+      nuspec.id="nuspec_test"
+      nuspec.output_file = "nuspec_test.nuspec"
+      nuspec.title = "Title"
+      nuspec.version = "1.2.3"
+      nuspec.authors = "Author Name"
+      nuspec.description = "test_xml_document"
+      nuspec.copyright = "copyright 2011"
+      nuspec.working_directory = working_dir
+      nuspec.reference("testFile1")
+      nuspec.reference("testFile2")
+      nuspec
+    end
+
+    before do
+      nuspec.execute
+      File.open(nuspec_output, "r") do |f|
+        @filedata = f.read
+      end
+    end
+
+    it "should produce a valid nuspec file" do
+      is_valid = XmlValidator.validate(nuspec_output, schema_file)
+      is_valid.should be_true
+    end
+
+    it "should contain references tag" do
+	  @filedata.downcase.should include("<references>".downcase)
+	end
+	
+    it "should contain references closing tag" do
+	  @filedata.downcase.should include("</references>".downcase)
+	end
+	
+    it "should contain the test file 1" do
+      @filedata.downcase.should include("<reference file='testFile1'/>".downcase)
+    end
+
+    it "should contain the 2nd test file" do
+      @filedata.downcase.should include("<reference file='testFile2'/>".downcase)
+    end
+  end
 end
