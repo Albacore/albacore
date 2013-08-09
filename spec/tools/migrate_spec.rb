@@ -1,21 +1,21 @@
 require 'spec_helper'
-require 'albacore/migrate'
+require 'albacore/tools/fluentmigrator'
 require 'map'
 require 'sh_interceptor'
 
-describe Albacore::Migrate::MigrateCmdFactory, "when constructing" do
-  subject { Albacore::Migrate::MigrateCmdFactory.create :interactive => false, :conn => 'c'}
+describe Albacore::Tools::FluentMigrator::MigrateCmdFactory, "when constructing" do
+  subject { Albacore::Tools::FluentMigrator::MigrateCmdFactory.create :interactive => false, :conn => 'c'}
   it { should_not be_nil }
 
   describe 'with :file context' do
     it 'raises error about file' do
-      expect { Albacore::Migrate::MigrateCmdFactory.create :file => 'migrate_these.txt', :interactive => false, :conn => 'c' }.
+      expect { Albacore::Tools::FluentMigrator::MigrateCmdFactory.create :file => 'migrate_these.txt', :interactive => false, :conn => 'c' }.
         to raise_error(ArgumentError, /not find/)
     end
   end
 end
 
-describe Albacore::Migrate::Cmd, "when calling #execute" do
+describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
 
   def cmd *args
     opts = Map.options(args).apply({
@@ -23,7 +23,7 @@ describe Albacore::Migrate::Cmd, "when calling #execute" do
         :conn => 'connection-string'
       })
     @logger.debug "calling new with #{opts.inspect}"
-    c = Albacore::Migrate::Cmd.new opts
+    c = Albacore::Tools::FluentMigrator::Cmd.new opts
     c.extend ShInterceptor
     c
   end
@@ -35,14 +35,14 @@ describe Albacore::Migrate::Cmd, "when calling #execute" do
 
   describe 'calling with no connection' do
     it 'raises ArgumentError' do
-      expect { Albacore::Migrate::Cmd.new :interactive => false }.
+      expect { Albacore::Tools::FluentMigrator::Cmd.new :interactive => false }.
         to raise_error(ArgumentError, /connection/)
     end
   end
 
   describe 'calling with no dll' do
     it 'raises ArgumentError' do
-      expect { Albacore::Migrate::Cmd.new :interactive => false,
+      expect { Albacore::Tools::FluentMigrator::Cmd.new :interactive => false,
         :dll => '',
         :conn => 'abc' }.
         to raise_error(ArgumentError, /dll/)

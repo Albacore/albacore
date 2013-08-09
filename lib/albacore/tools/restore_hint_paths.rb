@@ -6,7 +6,7 @@ require 'rake'
 require 'albacore/logging'
 require 'albacore/project'
 
-module Albacore
+module Albacore::Tools
   # a package repository is a location where the nugets or wraps are stored
   class PackageRepo
     include Logging
