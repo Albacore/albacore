@@ -48,7 +48,7 @@ describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
   end
   it "should output from echo" do
     res = subject.call("#{prefix}/support/echo/echo.exe this is a test")
-    res.should eq(["this is a test \n"])
+    res.should eq("this is a test\n")
   end
   it "should fail with RuntimeError if status is not zero" do
     begin

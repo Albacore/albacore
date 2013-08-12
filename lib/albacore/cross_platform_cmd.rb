@@ -60,26 +60,23 @@ module Albacore
       raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
 
       exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
+
       trace "system( exe=#{exe}, pars=#{pars.join(', ')}, options=#{opts.to_s})"
 
       chdir opts.get(:work_dir) do
         puts %Q{#{exe} #{pars.join(' ')}} unless opts.get :silent, false # log cmd verbatim
         begin
-          res = IO.popen([exe, *pars]) { |io| io.readlines }
+          lines = ''
+          IO.popen([exe, *pars]) do |io| # when given a block, returns #IO
+            io.each do |line|
+              lines << line
+              puts line if opts.get(:output, true) or not opts.get(:silent, false)
+            end
+          end
         rescue Errno::ENOENT => e
-          return block.call(nil, 127)
+          return block.call(nil, PseudoStatus.new(127))
         end
-        puts res unless opts.get(:silent, false) or not opts.get(:output, false)
-        return block.call($? == 0 && res, $?)
-      end
-    end
-    
-    def system_control cmd, *opts, &block
-      cmd = opts[0]
-      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
-      chdir opts[:work_dir] do
-        puts cmd
-        ProcessPilot::pilot cmd, opts, &block
+        return block.call($? == 0 && lines, $?)
       end
     end
 
@@ -87,15 +84,21 @@ module Albacore
     def sh *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
       block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
-
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
+
       cmd = cmd.join(' ') # shell needs a single string
 
       chdir opts.get(:work_dir) do
         trace "# sh( ...,  options: #{opts.to_s})"
         puts cmd unless opts.get :silent, false # log cmd verbatim
         begin
-          res = IO.popen(cmd, 'r') { |io| io.readlines }
+          lines = ''
+          IO.popen(cmd, 'r') do |io|
+            io.each do |line|
+              lines << line
+              puts line if opts.get(:output, true) or not opts.get(:silent, false)
+            end
+          end
         rescue Errno::ENOENT => e
           trace { "got error #{e}" }
           return block.call(nil, PseudoStatus.new(127))
@@ -104,8 +107,7 @@ module Albacore
           trace { "got error #{e}" }
           return block.call(nil, PseudoStatus.new(127)) 
         end
-        puts res unless opts.get :silent, false
-        return block.call($? == 0 && res, $?)
+        return block.call($? == 0 && lines, $?)
       end
     end
     
@@ -118,6 +120,15 @@ module Albacore
     def shie *cmd, &block
       block = lambda { |ok, status| [ok, status] } unless block_given?
       sh *cmd, &block
+    end
+    
+    def system_control cmd, *opts, &block
+      cmd = opts[0]
+      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
+      chdir opts[:work_dir] do
+        puts cmd
+        ProcessPilot::pilot cmd, opts, &block
+      end
     end
     
     def which executable
