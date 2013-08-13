@@ -156,11 +156,12 @@ module Albacore
       parameters = []
       parameters << Paths.normalize_slashes(file) if dir == '.'
       parameters << Paths.normalize_slashes("#{dir}:#{file}") unless dir == '.'
+      cmd, parameters = Paths.normalise cmd, parameters
 
       trace "#{cmd} #{parameters.join(' ')}"
 
-      # TODO: this still prints to STDERR on Windows
-      res = IO.popen([cmd, *parameters]) do |io|
+      null = ::Rake::Win32.windows? ? "NUL" : "/dev/null"
+      res = IO.popen([cmd, *parameters], { :err => null, :out => null }) do |io|
         io.read.chomp
       end
       
