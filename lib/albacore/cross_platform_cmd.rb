@@ -3,6 +3,8 @@ require 'map'
 require 'processpilot/processpilot'
 require 'albacore/paths'
 require 'albacore/logging'
+require 'albacore/errors/command_not_found_error'
+require 'open3'
 
 module Albacore
   # module for normalizing slashes across operating systems
@@ -43,35 +45,36 @@ module Albacore
       ::Albacore::Paths.make_command @executable, @parameters
     end
 
-    # run process
-    # system(cmd, [args array], [opts])
+    # run executable
+    #
+    # system(cmd, [args array], Hash(opts), block|ok,status|)
+    #  ok => false if bad exit code, or the output otherwise
     # 
     # options are passed as the last argument
     #
     # options:
-    #  :work_dir => a file path
+    #  :work_dir => a file path (default '.')
+    #  :silent   => whether to supress all output or not (default false)
+    #  :output   => whether to supress the command's output (default false)
     #
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
-      block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
       pars = cmd[1..-1].flatten
 
       raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
 
       exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
+      block = lambda { |ok, status| ok or raise_failure(exe, status) } unless block_given?
 
-      trace "system( exe=#{exe}, pars=#{pars.join(', ')}, options=#{opts.to_s})"
+      trace "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s})"
 
       chdir opts.get(:work_dir) do
         puts %Q{#{exe} #{pars.join(' ')}} unless opts.get :silent, false # log cmd verbatim
         begin
           lines = ''
-          IO.popen([exe, *pars]) do |io| # when given a block, returns #IO
-            io.each do |line|
-              lines << line
-              puts line if opts.get(:output, true) or not opts.get(:silent, false)
-            end
+          IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
+            io.each { |line| lines << line }
           end
         rescue Errno::ENOENT => e
           return block.call(nil, PseudoStatus.new(127))
@@ -80,16 +83,28 @@ module Albacore
       end
     end
 
+    # gets the spawn options based on a #Map input for a #system or #sh or #shie call.
+    # see http://www.ruby-doc.org/core-1.9.3/Process.html#method-c-spawn
+    # only handles err and out so far
+    def spawn_opts call_opts
+      opts = {}
+      opts[:err] = Albacore.application.output_err unless call_opts.get :silent, false
+      opts[:out] = Albacore.application.output if call_opts.get :output, true
+      opts
+    end
+
     # run in shell
     def sh *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
-      block = lambda { |ok, status| ok or fail(format_failure(cmd, status)) } unless block_given?
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
 
       cmd = cmd.join(' ') # shell needs a single string
+      block = lambda { |ok, status| ok or format_failure(cmd, status) } unless block_given?
 
       chdir opts.get(:work_dir) do
+
         trace "# sh( ...,  options: #{opts.to_s})"
+
         puts cmd unless opts.get :silent, false # log cmd verbatim
         begin
           lines = ''
@@ -169,9 +184,27 @@ module Albacore
       end
     end
     
-    # private(format_failure)
+    private
+    def knowns
+      { 127 => 'number 127 in particular means that the operating system could not find the executable' }
+    end
+
+    def raise_failure cmd, status
+      if status.exitstatus == 127
+        raise CommandNotFoundError.new(format_failure(cmd, status), cmd)
+      else
+        fail(format_failure(cmd, status))
+      end
+    end
+
     def format_failure cmd, status
-      "Command failed with status (#{status.exitstatus}): [#{cmd}]"
+      if knowns.has_key? status.exitstatus
+        %{Command failed with status (#{status.exitstatus}) - #{knowns[status.exitstatus]}:
+  #{cmd}}
+      else
+        %{Command failed with status (#{status.exitstatus}):
+  #{cmd}}
+      end 
     end
 
     # shuffle the executable to be a parameter to

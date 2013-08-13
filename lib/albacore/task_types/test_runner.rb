@@ -13,7 +13,7 @@ module Albacore
         mono_command
       end
       def execute
-        sh make_command, :work_dir => @work_dir
+        system @executable, @parameters, :work_dir => @work_dir
       end
     end
     class Config

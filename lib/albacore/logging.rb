@@ -25,5 +25,8 @@ module Albacore
     def puts str
       ::Albacore.application.puts str
     end
+    def err str
+      ::Albacore.application.err str
+    end
   end
 end

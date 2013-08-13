@@ -92,15 +92,24 @@ module Albacore
       def initialize work_dir, executable, *args
         opts = Map.options(args)
         raise ArgumentError, 'out is nil' if opts.getopt(:out).nil?
+
         @work_dir   = work_dir
         @executable = executable
-        
-        @parameters = [%W{pack -OutputDirectory #{opts.getopt(:out)}}].flatten
+        @parameters = [%W{Pack -OutputDirectory #{opts.getopt(:out)}}].flatten
+        @opts = opts
+
         mono_command
       end
       def execute nuspec_file
+        debug "running NuGetsPack::Cmd for nuspec: #{nuspec_file}"
         @parameters << nuspec_file
-        sh make_command, :work_dir => @work_dir
+        system @executable, @parameters, :work_dir => @work_dir
+
+        if @opts.get :symbols
+          info "running NuGetsPack::Cmd to generate symbols"
+          @parameters << '-Symbols'
+          system @executable, @parameters, :work_dir => @work_dir
+        end
       end
     end
 
@@ -152,12 +161,15 @@ module Albacore
         @description = "TODO"
         @project_url = "https://example.com"
         @license_url = "https://example.com"
+        @symbols = false
+      end
+
+      def gen_symbols
+        @symbols = true
       end
 
       def opts
-        Map.new({
-          :out => @out
-        })
+        Map.new({ :out => @out, :symbols => @symbols })
       end
     end
 

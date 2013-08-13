@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'albacore/tools/fluentmigrator'
+require 'albacore/tools/fluent_migrator'
 require 'map'
-require 'sh_interceptor'
+require 'support/sh_interceptor'
 
 describe Albacore::Tools::FluentMigrator::MigrateCmdFactory, "when constructing" do
   subject { Albacore::Tools::FluentMigrator::MigrateCmdFactory.create :interactive => false, :conn => 'c'}
@@ -30,7 +30,7 @@ describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
 
   # requires a let(:c)
   shared_context 'executing command' do
-    subject { c.execute ; c.received_args[1] }
+    subject { c.execute ; c.mono_parameters }
   end
 
   describe 'calling with no connection' do

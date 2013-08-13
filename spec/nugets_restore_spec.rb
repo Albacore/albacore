@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'albacore'
-require 'albacore/nugets_restore'
+require 'albacore/task_types/nugets_restore'
 require 'albacore/dsl'
-require 'sh_interceptor'
+require 'support/sh_interceptor'
 
 class NGConf
   self.extend Albacore::DSL 
@@ -11,7 +11,7 @@ end
 shared_context 'cmd context' do
   let (:hafsrc) { OpenStruct.new(:name => 'haf-source', :uri => 'https://haf.se/nugets') }
   before(:each) { cmd.extend ShInterceptor }
-  subject { cmd.execute ; cmd.received_args[1] }
+  subject { cmd.execute ; cmd.mono_parameters }
 end
 
 
@@ -43,7 +43,7 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
   }
 
   let (:path) {
-    ::Rake::Win32.windows?() ? 'src\\Proj\\packages.config' : 'src/Proj/packages.config' 
+    Albacore::Paths.normalize_slashes('src/Proj/packages.config')
   }
 
   include_context 'cmd context'

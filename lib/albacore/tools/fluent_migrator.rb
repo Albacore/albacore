@@ -62,7 +62,7 @@ module Albacore::Tools
 
         opts.get(:extras).each{|e| @parameters.push e}
 
-        trace "Running Albacore::Migrate cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}"
+        trace "configured Albacore::FluentMigrator::Cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}"
 
         mono_command
       end

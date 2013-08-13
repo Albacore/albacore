@@ -8,25 +8,37 @@ module Albacore
     # the output IO for this application, defaults to
     # STDOUT
     attr_reader :output
+
+    # the standard IO error output
+    attr_reader :output_err
     
     # initialize a new albacore application with a given log IO object
-    def initialize log = STDOUT, output = STDOUT
+    def initialize log = STDOUT, output = STDOUT, output_err = STDERR
       raise ArgumentError, "log must not be nil" if log.nil?
       raise ArgumentError, "output must not be nil" if output.nil?
+      raise ArgumentError, "out_err must not be nil" if output_err.nil?
       @logger = Logger.new log
       @logger.level = Logger::INFO
       @logger.formatter = proc do |severity, datetime, progname, msg|
         "#{severity[0]} #{datetime.to_datetime.iso8601(6)}: #{msg}\n"
       end
       @output = output
+      @output_err = output_err
     end
 
     def define_task *args, &block
+      args ||= []
       Rake::Task.define_task *args, &block
     end
 
+    # wite a line to stdout
     def puts *args
       @output.puts *args 
+    end
+    
+    # write a line to stderr
+    def err *args
+      @output_err.puts *args
     end
   end
 end

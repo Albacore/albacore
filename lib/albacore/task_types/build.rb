@@ -14,10 +14,10 @@ module Albacore
       def initialize work_dir, executable, parameters
         @work_dir = work_dir
         @executable = executable
-        @parameters = parameters
+        @parameters = (parameters === Array) ? parameters : parameters.to_a
       end
       def execute
-        sh make_command, :work_dir => @work_dir
+        system @executable, @parameters, :work_dir => @work_dir
       end
     end
 

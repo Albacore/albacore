@@ -1,40 +1,54 @@
 require 'spec_helper'
-require 'albacore/nugets_pack'
-require 'albacore/dsl'
-require 'sh_interceptor'
+require 'support/sh_interceptor'
+require 'albacore'
+require 'albacore/task_types/nugets_pack'
 
-class NGConf
-  self.extend Albacore::DSL 
-end
-
-describe Albacore::NugetsPack::Cmd, "when calling #execute" do
-  subject { 
+shared_context "config" do
+  let(:cfg) do 
     cfg = Albacore::NugetsPack::Config.new
     cfg.out = 'src/packages'
     cfg.files = FileList['src/**/*.{csproj,fsproj}']
+    cfg
+  end
+end
 
+describe Albacore::NugetsPack::Cmd, "when calling #execute" do
+  
+  include_context 'config'
+
+  subject { 
     cmd = Albacore::NugetsPack::Cmd.new nil, 'NuGet.exe', cfg.opts()
-    cmd.extend(ShInterceptor)
+    cmd.extend ShInterceptor
     cmd.execute './spec/testdata/example.nuspec'
     cmd
   }
 
-  it "should run the correct thing" do
-    expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "./spec/testdata/example.nuspec"]
-    expected_args.unshift '"mono"' unless ::Rake::Win32.windows?
-    expected_args = expected_args.to_a.join(' ')
-    
-    subject.received_args[0].should eq expected_args
+  describe "normal operation" do
+    it "should run the correct thing" do
+      subject.mono_command.should eq('NuGet.exe')
+      subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
+    end
+  end
+
+  describe 'packing with -Symbols' do
+    before do
+      cfg.gen_symbols
+    end
+    it "should include -Symbols" do
+      subject.mono_parameters.should include('-Symbols')
+    end  
   end
 end 
 
 describe Albacore::NugetsPack::ProjectTask do
-  it "reject .nuspec files" do
+  it "rejects .nuspec files" do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
   end
 end
 
 describe Albacore::NugetsPack::NuspecTask do
+
+  include_context 'config'
 
   it "accepts .nuspec files" do
     Albacore::NugetsPack::NuspecTask.accept?('some.nuspec').should eq true
@@ -42,10 +56,6 @@ describe Albacore::NugetsPack::NuspecTask do
 
   describe "when calling #execute" do
     subject { 
-      cfg = Albacore::NugetsPack::Config.new
-      cfg.out = 'src/packages'
-      cfg.files = FileList['src/**/*.{csproj,fsproj,nuspec}']
-
       cmd = Albacore::NugetsPack::Cmd.new nil, 'NuGet.exe', cfg.opts()
       cmd.extend(ShInterceptor)
 
@@ -55,11 +65,8 @@ describe Albacore::NugetsPack::NuspecTask do
     }
 
     it "should run the correct thing" do
-      expected_args = %W["NuGet.exe" "pack" "-OutputDirectory" "src/packages" "./spec/testdata/example.nuspec"]
-      expected_args.unshift '"mono"' unless ::Rake::Win32.windows?
-      expected_args = expected_args.to_a.join(' ')
-      
-      subject.received_args[0].should eq expected_args
+      subject.mono_command.should eq('NuGet.exe')
+      subject.mono_parameters.should eq(%W[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
     end
   end
 

@@ -49,5 +49,9 @@ module Albacore
         events[event].each { |m| m.call(obj) }
       end
     end
+
+    unless ENV.fetch('DEBUG', nil).nil?
+      Albacore.log_level = Logger::DEBUG
+    end
   end
 end

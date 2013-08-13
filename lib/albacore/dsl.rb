@@ -1,51 +1,45 @@
-require 'albacore/asmver'
 require 'albacore/cross_platform_cmd'
 
 module Albacore
   module DSL
+    # this means that you can use all things available in the cross platform
+    # cmd from within albacore
     include Albacore::CrossPlatformCmd
     
     private
 
     # a rake task type for outputting assembly versions
     def asmver *args, &block
-      require 'albacore/asmver'
-      args ||= []
-
-      body = proc {
-        c = Albacore::AsmVer::Config.new
+      require 'albacore/task_types/asmver'
+      Albacore.define_task *args do
+        c = AsmVer::Config.new
         yield c
       
         c.projects.each { |p|
-          cmd = Albacore::AsmVer::Cmd.new p
-          Albacore::AsmVer::Task.new(cmd).execute
+          cmd = AsmVer::Cmd.new p
+          AsmVer::Task.new(cmd).execute
         }
-      }
-      
-      Albacore.define_task *args, &body
+      end
     end
 
+    # a task for building sln or proj files - or just invoking something
+    # with MsBuild
     def build *args, &block
-      require 'albacore/build'
-      args ||= []
-
-      body = proc {
+      require 'albacore/task_types/build'
+      Albacore.define_task *args do
         c = Albacore::Build::Config.new
         yield c
 
         fail "unable to find MsBuild or XBuild" unless c.exe
         command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.parameters)
         Albacore::Build::Task.new(command).execute
-      }
-
-      Albacore.define_task *args, &body
+      end
     end
 
+    # restore the nugets to the solution
     def nugets_restore *args, &block
-      require 'albacore/nugets_restore'
-      args ||= []
-      
-      body = proc {
+      require 'albacore/task_types/nugets_restore'
+      Albacore.define_task *args do
         c = Albacore::NugetsRestore::Config.new
         yield c
 
@@ -55,52 +49,33 @@ module Albacore
           command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, c.opts_for_pkgcfg(p))
           Albacore::NugetsRestore::Task.new(command).execute
         end
-      }
-
-      Albacore.define_task(*args, &body)
+      end
     end
     
+    # pack nugets
     def nugets_pack *args, &block
-      require 'albacore/nugets_pack'
-      args ||= []
-      tasks = [
-        Albacore::NugetsPack::ProjectTask,
-        Albacore::NugetsPack::NuspecTask
-      ]
-      
-      body = proc {
+      require 'albacore/task_types/nugets_pack'
+      Albacore.define_task *args do
         c = Albacore::NugetsPack::Config.new
         yield c
       
         c.files.each do |f|
           command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.opts)
-          tasks.each{|t| t.new(command, c, f).execute if t.accept?(f)}
+          [
+            Albacore::NugetsPack::ProjectTask,
+            Albacore::NugetsPack::NuspecTask
+          ].each do |task|
+            task.new(command, c, f).execute if task.accept?(f)
+          end
         end
-      } 
-
-      Albacore.define_task(*args, &body)
+      end
     end
 
-    def restore_hint_paths *args, &block
-      require 'albacore/restore_hint_paths'
-      args ||= []
-      
-      body = proc {
-        c = Albacore::RestoreHintPaths::Config.new
-        yield c
-
-        t = Albacore::RestoreHintPaths::Task.new c
-        t.execute
-      }
-      
-      Albacore.define_task(*args, &body)
-    end
-
+    # basically a command with some parameters; allows you to execute your
+    # tests with albacore
     def test_runner *args, &block
-      require 'albacore/test_runner'
-      args ||= []
-      
-      body = proc {
+      require 'albacore/task_types/test_runner'
+      Albacore.define_task *args do
         c = Albacore::TestRunner::Config.new
         yield c
 
@@ -108,9 +83,19 @@ module Albacore
           command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.parameters, dll
           Albacore::TestRunner::Task.new(command).execute
         }
-      }
+      end
+    end
 
-      Albacore.define_task(*args, &body)
+    # Restore hint paths to registered nugets
+    def restore_hint_paths *args, &block
+      require 'albacore/tools/restore_hint_paths'
+      Albacore.define_task *args do
+        c = Albacore::RestoreHintPaths::Config.new
+        yield c
+
+        t = Albacore::RestoreHintPaths::Task.new c
+        t.execute
+      end
     end
   end
 end
