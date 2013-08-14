@@ -6,109 +6,39 @@ require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
 require 'albacore/project'
 require 'albacore/logging'
+require 'albacore/nuget_model'
 
 module Albacore
   module NugetsPack
-    class Metadata
-      include Logging
-
-      attr_accessor :id,
-        :version,
-        :authors,
-        :description,
-        :language,
-        :project_url,
-        :license_url,
-        :release_notes
-
-      attr_reader :dependencies, :framework_assemblies
-
-      def initialize
-        @dependencies = []
-        @framework_assemblies = []
-      end
-
-      def add_depenency id, version
-        @dependencies << OpenStruct.new(:id => id, :version => version)
-      end
-
-      def add_framework_dependency id, version
-        @framework_assemblies << OpenStruct.new(:id => id, :version => version)
-      end
-
-      def to_xml_builder
-        Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
-          x.metadata {
-            x.id           @id
-            x.version      @version
-            x.authors      @authors
-            x.description  @description
-            x.language     @language
-            x.projectUrl   @project_url
-            x.licenseUrl   @license_url
-            x.releaseNotes @release_notes
-            x.dependencies {
-              @dependencies.each { |d|
-                x.dependency(:id => d.id, :version => d.version)
-              }
-            }
-          }
-        end
-      end
-      def to_xml
-        to_xml_builder.to_xml
-      end
-    end
-
-    class Package
-      attr_accessor :metadata, :files
-      def initialize
-        @metadata = Metadata.new
-        @files = []
-      end
-      def add_file src, target, exclude
-        @files << OpenStruct.new(:src => src, :target => target, :exclude => exclude)
-      end
-      def to_xml_builder
-        md = Nokogiri::XML(@metadata.to_xml)
-        Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
-          x.package(:xmlns => 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd') {
-            x << md.at_css("metadata").to_xml
-            x.files {
-              @files.each { |f|
-                x.file(:src => f.src, :target => f.target, :exclude => f.exclude)
-              }
-            }
-          }
-        end
-      end
-      def to_xml
-        to_xml_builder.to_xml
-      end
-    end
-
     class Cmd
       include CrossPlatformCmd
-      def initialize work_dir, executable, *args
-        opts = Map.options(args)
+
+      # executable => the nuget executable
+      def initialize executable, *args
+        opts = Map.options args
         raise ArgumentError, 'out is nil' if opts.getopt(:out).nil?
 
-        @work_dir   = work_dir
+        @work_dir   = opts.get :work_dir, nil
         @executable = executable
         @parameters = [%W{Pack -OutputDirectory #{opts.getopt(:out)}}].flatten
         @opts = opts
 
         mono_command
       end
-      def execute nuspec_file
+      def execute nuspec_file, nuspec_symbols_file = nil
         debug "running NuGetsPack::Cmd for nuspec: #{nuspec_file}"
-        @parameters << nuspec_file
-        system @executable, @parameters, :work_dir => @work_dir
+        pars = @parameters.clone
+        pars << nuspec_file
+        system @executable, pars, :work_dir => @work_dir
 
-        if @opts.get :symbols
-          info "running NuGetsPack::Cmd to generate symbols"
-          @parameters << '-Symbols'
-          system @executable, @parameters, :work_dir => @work_dir
+        # if the symbols flag is set and there's a symbols file specified
+        # then run NuGet.exe to generate the .symbols.nupkg file
+        if @opts.get :symbols and nuspec_symbols_file
+          debug "running NuGetsPack::Cmd for symbols nuspec: #{nuspec_symbols_file}"
+          pars = @parameters.clone 
+          pars << '-Symbols' 
+          pars << nuspec_symbols_file 
+          system @executable, pars, :work_dir => @work_dir
         end
       end
     end
@@ -125,6 +55,7 @@ module Albacore
     #    p.out     = 'build/pkg'
     #    p.exe     = 'buildsupport/NuGet.exe'
     #    p.version = ENV['NUGET_VERSION']
+    #    p.gen_symbols
     #  end
     class Config
       include CmdConfig
@@ -156,7 +87,7 @@ module Albacore
       attr_accessor :release_notes
 
       def initialize
-        @package = Package.new
+        @package = Albacore::NugetModel::PackageWriter.new
         @authors = "TODO"
         @description = "TODO"
         @project_url = "https://example.com"
@@ -183,9 +114,31 @@ module Albacore
         @config = config
         @file = file
         @command_line = command_line
-        @package = Package.new
+        @package = PackageWriter.new
         @project = Albacore::Project.new @file
       end
+      def execute
+        filename = File.basename(@file, File.extname(@file))
+        dependencies = prepare_dependencies
+
+        debug "found #{dependencies.inspect} for dependencies"
+
+        nuspec, lib = prepare_nuspec filename, dependencies
+        project_glob = prepare_glob filename
+
+        debug "glob: #{project_glob}"
+
+        Dir.glob project_glob do |globbed|
+          debug "cp #{globbed} #{lib}"
+          FileUtils.cp globbed, lib
+        end
+
+        @command_line.execute nuspec
+        nupkg = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+        publish_artifact! nuspec, nupkg
+      end
+
+      private
       def prepare_dependencies
         @project.
           declared_packages.
@@ -193,7 +146,9 @@ module Albacore
             OpenStruct.new(:id => d.id, :version => d.version)
           }
       end
-      def prepare_nuspec filename, dependencies
+
+      private
+      def prepare_nuspec! filename, dependencies
         fpkg = File.join @config.out, filename
         lib = File.join fpkg, 'lib', 'net4'
         FileUtils.mkdir_p lib
@@ -210,7 +165,7 @@ module Albacore
         p.add_file 'lib\\**', 'lib', ''
 
         dependencies.each { |d|
-          p.metadata.add_depenency d.id, d.version
+          p.metadata.add_dependency d.id, d.version
         }
 
         nuspec = File.join fpkg, (filename + ".nuspec")
@@ -220,26 +175,16 @@ module Albacore
         end
         [nuspec, lib]
       end
+
+      private
       def prepare_glob filename
         output = @project.proj_xml_node.at_css("PropertyGroup OutputPath").text
         output = "../#{output.gsub('\\', '/')}/#{filename}.{dll,xml}"
         File.expand_path output, @file
       end
-      def execute
-        filename = File.basename(@file, File.extname(@file))
-        dependencies = prepare_dependencies
-        debug "found #{dependencies.inspect} for dependencies"
-        nuspec, lib = prepare_nuspec filename, dependencies
-        project_glob = prepare_glob filename
-        debug "glob: #{project_glob}"
-        Dir.glob project_glob do |globbed|
-          debug "cp #{globbed} #{lib}"
-          FileUtils.cp globbed, lib
-        end
 
-        @command_line.execute nuspec
-
-        path = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
+      private
+      def publish_artifact! nuspec, nuget
         Albacore.publish :artifact, OpenStruct.new(
           :nuspec   => nuspec,
           :nupkg    => path,
@@ -258,6 +203,7 @@ module Albacore
       def initialize command_line, config, nuspec
         @config = config
         @nuspec = nuspec
+        # is a NuspecPack::Cmd
         @command_line = command_line
       end
 
@@ -269,8 +215,8 @@ module Albacore
           nodes = xml.xpath('.//metadata/version')
           raise "No <version/> found" if nodes.empty?
           nodes.first.text()
-        rescue => err
-          puts "Error reading package version from file: #{err}"
+        rescue => error
+          err "Error reading package version from file: #{error}"
           raise
         end
       end
