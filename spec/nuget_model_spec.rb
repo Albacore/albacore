@@ -43,11 +43,11 @@ describe Albacore::NugetModel::Metadata do
   end
 end
 
-describe Albacore::NugetModel::PackageWriter, "when doing some xml generation" do
+describe Albacore::NugetModel::Package, "when doing some xml generation" do
   it "should be newable" do
     subject.should_not be_nil
   end
-  [:metadata, :files].each do |prop|
+  [:metadata, :files, :to_xml, :to_xml_builder].each do |prop|
     it "should respond to #{prop}" do
       subject.should respond_to(prop)
     end
@@ -60,4 +60,74 @@ describe Albacore::NugetModel::PackageWriter, "when doing some xml generation" d
   end
 end
 
+describe Albacore::NugetModel::Package, "from XML" do
+  let :dir do
+    File.basename(__FILE__)
+  end
+  let :xml do
+    %{
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Example</id>
+    <version>1.2.3.4</version>
+    <authors>Mr.Example</authors>
+    <owners>Ms.Example</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Example package</description>
+    <releaseNotes>Used for specs</releaseNotes>
+    <copyright>none</copyright>
+    <tags>example spec</tags>
+    <dependencies>
+      <dependency id="SampleDependency" version="1.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Full\\bin\\Debug\\*.dll" target="lib\\net40" /> 
+    <file src="Full\\bin\\Debug\\*.pdb" target="lib\\net40" /> 
+    <file src="Silverlight\\bin\\Debug\\*.dll" target="lib\\sl40" /> 
+    <file src="Silverlight\\bin\\Debug\\*.pdb" target="lib\\sl40" /> 
+    <file src="**\\*.cs" target="src" />
+  </files>
+</package>
+}
 
+  end
+  let :parser do
+    io = StringIO.new xml    
+    Nokogiri::XML(io)
+  end
+  subject do
+    package = Albacore::NugetModel::Package.from_xml xml
+    puts "node: #{package.inspect}"
+    puts "node meta: #{package.metadata.inspect}"
+    package
+  end
+  it "should exist" do
+    subject.should_not be_nil
+  end
+  it "should have the metadata properties of the XML above" do
+    parser.
+      xpath('.//metadata').
+      children.
+      reject{|n| n.name == 'dependencies' }.
+      reject {|n| n.text? }.
+      each do |node|
+      name = Albacore::NugetModel::Metadata.underscore node.name
+      subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
+    end
+  end
+  describe "all dependencies" do
+    it "should have the SampleDependency dependency of the XML above" do
+      parser.xpath('.//metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
+        subject.metadata.dependencies.find{ |d| d.id == dep['id'] }.should_not be_nil
+      end
+    end 
+  end
+  it "should have all the files of the XML above" do
+    subject.files.length.should eq(5)
+  end
+  it "should have a dep on SampleDependency version 1.0" do
+    subject.metadata.dependencies.find { |d| d.id == 'SampleDependency' }.should_not be_nil
+  end
+end

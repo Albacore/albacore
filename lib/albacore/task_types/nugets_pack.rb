@@ -43,67 +43,6 @@ module Albacore
       end
     end
 
-    # This tasktype allows you to quickly package project files to nuget
-    # packages.
-    #
-    # Point files to the project files, that should be in MsBuild XML.
-    #
-    # Examples
-    #
-    #  nugets_pack :pack => ['build/pkg', :versioning] do |p|
-    #    p.files   = FileList['src/**/*.csproj']
-    #    p.out     = 'build/pkg'
-    #    p.exe     = 'buildsupport/NuGet.exe'
-    #    p.version = ENV['NUGET_VERSION']
-    #    p.gen_symbols
-    #  end
-    class Config
-      include CmdConfig
-
-      # id is taken from the AssemblyName element in the csproj file.
-
-      # the output directory to place the newfangled nugets in
-      attr_accessor :out
-
-      # the version to build the nugets with
-      attr_accessor :version
-
-      # the files that are enumerable and are created nugets of
-      attr_accessor :files
-
-      # the value to put for authors in the nuget package.
-      attr_accessor :authors
-
-      # the description to put in the nugets
-      attr_accessor :description
-
-      # a URL for the home page of the package.
-      attr_accessor :project_url
-
-      # a link to the license that the package is under.
-      attr_accessor :license_url
-
-      # the release notes for this package
-      attr_accessor :release_notes
-
-      def initialize
-        @package = Albacore::NugetModel::PackageWriter.new
-        @authors = "TODO"
-        @description = "TODO"
-        @project_url = "https://example.com"
-        @license_url = "https://example.com"
-        @symbols = false
-      end
-
-      def gen_symbols
-        @symbols = true
-      end
-
-      def opts
-        Map.new({ :out => @out, :symbols => @symbols })
-      end
-    end
-
     class ProjectTask
       include Logging
 
@@ -197,6 +136,66 @@ module Albacore
       end
     end
     
+    # This tasktype allows you to quickly package project files to nuget
+    # packages.
+    #
+    # Point files to the project files, that should be in MsBuild XML.
+    #
+    # Examples
+    #
+    #  nugets_pack :pack => ['build/pkg', :versioning] do |p|
+    #    p.files   = FileList['src/**/*.csproj']
+    #    p.out     = 'build/pkg'
+    #    p.exe     = 'buildsupport/NuGet.exe'
+    #    p.version = ENV['NUGET_VERSION']
+    #    p.gen_symbols
+    #  end
+    class Config
+      include CmdConfig
+
+      # id is taken from the AssemblyName element in the csproj file.
+
+      # the output directory to place the newfangled nugets in
+      attr_accessor :out
+
+      # the version to build the nugets with
+      attr_accessor :version
+
+      # the files that are enumerable and are created nugets of
+      attr_accessor :files
+
+      # the value to put for authors in the nuget package.
+      attr_accessor :authors
+
+      # the description to put in the nugets
+      attr_accessor :description
+
+      # a URL for the home page of the package.
+      attr_accessor :project_url
+
+      # a link to the license that the package is under.
+      attr_accessor :license_url
+
+      # the release notes for this package
+      attr_accessor :release_notes
+
+      def initialize
+        @package = Albacore::NugetModel::Package.new
+        @authors = "TODO"
+        @description = "TODO"
+        @project_url = "https://example.com"
+        @license_url = "https://example.com"
+        @symbols = false
+      end
+
+      def gen_symbols
+        @symbols = true
+      end
+
+      def opts
+        Map.new({ :out => @out, :symbols => @symbols })
+      end
+    end
     class NuspecTask
       include Logging
 

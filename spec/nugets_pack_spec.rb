@@ -34,8 +34,7 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
       subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
     end
   end
-
-  describe 'packing with -Symbols' do
+describe 'packing with -Symbols' do
     before do
       cfg.gen_symbols
     end

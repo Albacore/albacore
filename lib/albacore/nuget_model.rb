@@ -1,6 +1,6 @@
 module Albacore
   module NugetModel
-    # the nuget xml metadata element
+    # the nuget xml metadata element writer
     class Metadata
       include Logging
 
@@ -11,7 +11,11 @@ module Albacore
         :language,
         :project_url,
         :license_url,
-        :release_notes
+        :release_notes,
+        :owners,
+        :require_license_acceptance,
+        :copyright,
+        :tags
 
       attr_reader :dependencies, :framework_assemblies
 
@@ -50,14 +54,42 @@ module Albacore
       def to_xml
         to_xml_builder.to_xml
       end
+      def self.from_xml node
+        Albacore.application.logger.debug { "constructing NugetModel::Metadata from node #{node.inspect}" }
+
+        m = Metadata.new
+        node.children.reject { |n| n.text? }.each do |n|
+          if n.name == 'dependencies'
+            n.children.reject { |n| n.text? }.each do |dep|
+              m.add_dependency dep['id'], dep['version']
+            end
+          elsif n.name == 'frameworkDepdendencies'
+            n.children.reject { |n| n.text? }.each do |dep|
+              m.add_framework_depdendency dep['id'], dep['version']
+            end 
+          else
+            # just set the property
+            m.send(:"#{underscore n.name}=", n.inner_text)
+          end
+        end
+        m
+      end
+      
+      def self.underscore str
+        str.gsub(/::/, '/').
+          gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+          gsub(/([a-z\d])([A-Z])/,'\1_\2').
+          tr("-", "_").
+          downcase
+      end
     end
 
-    # the nuget package element
-    class PackageWriter
+    # the nuget package element writer
+    class Package
       attr_accessor :metadata, :files
-      def initialize
-        @metadata = Metadata.new
-        @files = []
+      def initialize metadata = nil, files = nil
+        @metadata = metadata || Metadata.new
+        @files = files || []
       end
       def add_file src, target, exclude
         @files << OpenStruct.new(:src => src, :target => target, :exclude => exclude)
@@ -77,6 +109,19 @@ module Albacore
       end
       def to_xml
         to_xml_builder.to_xml
+      end
+      def self.from_xml xml
+        parser = Nokogiri::XML(xml)
+        meta = Metadata.from_xml(parser.xpath('.//metadata'))
+        files = parser.
+          xpath('.//files').
+          children.
+          reject { |n| n.text? or n['src'].nil? }.
+          collect { |n|
+            h = { :src => n['src'], :target => n['target'], :exclude => n['exclude'] }
+            OpenStruct.new h
+          }
+        Package.new meta, files
       end
     end
   end
