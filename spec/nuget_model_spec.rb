@@ -131,3 +131,20 @@ describe Albacore::NugetModel::Package, "from XML" do
     subject.metadata.dependencies.find { |d| d.id == 'SampleDependency' }.should_not be_nil
   end
 end
+
+
+describe "when reading xml from a fsproj file into a hash" do
+  it "should the project name"
+  it "should find the the author"
+  # etc ..
+end
+
+describe "how to merge data from an xml, an fsproj and a hash" do
+  let :xml do ; end
+  let :fsproj do ; end
+  let :hash do ; end
+  let :sources do
+  end
+  it "should select the value from the topmost source"
+  it "if the topmost source doesn't have value, moves to next"
+end
