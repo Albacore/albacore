@@ -27,21 +27,21 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   end
 
   describe "normal operation" do
-    it "should run the correct thing" do
+    it "should run the correct executable" do
       subject.mono_command.should eq('NuGet.exe')
+    end
+    it "should include the correct parameters" do
       subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
     end
   end
 
   describe 'packing with -Symbols' do
     before do
-      cmd.extend ShInterceptor
       cfg.gen_symbols
-      cmd.execute './spec/testdata/example.nuspec', './spec/testdata/example.symbols.spec'
     end
     it "should include -Symbols" do
       pending "waiting for a class that generates nuspecs and nothing else"
-      subject.mono_parameters.should include('-Symbols')
+      subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages -Symbols ./spec/testdata/example.nuspec])
     end
   end 
 end
@@ -81,4 +81,3 @@ describe Albacore::NugetsPack::ProjectTask do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
   end
 end
-
