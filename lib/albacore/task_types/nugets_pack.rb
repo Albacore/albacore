@@ -53,7 +53,7 @@ module Albacore
         @config = config
         @file = file
         @command_line = command_line
-        @package = PackageWriter.new
+        @package = Albacore::NugetModel::Package.new
         @project = Albacore::Project.new @file
       end
       def execute

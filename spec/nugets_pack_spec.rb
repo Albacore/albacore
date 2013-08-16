@@ -34,7 +34,7 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
       subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
     end
   end
-describe 'packing with -Symbols' do
+  describe 'packing with -Symbols' do
     before do
       cfg.gen_symbols
     end
@@ -76,6 +76,13 @@ describe Albacore::NugetsPack::NuspecTask do
 end
 
 describe Albacore::NugetsPack::ProjectTask do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project.fsproj"
+  end
+  it "can be created" do
+    Albacore::NugetsPack::ProjectTask.new "", "", projfile
+  end
   it "rejects .nuspec files" do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
   end

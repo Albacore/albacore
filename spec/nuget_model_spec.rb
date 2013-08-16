@@ -110,8 +110,8 @@ describe Albacore::NugetModel::Package, "from XML" do
     parser.
       xpath('.//metadata').
       children.
-      reject{|n| n.name == 'dependencies' }.
-      reject {|n| n.text? }.
+      reject { |n| n.name == 'dependencies' }.
+      reject { |n| n.text? }.
       each do |node|
       name = Albacore::NugetModel::Metadata.underscore node.name
       subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
@@ -134,7 +134,15 @@ end
 
 
 describe "when reading xml from a fsproj file into a hash" do
-  it "should the project name"
+  let :fsproj do
+    %{
+
+
+}
+  end
+  it "should the project name" do
+    
+  end
   it "should find the the author"
   # etc ..
 end
