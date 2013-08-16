@@ -62,11 +62,12 @@ module Albacore
 
         debug "found #{dependencies.inspect} for dependencies"
 
-        nuspec, lib = prepare_nuspec filename, dependencies
+        nuspec, lib = prepare_nuspec! filename, dependencies
         project_glob = prepare_glob filename
 
         debug "glob: #{project_glob}"
 
+        # todo: do in-place
         Dir.glob project_glob do |globbed|
           debug "cp #{globbed} #{lib}"
           FileUtils.cp globbed, lib
