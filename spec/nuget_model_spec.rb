@@ -133,26 +133,128 @@ describe Albacore::NugetModel::Package, "from XML" do
 end
 
 
-describe "when reading xml from a fsproj file into a hash" do
-  let :fsproj do
-    %{
-
-
-}
+describe "when reading xml from a fsproj file into Project/Metadata" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project.fsproj"
+  end 
+  subject do
+    Albacore::NugetModel::Package.from_xxproj projfile
   end
-  it "should the project name" do
-    
+  it "should find Name element" do
+    subject.metadata.id.should eq 'Project'
   end
-  it "should find the the author"
-  # etc ..
+  it "should not find Version element" do
+    subject.metadata.version.should eq ""
+  end
+  it "should find Authors element" do
+    subject.metadata.authors.should eq "Henrik Feldt"
+  end
+
+  describe "when including files" do
+    subject do
+      Albacore::NugetModel::Package.from_xxproj projfile, :include_compile_files => true
+    end
+    it "should contain all files (just one)" do
+      subject.files.length.should eq 1
+    end
+    it "should have a file of Library1.fs" do
+      f = subject.files.first
+      f.target.should eq('src/Library1.fs')
+      f.src.should eq('Library1.fs')
+    end
+  end
 end
 
-describe "how to merge data from an xml, an fsproj and a hash" do
-  let :xml do ; end
-  let :fsproj do ; end
-  let :hash do ; end
-  let :sources do
+describe "creating nuget from proj file" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project.fsproj"
+  end 
+  let :id do
+    'Sample.Nuget'
   end
-  it "should select the value from the topmost source"
-  it "if the topmost source doesn't have value, moves to next"
+  let :curr do
+    File.dirname(__FILE__)
+  end
+  let :expected_nuspec do
+    File.join curr, "testdata", "#{id}.nuspec"
+  end
+  let :expected_nuspec_symbols do
+    File.join curr, "testdata", "#{id}.symbols.nuspec"
+  end
+  let :config do
+    cfg = Albacore::NugetsPack::Config.new
+    cfg.target = 'net40'
+    cfg.files  = [File.join(curr, 'testdata', '*.fsproj')]
+    cfg.metadata do |m|
+      m.id = id
+      m.authors = 'haf'
+      m.description = 'a nice lib'
+      m.language = 'Danish'
+      m.project_url = 'https://github.com/haf/Reasonable'
+      m.license_url = 'https://github.com/haf/README.md'
+      m.release_notes = %{
+v10.0.0:
+  - Some notes
+}
+      m.owners = 'haf'
+      m.require_license_acceptance = false
+
+      m.add_dependency 'Abc.Package', '>= 1.0.2'
+      m.add_framework_dependency 'System.Transactions', '4.0.0'
+    end
+    cfg.gen_symbols # files: *.{pdb,dll,cs,fs,vb}
+    cfg
+  end
+
+  subject do
+    Albacore::NugetsPack::ProjectTask.new config.opts, [projfile]
+  end 
+
+  before do
+    subject.execute
+  end
+
+  after do
+    File.delete expected_nuspec if File.exists? expected_nuspec
+    File.delete expected_nuspec_symbols if File.exists? expected_nuspec_symbols
+  end
+
+  it "should have generated a nuspec" do
+    File.exists?(expected_nuspec).should be_true
+  end
+
+  it "should have generated a symbol nuspec" do
+    File.exists?(expected_nuspec_symbols).should be_true
+  end
+
+  def contents xml, node
+    xml.xpath(".//metadata/#{node}").inner_text
+  end
+
+  it "should have the specified metadata" do
+    [expected_nuspect, expected_nuspec_symbols].each do |file|
+      xml = 
+      contents(xml, 'id').should eq(id)
+      contents(xml, 'authors').should eq('haf')
+      contents(xml, 'description').should eq('a nice lib')
+      # ...
+    end
+  end
+
+  describe "the symbol package" do
+    it "should have the pdb files in the nuspec" do
+      xml = Nokogiri::XML(File.open(expected_nuspec_symbols))
+      %w[src\\Library1.fs lib\\net40\\Project.dll lib\\net40\\Project.pdb].each do |expected_target|
+        xml.xpath('.//file').first { |f| f.target == expected_target }.should_not be_nil
+      end
+    end
+  end
+
+end
+
+describe "creating nuget from dependent proj file" do
+  it "should create dependencies for dependent projects"
+  it "should create dependencies for dependent nugets"
 end

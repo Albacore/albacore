@@ -81,7 +81,7 @@ describe Albacore::NugetsPack::ProjectTask do
     File.join curr, "testdata", "Project.fsproj"
   end
   it "can be created" do
-    Albacore::NugetsPack::ProjectTask.new "", "", projfile
+    Albacore::NugetsPack::ProjectTask.new "", projfile
   end
   it "rejects .nuspec files" do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
