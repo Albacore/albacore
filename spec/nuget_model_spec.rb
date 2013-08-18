@@ -7,12 +7,13 @@ describe Albacore::NugetModel::Metadata do
       subject.should respond_to(prop)
     end
   end
+
   describe "when adding a dependency" do
     before do 
       subject.add_dependency 'DepId', '=> 3.4.5'
     end
     let :dep do
-      subject.dependencies.first
+      subject.dependencies['DepId']
     end
     it "should contain the dependency version" do
       dep.version.should eq('=> 3.4.5')
@@ -24,12 +25,13 @@ describe Albacore::NugetModel::Metadata do
       subject.dependencies.length.should eq(1)
     end
   end
+
   describe "when adding a framework dependency" do
     before do
       subject.add_framework_dependency 'System.Transactions', '2.0.0' 
     end
     let :dep do
-      subject.framework_assemblies.first
+      subject.framework_assemblies.first[1]
     end
     it "should contain the dependency id" do
       dep.id.should eq('System.Transactions')
@@ -99,8 +101,8 @@ describe Albacore::NugetModel::Package, "from XML" do
   end
   subject do
     package = Albacore::NugetModel::Package.from_xml xml
-    puts "node: #{package.inspect}"
-    puts "node meta: #{package.metadata.inspect}"
+    #puts "node: #{package.inspect}"
+    #puts "node meta: #{package.metadata.inspect}"
     package
   end
   it "should exist" do
@@ -117,18 +119,21 @@ describe Albacore::NugetModel::Package, "from XML" do
       subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
     end
   end
+
   describe "all dependencies" do
     it "should have the SampleDependency dependency of the XML above" do
       parser.xpath('.//metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
-        subject.metadata.dependencies.find{ |d| d.id == dep['id'] }.should_not be_nil
+        subject.metadata.dependencies[dep['id']].should_not be_nil
       end
     end 
   end
+
   it "should have all the files of the XML above" do
     subject.files.length.should eq(5)
   end
+
   it "should have a dep on SampleDependency version 1.0" do
-    subject.metadata.dependencies.find { |d| d.id == 'SampleDependency' }.should_not be_nil
+    subject.metadata.dependencies['SampleDependency'].should_not be_nil
   end
 end
 
@@ -139,7 +144,7 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     File.join curr, "testdata", "Project.fsproj"
   end 
   subject do
-    Albacore::NugetModel::Package.from_xxproj projfile
+    Albacore::NugetModel::Package.from_xxproj_file projfile
   end
   it "should find Name element" do
     subject.metadata.id.should eq 'Project'
@@ -153,7 +158,7 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
 
   describe "when including files" do
     subject do
-      Albacore::NugetModel::Package.from_xxproj projfile, :include_compile_files => true
+      Albacore::NugetModel::Package.from_xxproj_file projfile, :include_compile_files => true
     end
     it "should contain all files (just one)" do
       subject.files.length.should eq 1
@@ -166,92 +171,68 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
   end
 end
 
-describe "creating nuget from proj file" do
-  let :projfile do
-    curr = File.dirname(__FILE__)
-    File.join curr, "testdata", "Project.fsproj"
-  end 
-  let :id do
-    'Sample.Nuget'
-  end
-  let :curr do
-    File.dirname(__FILE__)
-  end
-  let :expected_nuspec do
-    File.join curr, "testdata", "#{id}.nuspec"
-  end
-  let :expected_nuspec_symbols do
-    File.join curr, "testdata", "#{id}.symbols.nuspec"
-  end
-  let :config do
-    cfg = Albacore::NugetsPack::Config.new
-    cfg.target = 'net40'
-    cfg.files  = [File.join(curr, 'testdata', '*.fsproj')]
-    cfg.metadata do |m|
-      m.id = id
-      m.authors = 'haf'
-      m.description = 'a nice lib'
-      m.language = 'Danish'
-      m.project_url = 'https://github.com/haf/Reasonable'
-      m.license_url = 'https://github.com/haf/README.md'
-      m.release_notes = %{
-v10.0.0:
-  - Some notes
-}
-      m.owners = 'haf'
-      m.require_license_acceptance = false
-
-      m.add_dependency 'Abc.Package', '>= 1.0.2'
-      m.add_framework_dependency 'System.Transactions', '4.0.0'
+describe Albacore::NugetModel::Package, "overriding metadata" do
+  let :p1 do
+    p = Albacore::NugetModel::Package.new.with_metadata do |m|
+      m.id = 'A.B'
+      m.version = '2.1.3'
+      m.add_dependency 'NLog', '2.0'
     end
-    cfg.gen_symbols # files: *.{pdb,dll,cs,fs,vb}
-    cfg
+    p.add_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
+    p.add_file 'CodeFolder\\*.fs', 'lib', 'AssemblyInfo.fs'
+  end 
+  let :p2 do
+    Albacore::NugetModel::Package.new.with_metadata do |m|
+      m.id = 'A.B.C'
+      m.add_dependency 'NLog', '2.3'
+      m.add_dependency 'Castle.Core', '3.0.0'
+      m.owners = 'Henrik Feldt'
+    end
   end
-
   subject do
-    Albacore::NugetsPack::ProjectTask.new config.opts, [projfile]
-  end 
-
-  before do
-    subject.execute
+    p1.merge_with p2
   end
-
-  after do
-    File.delete expected_nuspec if File.exists? expected_nuspec
-    File.delete expected_nuspec_symbols if File.exists? expected_nuspec_symbols
-  end
-
-  it "should have generated a nuspec" do
-    File.exists?(expected_nuspec).should be_true
-  end
-
-  it "should have generated a symbol nuspec" do
-    File.exists?(expected_nuspec_symbols).should be_true
-  end
-
-  def contents xml, node
-    xml.xpath(".//metadata/#{node}").inner_text
-  end
-
-  it "should have the specified metadata" do
-    [expected_nuspect, expected_nuspec_symbols].each do |file|
-      xml = 
-      contents(xml, 'id').should eq(id)
-      contents(xml, 'authors').should eq('haf')
-      contents(xml, 'description').should eq('a nice lib')
-      # ...
+  describe "when overriding:" do
+    let :m do
+      subject.metadata
     end
-  end
 
-  describe "the symbol package" do
-    it "should have the pdb files in the nuspec" do
-      xml = Nokogiri::XML(File.open(expected_nuspec_symbols))
-      %w[src\\Library1.fs lib\\net40\\Project.dll lib\\net40\\Project.pdb].each do |expected_target|
-        xml.xpath('.//file').first { |f| f.target == expected_target }.should_not be_nil
+    def self.has_value sym, e
+      it "should have overridden #{sym}, to be #{e}" do
+        m.send(sym).should eq e
       end
     end
-  end
 
+    def self.has_dep name, version
+      it "has dependency on '#{name}'" do
+        m.dependencies.has_key?(name).should be_true
+      end
+      it "overrode dependency on '#{name}'" do
+        m.dependencies[name].version.should eq version
+      end
+    end
+
+    def self.has_file src, target, exclude = nil
+      it "file.src == '#{src}'" do
+        file = subject.files.find { |f| f.src == src }
+        file.should_not be_nil 
+      end
+      it "file.target == '#{target}'" do
+        file = subject.files.find { |f| f.src == src }
+        file.target.should eq target
+      end 
+    end
+
+    has_value :id, 'A.B.C'
+    has_value :owners, 'Henrik Feldt'
+    has_value :version, '2.1.3'
+
+    has_dep 'NLog', '2.3'
+    has_dep 'Castle.Core', '3.0.0'
+
+    has_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
+    has_file 'CodeFolder\\*.fs', 'lib', 'AssemblyInfo.fs'
+  end
 end
 
 describe "creating nuget from dependent proj file" do

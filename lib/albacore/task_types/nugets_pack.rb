@@ -63,9 +63,6 @@ module Albacore
       # the output directory to place the newfangled nugets in
       attr_writer :out
 
-      # the version to build the nugets with
-      attr_writer :version
-
       # the .net target (e.g. net40, mono2.0)
       attr_writer :target
 
@@ -99,7 +96,6 @@ module Albacore
           :out     => @out,
           :symbols => @symbols,
           :exe     => @exe,
-          :version => @version,
           :package => @package,
           :target  => @target,
           :files   => @files
@@ -107,28 +103,71 @@ module Albacore
       end
     end
 
+    # a task that handles the generation of nugets from projects or nuspecs.
     class ProjectTask
+      include Logging
+
       def initialize opts, files, &before_execute
-        @opts = opts
+        raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
+        @opts = opts.apply :out => '.'
         @files = files
         @before_execute = before_execute
       end
 
       def execute
-        @files.each do |proj|
-          cwd = File.basename(proj)
-          # create the command
-          cmd = Albacore::NugetsPack::Cmd.new(
-                  @opts.get(:exe),
-                  :work_dir => cwd,
-                  :out      => cwd)
+        @files.each { |p| execute_inner p }
+      end
 
-          # run any concerns that modify the command
-          @before_execute.call cmd if @before_execute
+      # execute, for each project file
+      private
+      def execute_inner project_file
+        proj = Albacore::Project.new project_file
+        nuspec, nuspec_symbols = create_nuspec proj 
+        create_nuget proj
+      rescue => e
+        err (e.inspect)
+        raise $!
+      ensure
+        [nuspec, nuspec_symbols].each{|n| cleanup_nuspec n}
+      end
 
-          # run the command for the file
-          cmd.execute 
-        end
+      ## Creating
+
+      private
+      def create_nuspec proj
+        nuspec = Albacore::NugetModel::Package.from_xxproj proj,
+          :project_dependencies => true,
+          :nuget_dependencies   => true
+        nuspec = nuspec.merge_with(@opts.get(:package))
+        File.write(File.join(@opts.get(:out), nuspec.metadata.id + '.nuspec'), nuspec.to_xml)
+
+        nuspec_symbols = Albacore::NugetModel::Package.from_xxproj :symbols => true
+        nuspec_symbols = nuspec_symbols.merge_with(@opts.get(:package))
+        File.write(File.join(opts.get(:out), nuspec.metadata.id + '.symbols.nuspec'), nuspec_symbols.to_xml) if @opts.get :symbols, true
+        [nuspec, nuspec_symbols]
+      end
+
+      private
+      def create_nuget cwd, nuspec, nuspec_symbols
+        # create the command
+        cmd = Albacore::NugetsPack::Cmd.new(
+                @opts.get(:exe),
+                :work_dir => cwd,
+                :out      => cwd)
+
+        # run any concerns that modify the command
+        @before_execute.call cmd if @before_execute
+
+        # run the command for the file
+        cmd.execute nuspec, nuspec_symbols
+      end
+
+      ## Cleaning up after generation
+
+      private
+      def cleanup_nuspec nuspec
+        return if nuspec.nil? or not File.exists? nuspec
+        File.delete nuspec
       end
 
       def self.accept? f
@@ -254,8 +293,11 @@ module Albacore
       def execute
         version = read_version_from_nuspec
         filename = File.basename(@nuspec, File.extname(@nuspec))
+
         @command_line.execute @nuspec
-        path = File.join(@config.out, "#{filename}.#{version}.nupkg")
+
+        path = File.join(@config.opts.get(:out), "#{filename}.#{version}.nupkg")
+
         Albacore.publish :artifact, OpenStruct.new(
           :nuspec   => @nuspec,
           :nupkg    => path,

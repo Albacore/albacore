@@ -1,4 +1,6 @@
 require 'map'
+require 'albacore/logging'
+require 'albacore/project'
 
 module Albacore
   module NugetModel
@@ -6,63 +8,84 @@ module Albacore
     class Metadata
       include Logging
 
+      def self.nuspec_field *syms
+        syms.each do |sym|
+          self.class_eval(
+%{def #{sym}
+  @#{sym}
+end})
+          self.class_eval(
+%{def #{sym}= val
+  @#{sym} = val
+  @set_fields << :#{sym}
+end})                      
+        end 
+      end
+
       # gets or sets the id of this package
-      attr_accessor :id
+      nuspec_field :id
       
       # gets or sets the version of this package
-      attr_accessor :version
+      nuspec_field :version
 
       # gets or sets the authors of this package
-      attr_accessor :authors
+      nuspec_field :authors
 
       # gets or sets the description of this package
-      attr_accessor :description
+      nuspec_field :description
 
       # gets or sets the language that this package has been built with
-      attr_accessor :language
+      nuspec_field :language
 
       # gets or sets the project url for this package
-      attr_accessor :project_url
+      nuspec_field :project_url
 
       # gets or sets the license url for this package
-      attr_accessor :license_url
+      nuspec_field :license_url
 
       # gets or sets the release notes for this build.
-      attr_accessor :release_notes
+      nuspec_field :release_notes
 
       # gets or sets the owners of this package
-      attr_accessor :owners
+      nuspec_field :owners
 
       # gets or sets whether this package requires a license acceptance from the user
       # hint: don't.
-      attr_accessor :require_license_acceptance
+      nuspec_field :require_license_acceptance
 
       # gets or sets the copyright for this package
-      attr_accessor :copyright
+      nuspec_field :copyright
 
       # get or sets the tags for this package
-      attr_accessor :tags
+      nuspec_field :tags
 
       # get the dependent nuget packages for this package
-      attr_reader :dependencies
+      nuspec_field :dependencies
 
       # gets the framework assemblies for this package
-      attr_reader :framework_assemblies
+      nuspec_field :framework_assemblies
+
+      # gets the field symbols that have been set
+      attr_reader :set_fields
 
       # initialise a new package data object
-      def initialize
-        @dependencies = []
-        @framework_assemblies = []
+      def initialize dependencies = nil, framework_assemblies = nil
+        @set_fields = []
+        @dependencies = dependencies ||  Hash.new
+        @framework_assemblies = framework_assemblies || Hash.new
+
+        debug "creating new metadata with dependencies: #{dependencies}" unless dependencies.nil?
+        debug "creating new metadata (same as prev) with fw asms: #{framework_assemblies}" unless framework_assemblies.nil?
       end
 
       # add a dependency to the package; id and version
       def add_dependency id, version
-        @dependencies << OpenStruct.new(:id => id, :version => version)
+        @dependencies[id] = OpenStruct.new(:id => id, :version => version)
       end
 
       # add a framework dependency for the package
       def add_framework_dependency id, version
-        @framework_assemblies << OpenStruct.new(:id => id, :version => version)
+        @framework_assemblies[id] = OpenStruct.new(:id => id, :version => version)
       end
 
       def to_xml_builder
@@ -79,7 +102,7 @@ module Albacore
             x.owners       @owners
             x.requireLicenseAcceptance @require_license_acceptance
             x.dependencies {
-              @dependencies.each { |d|
+              @dependencies.each { |k, d|
                 x.dependency(:id => d.id, :version => d.version)
               }
             }
@@ -91,6 +114,31 @@ module Albacore
       def to_xml
         to_xml_builder.to_xml
       end
+
+      def merge_with other
+        raise ArgumentError, 'other is nil' if other.nil?
+        raise ArgumentError, 'other is wrong type' unless other.is_a? Metadata
+
+        deps = @dependencies.clone.merge(other.dependencies)
+        fw_asms = @framework_assemblies.clone.merge(other.framework_assemblies)
+
+        m_next = Metadata.new deps, fw_asms
+
+        # set all my fields to the new instance
+        @set_fields.each do |field|
+          debug "setting field '#{field}' to be '#{send(field)}'" 
+          m_next.send(:"#{field}=", send(field))
+        end
+
+        # set all other's fields to the new instance, overriding mine
+        other.set_fields.each do |field|
+          debug "setting field '#{field}' to be '#{send(field)}'" 
+          m_next.send(:"#{field}=", other.send(field))
+        end
+
+        m_next
+      end
+
       def self.from_xml node
         Albacore.application.logger.debug { "constructing NugetModel::Metadata from node #{node.inspect}" }
 
@@ -124,16 +172,30 @@ module Albacore
     # the nuget package element writer
     class Package
 
-      attr_accessor :metadata, :files
+      # the metadata corresponds to the metadata element of the nuspec
+      attr_accessor :metadata
 
+      # the files is something enumerable that corresponds to the file
+      # elements inside '//package/files'.
+      attr_accessor :files
+
+      # creates a new nuspec package instance
       def initialize metadata = nil, files = nil
         @metadata = metadata || Metadata.new
         @files = files || []
       end
 
       # add a file to the instance
-      def add_file src, target, exclude
+      def add_file src, target, exclude = nil
         @files << OpenStruct.new(:src => src, :target => target, :exclude => exclude)
+        self
+      end
+
+      # do something with the metadata.
+      # returns the #self Package instance
+      def with_metadata &block
+        yield @metadata if block_given?
+        self
       end
 
       # gets the current package as a xml builder
@@ -156,6 +218,16 @@ module Albacore
         to_xml_builder.to_xml
       end
 
+      # creates a new Package/Metadata by overriding data in this instance with
+      # data from passed instance
+      def merge_with other
+        m_next = @metadata.merge_with other.metadata
+        files_other = {}
+        other.files.each { |f| files_other[f.src] = f }
+        f_next = @files.collect { |f| files_other.fetch f.src, f }
+        Package.new m_next, f_next
+      end
+
       # read the nuget specification from a nuspec file
       def self.from_xml xml
         parser = Nokogiri::XML(xml)
@@ -172,9 +244,14 @@ module Albacore
       end
 
       # read the nuget specification from a xxproj file (e.g. csproj, fsproj)
-      def self.from_xxproj file, *opts
-        opts = Map.options opts
+      def self.from_xxproj_file file, *opts
         proj = Albacore::Project.new file
+        from_xxproj proj, *opts
+      end
+
+      # read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
+      def self.from_xxproj proj, *opts
+        opts = Map.options opts
         package = Package.new
         package.metadata.id = proj.name
         package.metadata.version = proj.version
