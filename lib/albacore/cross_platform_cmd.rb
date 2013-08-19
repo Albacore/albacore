@@ -7,7 +7,7 @@ require 'albacore/errors/command_not_found_error'
 require 'open3'
 
 module Albacore
-  # module for normalizing slashes across operating systems
+  # module for normalising slashes across operating systems
   # and running commands
   module CrossPlatformCmd
     include Logging
@@ -36,8 +36,8 @@ module Albacore
       include CrossPlatformCmd
     end
 
-    def normalize_slashes path
-      ::Albacore::Paths.normalize_slashes path
+    def normalise_slashes path
+      ::Albacore::Paths.normalise_slashes path
     end
 
     # create
@@ -154,8 +154,8 @@ module Albacore
 
       cmd = ::Rake::Win32.windows? ? 'where' : 'which'
       parameters = []
-      parameters << Paths.normalize_slashes(file) if dir == '.'
-      parameters << Paths.normalize_slashes("#{dir}:#{file}") unless dir == '.'
+      parameters << Paths.normalise_slashes(file) if dir == '.'
+      parameters << Paths.normalise_slashes("#{dir}:#{file}") unless dir == '.'
       cmd, parameters = Paths.normalise cmd, parameters
 
       trace "#{cmd} #{parameters.join(' ')}"

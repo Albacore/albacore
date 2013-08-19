@@ -171,6 +171,7 @@ end})
 
     # the nuget package element writer
     class Package
+      include Logging
 
       # the metadata corresponds to the metadata element of the nuspec
       attr_accessor :metadata
@@ -251,21 +252,58 @@ end})
 
       # read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
       def self.from_xxproj proj, *opts
-        opts = Map.options opts
+        opts = Map.options(opts).
+          apply(
+            :symbols        => false,
+            :dotnet_version => 'net40',
+            :known_projects => Set.new,
+            :configuration  => 'Debug')
+
+        debug = Albacore.application.logger.method(:debug)
+        version = opts.get(:version)
         package = Package.new
         package.metadata.id = proj.name
-        package.metadata.version = proj.version
+        package.metadata.version = version
         package.metadata.authors = proj.authors
 
-        if opts.get :include_compile_files, false 
-          compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
-          Albacore.application.logger.debug "including compile files: #{compile_files}"
-          compile_files.each do |f|
-            exclude = ""
-            target = File.join 'src', f.include
-            package.add_file f.include, target, exclude
-          end 
+        # add declared packages as dependencies
+        proj.declared_packages.each do |p|
+          package.metadata.add_dependency p.id, p.version
         end
+
+        # add declared projects as dependencies
+        proj.
+          declared_projects.
+          keep_if { |p| opts.get(:known_projects).include? p.name }.
+          each do |p|
+          debug.call "adding project dependency: #{proj.name} => #{p.name} at #{version}"
+          package.metadata.add_dependency p.name, version
+        end
+
+        output = proj.output_path(opts.get(:configuration))
+        target_lib = %W[lib #{opts.get(:dotnet_version)}].join('\\')
+
+        if opts.get :symbols 
+          compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
+
+          debug.call "add compiled files: #{compile_files}"
+          compile_files.each do |f|
+            target = %W[src #{f.include}].join('\\')
+            package.add_file f.include, target
+          end 
+
+          debug.call "add dll and pdb files"
+          package.add_file (output + proj.asmname + '.pdb'), target_lib
+          package.add_file (output + proj.asmname + '.dll'), target_lib
+        elsif
+          # add *.{dll,xml,config}
+          %w[dll xml config].each do |ext|
+            file = output + "#{proj.asmname}.#{ext}"
+            debug.call "adding file #{file}"
+            package.add_file file, target_lib
+          end
+        end
+
         package
       end
     end

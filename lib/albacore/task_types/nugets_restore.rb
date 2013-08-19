@@ -106,7 +106,7 @@ module Albacore
         debug "include_official nuget repo: #{include_official}"
         pars << %W[-source #{OFFICIAL_REPO}] if include_official
         
-        map = Map.new({ :pkgcfg     => Albacore::Paths.normalize_slashes(pkg),
+        map = Map.new({ :pkgcfg     => Albacore::Paths.normalise_slashes(pkg),
                         :out        => @out,
                         :parameters => pars })
 

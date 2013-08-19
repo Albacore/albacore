@@ -4,7 +4,7 @@ require 'albacore/project'
 
 describe Albacore::Project, "when loading packages.config" do
   subject {
-    p = File.expand_path('../testdata/Project.fsproj', __FILE__)
+    p = File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
     #puts "path: #{p}"
     Albacore::Project.new(p)
   }
@@ -17,7 +17,7 @@ end
 
 describe Albacore::Project, "when reading project file" do
   subject {
-    p = File.expand_path('../testdata/Project.fsproj', __FILE__)
+    p = File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
     Albacore::Project.new(p)
   }
   let(:library1) { subject.included_files.find { |p| p.include == 'Library1.fs' } }

@@ -138,38 +138,80 @@ describe Albacore::NugetModel::Package, "from XML" do
 end
 
 
+shared_context 'metadata_dsl' do
+  let :m do
+    subject.metadata
+  end
+
+  def self.has_value sym, e
+    it "should have overridden #{sym}, to be #{e}" do
+      m.send(sym).should eq e
+    end
+  end
+
+  def self.has_dep name, version
+    it "has dependency on '#{name}'" do
+      m.dependencies.has_key?(name).should be_true
+    end
+    it "overrode dependency on '#{name}'" do
+      m.dependencies[name].version.should eq version
+    end
+  end
+
+  def self.has_file src, target, exclude = nil
+    it "has file[#{src}] (should not be nil)" do
+      file = subject.files.find { |f| f.src == src }
+#       puts "## ALL FILES ##"
+#       subject.files.each do |f|
+#         #puts "subject.files: #{subject.files}, index of: #{subject.files.find_index { |f| f.src == src }}"
+#         puts "#{f.inspect}"
+#       end
+      file.should_not be_nil 
+    end
+    it "has file[#{src}].target == '#{target}'" do
+      file = subject.files.find { |f| f.src == src }
+      file.target.should eq target
+    end 
+  end
+end
+
 describe "when reading xml from a fsproj file into Project/Metadata" do
   let :projfile do
     curr = File.dirname(__FILE__)
-    File.join curr, "testdata", "Project.fsproj"
+    File.join curr, "testdata", "Project", "Project.fsproj"
   end 
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile
   end
+
+  include_context 'metadata_dsl'
+
   it "should find Name element" do
-    subject.metadata.id.should eq 'Project'
+    m.id.should eq 'Project'
   end
+
   it "should not find Version element" do
-    subject.metadata.version.should eq ""
+    m.version.should eq nil
   end
+
   it "should find Authors element" do
-    subject.metadata.authors.should eq "Henrik Feldt"
+    m.authors.should eq "Henrik Feldt"
   end
 
   describe "when including files" do
     subject do
-      Albacore::NugetModel::Package.from_xxproj_file projfile, :include_compile_files => true
+      Albacore::NugetModel::Package.from_xxproj_file projfile, :symbols => true
     end
-    it "should contain all files (just one)" do
-      subject.files.length.should eq 1
+    it "should contain all files (just one) and all dll and pdb files (two)" do
+      subject.files.length.should eq 3
     end
-    it "should have a file of Library1.fs" do
-      f = subject.files.first
-      f.target.should eq('src/Library1.fs')
-      f.src.should eq('Library1.fs')
-    end
+
+    has_file 'Library1.fs', 'src\\Library1.fs'
+    has_file 'bin\\Debug\\Project.dll', 'lib\\net40'
+    has_file 'bin\\Debug\\Project.pdb', 'lib\\net40'
   end
 end
+
 
 describe Albacore::NugetModel::Package, "overriding metadata" do
   let :p1 do
@@ -192,37 +234,10 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
   subject do
     p1.merge_with p2
   end
+
+  include_context 'metadata_dsl'
+
   describe "when overriding:" do
-    let :m do
-      subject.metadata
-    end
-
-    def self.has_value sym, e
-      it "should have overridden #{sym}, to be #{e}" do
-        m.send(sym).should eq e
-      end
-    end
-
-    def self.has_dep name, version
-      it "has dependency on '#{name}'" do
-        m.dependencies.has_key?(name).should be_true
-      end
-      it "overrode dependency on '#{name}'" do
-        m.dependencies[name].version.should eq version
-      end
-    end
-
-    def self.has_file src, target, exclude = nil
-      it "file.src == '#{src}'" do
-        file = subject.files.find { |f| f.src == src }
-        file.should_not be_nil 
-      end
-      it "file.target == '#{target}'" do
-        file = subject.files.find { |f| f.src == src }
-        file.target.should eq target
-      end 
-    end
-
     has_value :id, 'A.B.C'
     has_value :owners, 'Henrik Feldt'
     has_value :version, '2.1.3'
@@ -235,7 +250,50 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
   end
 end
 
-describe "creating nuget from dependent proj file" do
-  it "should create dependencies for dependent projects"
-  it "should create dependencies for dependent nugets"
+describe "creating nuget (not symbols) from dependent proj file" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+  end 
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile,
+      :known_projects => %w[Sample.Core],
+      :version        => '2.3.0',
+      :configuration  => 'Debug'
+  end
+  
+  include_context 'metadata_dsl'
+
+  # from fsproj
+  has_dep 'Sample.Core', '2.3.0'
+
+  # from packages.config
+  has_dep 'Magnum', '2.1.0'
+  has_dep 'MassTransit', '2.8.0'
+  has_dep 'Newtonsoft.Json', '5.0.6'
+
+  # actual nuspec contents
+  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
+  has_file 'bin\\Debug\\Sample.Commands.xml', 'lib\\net40'
+
+end
+
+describe 'creating nuget symbols from dependent proj file' do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+  end 
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile,
+      :symbols        => true,
+      :version        => '2.1.0',
+      :known_projects => %w[Sample.Core],
+      :configuration  => 'Debug'
+  end
+  
+  include_context 'metadata_dsl'
+  
+  has_file 'Library.fs', 'src\\Library.fs'
+  has_file 'bin\\Debug\\Sample.Commands.pdb', 'lib\\net40'
+  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
 end

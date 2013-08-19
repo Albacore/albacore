@@ -43,7 +43,7 @@ describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
   }
 
   let (:path) {
-    Albacore::Paths.normalize_slashes('src/Proj/packages.config')
+    Albacore::Paths.normalise_slashes('src/Proj/packages.config')
   }
 
   include_context 'cmd context'

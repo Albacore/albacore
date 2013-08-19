@@ -35,6 +35,13 @@ module Albacore
       authors = @proj_xml_node.css("Project PropertyGroup Authors")
       authors.inner_text
     end 
+
+    # gets the output path of the project given the configuration
+    def output_path conf
+      path = @proj_xml_node.css "Project PropertyGroup[Condition*=#{conf}] OutputPath"
+      debug "[#{name}] output path node: #{path}"
+      path.inner_text
+    end
     
     # find the NodeList reference list
     def find_refs
@@ -64,6 +71,14 @@ module Albacore
           :semver => Albacore::SemVer.parse(p[:version], '%M.%m.%p', false)
         )
       }
+    end
+
+    def declared_projects
+      @proj_xml_node.css("ProjectReference").collect do |proj|
+        debug "[#{name}]: found project reference: #{proj.css("Name").inner_text}"
+        Project.new(File.join(@proj_path_base, Albacore::Paths.normalise_slashes(proj['Include'])))
+        #OpenStruct.new :name => proj.inner_text
+      end
     end
 
     # returns a list of the files included in the project
