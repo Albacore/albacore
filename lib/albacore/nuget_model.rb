@@ -257,7 +257,8 @@ end})
             :symbols        => false,
             :dotnet_version => 'net40',
             :known_projects => Set.new,
-            :configuration  => 'Debug')
+            :configuration  => 'Debug',
+            :project_dependencies => true)
 
         debug = Albacore.application.logger.method(:debug)
         version = opts.get(:version)
@@ -271,13 +272,15 @@ end})
           package.metadata.add_dependency p.id, p.version
         end
 
-        # add declared projects as dependencies
-        proj.
-          declared_projects.
-          keep_if { |p| opts.get(:known_projects).include? p.name }.
-          each do |p|
-          debug.call "adding project dependency: #{proj.name} => #{p.name} at #{version}"
-          package.metadata.add_dependency p.name, version
+        if opts.get :project_dependencies
+          # add declared projects as dependencies
+          proj.
+            declared_projects.
+            keep_if { |p| opts.get(:known_projects).include? p.name }.
+            each do |p|
+            debug.call "adding project dependency: #{proj.name} => #{p.name} at #{version}"
+            package.metadata.add_dependency p.name, version
+          end
         end
 
         output = proj.output_path(opts.get(:configuration))

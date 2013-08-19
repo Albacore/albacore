@@ -10,6 +10,7 @@ require 'albacore/nuget_model'
 
 module Albacore
   module NugetsPack
+    # the nuget command
     class Cmd
       include CrossPlatformCmd
 
@@ -18,27 +19,33 @@ module Albacore
         opts = Map.options args
         raise ArgumentError, 'out is nil' if opts.getopt(:out).nil?
 
-        @work_dir   = opts.get :work_dir, nil
+        @work_dir   = opts.getopt :work_dir, :default => nil
         @executable = executable
         @parameters = [%W{Pack -OutputDirectory #{opts.getopt(:out)}}].flatten
         @opts = opts
 
         mono_command
       end
+
+      # run nuget on the nuspec to create a new package
       def execute nuspec_file, nuspec_symbols_file = nil
-        debug "running NuGetsPack::Cmd for nuspec: #{nuspec_file}"
-        pars = @parameters.clone
+        debug "NugetsPack::Cmd#execute, opts: #{@opts}"
+
+        orig_pars = @parameters.dup
+
+        pars = orig_pars.dup
         pars << nuspec_file
         system @executable, pars, :work_dir => @work_dir
 
         # if the symbols flag is set and there's a symbols file specified
         # then run NuGet.exe to generate the .symbols.nupkg file
         if @opts.get :symbols and nuspec_symbols_file
-          debug "running NuGetsPack::Cmd for symbols nuspec: #{nuspec_symbols_file}"
-          pars = @parameters.clone 
+          pars = orig_pars.dup 
           pars << '-Symbols' 
           pars << nuspec_symbols_file 
           system @executable, pars, :work_dir => @work_dir
+        else
+          debug "symbols not configured for generation, use Config#gen_symbols to do so"
         end
       end
     end
@@ -69,22 +76,27 @@ module Albacore
       # sets the files to search
       attr_writer :files
 
+      # sets the MsBuild configuration that is used to produce the output into
+      # <OutputPath>...</OutputPath>
+      attr_writer :configuration
+
       def initialize
         @package = Albacore::NugetModel::Package.new
         @target  = 'net40'
         @symbols = false
       end
 
-      def metadata &block
-        yield @package.metadata if block_given?
+      def with_metadata &block
+        yield @package.metadata
       end
 
       # configure the package with a block
-      def package &block
-        yield @package if block_given?
+      def with_package &block
+        yield @package
       end
 
-      # generate symbols for the nugets
+      # generate symbols for the nugets: just call this method to
+      # enable generation
       def gen_symbols
         @symbols = true
       end
@@ -93,12 +105,13 @@ module Albacore
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
         Map.new({
-          :out     => @out,
-          :symbols => @symbols,
-          :exe     => @exe,
-          :package => @package,
-          :target  => @target,
-          :files   => @files
+          :out           => @out,
+          :exe           => @exe,
+          :symbols       => @symbols,
+          :package       => @package,
+          :target        => @target,
+          :files         => @files,
+          :configuration => @configuration
         })
       end
     end
@@ -107,23 +120,46 @@ module Albacore
     class ProjectTask
       include Logging
 
-      def initialize opts, files, &before_execute
+      def initialize opts, &before_execute
         raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
-        @opts = opts.apply :out => '.'
-        @files = files
+        raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
+        @opts           = opts.apply :out => '.'
+        @files          = opts.get :files
         @before_execute = before_execute
       end
 
       def execute
-        @files.each { |p| execute_inner p }
+        @files.each do |p|
+          proj, n, ns = generate_nuspec p
+          execute_inner! proj, n, ns
+        end
+      end
+
+      # generate all nuspecs
+      def generate_nuspecs
+        nuspecs = {}
+        @files.each do |p|
+          proj, n, ns = generate_nuspec p
+          #nuspecs[p] = OpenStruct.new({:proj => proj, :nuspec => n, :nuspec_symbols => ns })
+          nuspecs[proj.name] = OpenStruct.new({:proj => proj, :nuspec => n, :nuspec_symbols => ns })
+        end
+        nuspecs
+      end
+
+      private
+      def generate_nuspec p
+        proj = Albacore::Project.new p
+        nuspec, nuspec_symbols = create_nuspec proj 
+        [proj, nuspec, nuspec_symbols]
       end
 
       # execute, for each project file
       private
-      def execute_inner project_file
-        proj = Albacore::Project.new project_file
-        nuspec, nuspec_path, nuspec_symbols, nuspec_symbols_path = create_nuspec proj 
-        create_nuget nuspec, nuspec_symbols, proj
+      def execute_inner! proj, nuspec, nuspec_symbols
+        nuspec_path = write_nuspec! proj, nuspec
+        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols
+
+        create_nuget! proj.proj_path_base, nuspec_path, nuspec_symbols_path
       rescue => e
         err (e.inspect)
         raise $!
@@ -139,14 +175,12 @@ module Albacore
           :project_dependencies => true,
           :nuget_dependencies   => true
         nuspec = nuspec.merge_with(@opts.get(:package))
-        nuspec_path = write_nuspec! proj, nuspec
 
         nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
           :symbols => true
         nuspec_symbols = nuspec_symbols.merge_with(@opts.get(:package))
-        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols
 
-        [nuspec, nuspec_path, nuspec_symbols, nuspec_symbols_path]
+        [nuspec, nuspec_symbols]
       end
 
       private
@@ -157,15 +191,18 @@ module Albacore
       end
 
       private
-      def create_nuget cwd, nuspec, nuspec_symbols
+      def create_nuget! cwd, nuspec, nuspec_symbols
         # create the command
         cmd = Albacore::NugetsPack::Cmd.new(
                 @opts.get(:exe),
                 :work_dir => cwd,
-                :out      => cwd)
+                :out      => @opts.get(:out),
+                :symbols  => @opts.get(:symbols))
 
         # run any concerns that modify the command
         @before_execute.call cmd if @before_execute
+
+        debug "generating nuspec at #{nuspec}, and symbols (possibly) at #{nuspec_symbols}"
 
         # run the command for the file
         cmd.execute nuspec, nuspec_symbols
@@ -179,87 +216,6 @@ module Albacore
         File.delete nuspec
       end
 
-      def self.accept? f
-        File.extname(f).downcase != '.nuspec'
-      end
-    end
-    
-
-    class ProjectTaskOld
-      include Logging
-
-      # the package under construction
-      attr_accessor :package
-
-      def initialize command_line, config, file
-        @config = config
-        @file = file
-        @command_line = command_line
-        @package = Albacore::NugetModel::Package.new
-        @project = Albacore::Project.new @file
-      end
-
-      def execute
-        filename = File.basename(@file, File.extname(@file))
-        dependencies = prepare_dependencies
-        debug "#{filename} -(dep)-> #{dependencies.inspect}"
-
-        nuspec, lib = prepare_nuspec! filename, dependencies
-        project_glob = prepare_glob filename
-
-        debug "glob: #{project_glob}"
-
-        @command_line.execute nuspec
-        nupkg = File.join(@config.out, "#{filename}.#{@config.version}.nupkg")
-        publish_artifact! nuspec, nupkg
-      end
-
-      private
-      def prepare_dependencies
-        @project.
-          declared_packages.
-          collect { |d| 
-            OpenStruct.new(:id => d.id, :version => d.version)
-          }
-      end
-
-      private
-      def prepare_nuspec! filename, dependencies
-        fpkg = File.join @config.out, filename
-        lib = File.join fpkg, 'lib', 'net4'
-        FileUtils.mkdir_p lib
-
-        p = @package
-        p.metadata.id            = @project.asmname
-        p.metadata.version       = @config.version
-        p.metadata.authors       = @config.authors
-        p.metadata.description   = @config.description
-        p.metadata.license_url   = @config.license_url
-        p.metadata.project_url   = @config.project_url
-        p.metadata.release_notes = @config.release_notes
-
-        p.add_file 'lib\\**', 'lib', ''
-
-        dependencies.each { |d|
-          p.metadata.add_dependency d.id, d.version
-        }
-
-        nuspec = File.join fpkg, (filename + ".nuspec")
-
-        File.open(nuspec, 'w') do |io|
-          io.puts p.to_xml
-        end
-
-        [nuspec, lib]
-      end
-
-      private
-      def prepare_glob filename
-        output = @project.proj_xml_node.at_css("PropertyGroup OutputPath").text
-        output = "../#{output.gsub('\\', '/')}/#{filename}.{dll,xml}"
-        File.expand_path output, @file
-      end
-
       private
       def publish_artifact! nuspec, nuget
         Albacore.publish :artifact, OpenStruct.new(
@@ -269,11 +225,11 @@ module Albacore
         ) 
       end
 
-      def self.accept? file
-        File.extname(file).downcase != '.nuspec'
+      def self.accept? f
+        File.extname(f).downcase != '.nuspec'
       end
     end
-
+    
     # generate a nuget from a nuspec
     class NuspecTask
       include Logging

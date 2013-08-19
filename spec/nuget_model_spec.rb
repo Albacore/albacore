@@ -251,10 +251,12 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
 end
 
 describe "creating nuget (not symbols) from dependent proj file" do
+
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
   end 
+
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile,
       :known_projects => %w[Sample.Core],
@@ -275,7 +277,37 @@ describe "creating nuget (not symbols) from dependent proj file" do
   # actual nuspec contents
   has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
   has_file 'bin\\Debug\\Sample.Commands.xml', 'lib\\net40'
+end
 
+describe "creating nuget (no symbols) with :project_dependencies => false, on dependent proj file" do
+
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+  end 
+
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile,
+      :known_projects => %w[Sample.Core],
+      :version        => '2.3.0',
+      :configuration  => 'Debug',
+      :project_dependencies => false
+  end
+  
+  include_context 'metadata_dsl'
+
+  it 'should not have dependency on Sample.Core' do
+    m.dependencies['Sample.Core'].should be_nil
+  end
+
+  # from packages.config
+  has_dep 'Magnum', '2.1.0'
+  has_dep 'MassTransit', '2.8.0'
+  has_dep 'Newtonsoft.Json', '5.0.6'
+
+  # actual nuspec contents
+  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
+  has_file 'bin\\Debug\\Sample.Commands.xml', 'lib\\net40'
 end
 
 describe 'creating nuget symbols from dependent proj file' do
