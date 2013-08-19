@@ -16,13 +16,13 @@ gem 'albacore'
 And then execute
 
 ```bat
-cmd> bundle
+> bundle
 ```
     
 Or install it yourself:
 
 ```bat
-cmd> gem install albacore
+> gem install albacore
 ```
 
 ## Usage
