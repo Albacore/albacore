@@ -1,5 +1,6 @@
 require 'rake'
 require 'nokogiri'
+require 'fileutils'        
 require 'albacore'
 require 'albacore/paths'
 require 'albacore/cmd_config'
@@ -104,6 +105,7 @@ module Albacore
       # gets the options specified for the task
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
+        
         Map.new({
           :out           => @out,
           :exe           => @exe,
@@ -111,7 +113,8 @@ module Albacore
           :package       => @package,
           :target        => @target,
           :files         => @files,
-          :configuration => @configuration
+          :configuration => @configuration,
+          :original_path => FileUtils.pwd
         })
       end
     end
@@ -133,6 +136,10 @@ module Albacore
           proj, n, ns = generate_nuspec p
           execute_inner! proj, n, ns
         end
+      end
+
+      def path_to relative_file_path, cwd
+        File.expand_path( File.join(@opts.get(:original_path), relative_file_path), cwd )
       end
 
       # generate all nuspecs
@@ -164,7 +171,7 @@ module Albacore
         err (e.inspect)
         raise $!
       ensure
-        [nuspec_path, nuspec_symbols_path].each{|n| cleanup_nuspec n}
+        #[nuspec_path, nuspec_symbols_path].each{|n| cleanup_nuspec n}
       end
 
       ## Creating
@@ -193,10 +200,14 @@ module Albacore
       private
       def create_nuget! cwd, nuspec, nuspec_symbols
         # create the command
+        exe = path_to(@opts.get(:exe), cwd)
+        out = path_to(@opts.get(:out), cwd)
+        nuspec = path_to nuspec, cwd
+        nuspec_symbols = path_to nuspec_symbols, cwd
         cmd = Albacore::NugetsPack::Cmd.new(
-                @opts.get(:exe),
+                exe,
                 :work_dir => cwd,
-                :out      => @opts.get(:out),
+                :out      => out,
                 :symbols  => @opts.get(:symbols))
 
         # run any concerns that modify the command

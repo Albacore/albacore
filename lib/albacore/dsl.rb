@@ -58,16 +58,7 @@ module Albacore
       Albacore.define_task *args do
         c = Albacore::NugetsPack::Config.new
         yield c
-      
-        c.files.each do |f|
-          command = Albacore::NugetsPack::Cmd.new(c.work_dir, c.exe, c.opts)
-          [
-            Albacore::NugetsPack::ProjectTask,
-            Albacore::NugetsPack::NuspecTask
-          ].each do |task|
-            task.new(command, c, f).execute if task.accept?(f)
-          end
-        end
+        Albacore::NugetsPack::ProjectTask.new(c.opts).execute
       end
     end
 

@@ -91,16 +91,9 @@ end})
       def to_xml_builder
         Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
           x.metadata {
-            x.id           @id
-            x.version      @version
-            x.authors      @authors
-            x.description  @description
-            x.language     @language
-            x.projectUrl   @project_url
-            x.licenseUrl   @license_url
-            x.releaseNotes @release_notes
-            x.owners       @owners
-            x.requireLicenseAcceptance @require_license_acceptance
+            @set_fields.each do |f|
+              x.send(f, send(f))
+            end
             x.dependencies {
               @dependencies.each { |k, d|
                 x.dependency(:id => d.id, :version => d.version)
