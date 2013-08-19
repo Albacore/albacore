@@ -45,7 +45,7 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   end 
 end
 
-describe Albacore::NugetsPack::NuspecTask do
+describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
   include_context 'pack_config'
 
   it "accepts .nuspec files" do
@@ -75,30 +75,29 @@ describe Albacore::NugetsPack::NuspecTask do
   end
 end
 
-describe Albacore::NugetsPack::ProjectTask do
+describe Albacore::NugetsPack::ProjectTask, "when testing public interface" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project.fsproj"
   end
   it "can be created" do
-    Albacore::NugetsPack::ProjectTask.new((Map.new()), projfile)
+    Albacore::NugetsPack::ProjectTask.new(Map.new(), projfile)
   end
   it "rejects .nuspec files" do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
   end
 end
 
-describe "creating nuget from proj file" do
-  let :projfile do
-    curr = File.dirname(__FILE__)
-    File.join curr, "testdata", "Project.fsproj"
-  end 
+describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
   let :id do
     'Sample.Nuget'
   end
   let :curr do
     File.dirname(__FILE__)
   end
+  let :projfile do
+    File.join curr, "testdata", "Project.fsproj"
+  end 
   let :expected_nuspec do
     File.join curr, "testdata", "#{id}.nuspec"
   end
@@ -134,12 +133,12 @@ v10.0.0:
     Albacore::NugetsPack::ProjectTask.new config.opts, [projfile]
   end 
 
-  before do
-    pending "finish Package#merge_with first"
+  before :each do
+    pending "test project_dependencies and nuget_dependencies first"
     subject.execute
   end
 
-  after do
+  after :each do
     File.delete expected_nuspec if File.exists? expected_nuspec
     File.delete expected_nuspec_symbols if File.exists? expected_nuspec_symbols
   end
@@ -158,7 +157,7 @@ v10.0.0:
 
   it "should have the specified metadata" do
     [expected_nuspect, expected_nuspec_symbols].each do |file|
-      xml = 
+      xml = Nokogiri::XML(File.open(file))
       contents(xml, 'id').should eq(id)
       contents(xml, 'authors').should eq('haf')
       contents(xml, 'description').should eq('a nice lib')

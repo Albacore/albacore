@@ -122,13 +122,13 @@ module Albacore
       private
       def execute_inner project_file
         proj = Albacore::Project.new project_file
-        nuspec, nuspec_symbols = create_nuspec proj 
-        create_nuget proj
+        nuspec, nuspec_path, nuspec_symbols, nuspec_symbols_path = create_nuspec proj 
+        create_nuget nuspec, nuspec_symbols, proj
       rescue => e
         err (e.inspect)
         raise $!
       ensure
-        [nuspec, nuspec_symbols].each{|n| cleanup_nuspec n}
+        [nuspec_path, nuspec_symbols_path].each{|n| cleanup_nuspec n}
       end
 
       ## Creating
@@ -139,12 +139,21 @@ module Albacore
           :project_dependencies => true,
           :nuget_dependencies   => true
         nuspec = nuspec.merge_with(@opts.get(:package))
-        File.write(File.join(@opts.get(:out), nuspec.metadata.id + '.nuspec'), nuspec.to_xml)
+        nuspec_path = write_nuspec! proj, nuspec
 
-        nuspec_symbols = Albacore::NugetModel::Package.from_xxproj :symbols => true
+        nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
+          :symbols => true
         nuspec_symbols = nuspec_symbols.merge_with(@opts.get(:package))
-        File.write(File.join(opts.get(:out), nuspec.metadata.id + '.symbols.nuspec'), nuspec_symbols.to_xml) if @opts.get :symbols, true
-        [nuspec, nuspec_symbols]
+        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols
+
+        [nuspec, nuspec_path, nuspec_symbols, nuspec_symbols_path]
+      end
+
+      private
+      def write_nuspec! proj, nuspec
+        nuspec_path = File.join(proj.proj_path_base, nuspec.metadata.id + '.nuspec')
+        File.write(nuspec_path, nuspec.to_xml)
+        nuspec_path
       end
 
       private
