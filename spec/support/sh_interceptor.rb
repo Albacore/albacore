@@ -20,14 +20,18 @@ module ShInterceptor
   # gets the command (which might be mono-prefixed), without
   # the mono-prefix.
   def mono_command index = 0
-    parameters = invocations[index].parameters
+    invocation = invocations[index]
+    fail "no invocation with index = #{index}" unless invocation
+    parameters = invocation.parameters
     is_mono_command?(index) ?
       parameters[0] :
       executable
   end
 
   def mono_parameters index = 0
-    parameters = invocations[index].parameters
+    invocation = invocations[index]
+    fail "no invocation with index = #{index}" unless invocation
+    parameters = invocation.parameters
     is_mono_command?(index) ?
       parameters[1..-1] :
       parameters

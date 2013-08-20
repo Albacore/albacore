@@ -15,31 +15,28 @@ module Albacore
     
     # get the project name specified in the project file
     def name
-      name = @proj_xml_node.css("Project PropertyGroup Name")
-      name.inner_text
+      read_property "Name"
     end
 
     # get the assembly name specified in the project file
     def asmname
-      asmname = @proj_xml_node.css("Project PropertyGroup AssemblyName")
-      asmname.inner_text  
+      read_property "AssemblyName"
     end
 
     # gets the version from the project file
     def version
-      version = @proj_xml_node.css("Project PropertyGroup Version")
-      version.inner_text
+      read_property "Version"
     end
 
+    # gets any authors from the project file
     def authors
-      authors = @proj_xml_node.css("Project PropertyGroup Authors")
-      authors.inner_text
+      read_property "Authors"
     end 
 
     # gets the output path of the project given the configuration
     def output_path conf
       path = @proj_xml_node.css "Project PropertyGroup[Condition*=#{conf}] OutputPath"
-      debug "[#{name}] output path node: #{path}"
+      debug "#{name}: output path node: #{path} [albacore: project]"
       path.inner_text
     end
     
@@ -75,7 +72,7 @@ module Albacore
 
     def declared_projects
       @proj_xml_node.css("ProjectReference").collect do |proj|
-        debug "[#{name}]: found project reference: #{proj.css("Name").inner_text}"
+        debug "#{name}: found project reference: #{proj.css("Name").inner_text} [albacore: project]"
         Project.new(File.join(@proj_path_base, Albacore::Paths.normalise_slashes(proj['Include'])))
         #OpenStruct.new :name => proj.inner_text
       end
@@ -86,7 +83,7 @@ module Albacore
       ['Compile','Content','EmbeddedResource','None'].map { |item_name|
         proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{item_name}",
           'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
-          debug "Project#included_files looking at #{f}"
+          debug "#{name}: #included_files looking at '#{f}' [albacore: project]"
           link = f.elements.select{ |el| el.name == 'Link' }.map { |el| el.content }.first
           OpenStruct.new(:include => f[:Include], 
             :item_name => item_name.downcase,
@@ -101,7 +98,7 @@ module Albacore
     def find_packages
       declared_packages.collect do |package|
         guess = PackageRepo.new('./src/packages').find_latest package['id']
-        debug "guess: #{guess}"
+        debug "#{name}: guess: #{guess} [albacore: project]"
         guess
       end
     end
@@ -123,6 +120,13 @@ module Albacore
     
     def to_s
       path
+    end
+
+    private
+
+    def read_property prop_name
+      txt = @proj_xml_node.css("Project PropertyGroup #{prop_name}").inner_text
+      (txt.nil? || txt.strip.empty?) ? nil : txt.strip
     end
 
     # find the node of pkg_id

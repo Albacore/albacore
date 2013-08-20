@@ -72,8 +72,8 @@ module Albacore
 
       chdir opts.get(:work_dir) do
         puts printable unless opts.get :silent, false # log cmd verbatim
+        lines = ''
         begin
-          lines = ''
           IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
             io.each do |line|
               lines << line

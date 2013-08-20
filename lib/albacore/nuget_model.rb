@@ -4,6 +4,26 @@ require 'albacore/project'
 
 module Albacore
   module NugetModel
+    class IdVersion
+      attr_reader :id, :version
+      def initialize id, version
+        @id, @version = id, version
+      end
+      def to_s
+        "#{id}@#{version}"
+      end
+    end
+
+    class FileItem
+      attr_reader :src, :target, :exclude
+      def initialize src, target, excl
+        @src, @target, @exclude = src, target, excl
+      end
+      def to_s
+        "NugetModel::FileItem(src: #{@src}, target: #{@target}, exclude: #{@exclude}"
+      end
+    end
+
     # the nuget xml metadata element writer
     class Metadata
       include Logging
@@ -71,21 +91,21 @@ end})
       # initialise a new package data object
       def initialize dependencies = nil, framework_assemblies = nil
         @set_fields   = Set.new
-        @dependencies = dependencies ||  Hash.new
+        @dependencies = dependencies || Hash.new
         @framework_assemblies = framework_assemblies || Hash.new
 
-        debug "creating new metadata with dependencies: #{dependencies}" unless dependencies.nil?
-        debug "creating new metadata (same as prev) with fw asms: #{framework_assemblies}" unless framework_assemblies.nil?
+        debug "creating new metadata with dependencies: #{dependencies} [nuget model: metadata]" unless dependencies.nil?
+        debug "creating new metadata (same as prev) with fw asms: #{framework_assemblies} [nuget model: metadata]" unless framework_assemblies.nil?
       end
 
       # add a dependency to the package; id and version
       def add_dependency id, version
-        @dependencies[id] = OpenStruct.new(:id => id, :version => version)
+        @dependencies[id] = IdVersion.new id, version
       end
 
       # add a framework dependency for the package
       def add_framework_dependency id, version
-        @framework_assemblies[id] = OpenStruct.new(:id => id, :version => version)
+        @framework_assemblies[id] = IdVersion.new id, version
       end
 
       def to_xml_builder
@@ -112,6 +132,8 @@ end})
         raise ArgumentError, 'other is nil' if other.nil?
         raise ArgumentError, 'other is wrong type' unless other.is_a? Metadata
 
+        trace { "#{self} merging with #{other} [nuget model: metadata]" }
+
         deps = @dependencies.clone.merge(other.dependencies)
         fw_asms = @framework_assemblies.clone.merge(other.framework_assemblies)
 
@@ -119,21 +141,27 @@ end})
 
         # set all my fields to the new instance
         @set_fields.each do |field|
-          debug "setting field '#{field}' to be '#{send(field)}'" 
+          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]" 
           m_next.send(:"#{field}=", send(field))
         end
 
         # set all other's fields to the new instance, overriding mine
         other.set_fields.each do |field|
-          debug "setting field '#{field}' to be '#{send(field)}'" 
+          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]" 
           m_next.send(:"#{field}=", other.send(field))
         end
 
         m_next
       end
 
+      def to_s
+        "NugetModel::Metadata(#{ @set_fields.map { |f| "#{f}=#{send(f)}" }.join(', ') })"
+      end
+
+      self.extend Logging
+
       def self.from_xml node
-        Albacore.application.logger.debug { "constructing NugetModel::Metadata from node #{node.inspect}" }
+        debug { "constructing NugetModel::Metadata from node #{node.inspect} [nuget model: metadata]" }
 
         m = Metadata.new
         node.children.reject { |n| n.text? }.each do |n|
@@ -181,8 +209,15 @@ end})
 
       # add a file to the instance
       def add_file src, target, exclude = nil
-        @files << OpenStruct.new(:src => src, :target => target, :exclude => exclude)
+        @files << FileItem.new(src, target, exclude)
         self
+      end
+
+      # remove the file denoted by src
+      def remove_file src
+        src = src.src if src.respond_to? :src # if passed an OpenStruct e.g.
+        trace { "remove_file: removing file '#{src}' [nuget model: package]" }
+        @files = @files.reject { |f| f.src == src }
       end
 
       # do something with the metadata.
@@ -222,6 +257,13 @@ end})
         Package.new m_next, f_next
       end
 
+      def to_s
+        "NugetModel::Package(files: #{@files.map(&:to_s)}, metadata: #{ })"
+      end
+
+      # gimme some logging lööve
+      self.extend Logging
+
       # read the nuget specification from a nuspec file
       def self.from_xml xml
         parser = Nokogiri::XML(xml)
@@ -230,10 +272,7 @@ end})
           xpath('.//files').
           children.
           reject { |n| n.text? or n['src'].nil? }.
-          collect { |n|
-            h = { :src => n['src'], :target => n['target'], :exclude => n['exclude'] }
-            OpenStruct.new h
-          }
+          collect { |n| FileItem.new n['src'], n['target'], n['exclude'] }
         Package.new meta, files
       end
 
@@ -243,23 +282,32 @@ end})
         from_xxproj proj, *opts
       end
 
-      # read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
+      # Read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
+      # Options:
+      #  - symbols
+      #  - dotnet_version
+      #  - known_projects
+      #  - configuration
+      #  - project_dependencies
+      #  - nuget_dependencies
       def self.from_xxproj proj, *opts
-        opts = Map.options(opts).
+        opts = Map.options(opts || {}).
           apply({
             symbols:              false,
             dotnet_version:       'net40',
             known_projects:       Set.new,
             configuration:        'Debug',
             project_dependencies: true,
+            verify_files:         false,
             nuget_dependencies:   true })
 
-        debug = Albacore.application.logger.method :debug
+        trace { "#from_xxproj opts: #{opts} [nuget model: package]" }
+
         version = opts.get :version
         package = Package.new
-        package.metadata.id = proj.name
-        package.metadata.version = version
-        package.metadata.authors = proj.authors
+        package.metadata.id = proj.name if proj.name
+        package.metadata.version = version if version
+        package.metadata.authors = proj.authors if proj.authors
 
         if opts.get :nuget_dependencies
           # add declared packages as dependencies
@@ -274,7 +322,7 @@ end})
             declared_projects.
             keep_if { |p| opts.get(:known_projects).include? p.name }.
             each do |p|
-            debug.call "adding project dependency: #{proj.name} => #{p.name} at #{version}"
+            debug "adding project dependency: #{proj.name} => #{p.name} at #{version} [nuget model: package]"
             package.metadata.add_dependency p.name, version
           end
         end
@@ -285,24 +333,35 @@ end})
         if opts.get :symbols 
           compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
 
-          debug.call "add compiled files: #{compile_files}"
+          debug "add compiled files: #{compile_files} [nuget model: package]"
           compile_files.each do |f|
             target = %W[src #{f.include}].join('/')
             package.add_file f.include, target
           end 
 
-          debug.call "add dll and pdb files"
+          debug "add dll and pdb files [nuget model: package]"
           package.add_file (output + proj.asmname + '.pdb').gsub(/\\/, '/'), target_lib
           package.add_file (output + proj.asmname + '.dll').gsub(/\\/, '/'), target_lib
-        elsif
+        else
           # add *.{dll,xml,config}
           %w[dll xml config].each do |ext|
             file = %W{#{output} #{proj.asmname}.#{ext}}.
               map { |f| f.gsub /\\$/, '' }.
               map { |f| f.gsub /\\/, '/' }.
               join '/'
-            debug.call "adding file #{file}"
+            debug "adding binary file #{file} [nuget model: package]"
             package.add_file file, target_lib
+          end
+        end
+
+        if opts.get :verify_files
+          package.files.each do |file|
+            file_path = File.expand_path file.src, proj.proj_path_base
+            unless File.exists? file_path
+              package.remove_file file.src
+              info "while building nuspec for proj: #{proj.name}, file: #{file.src} => #{file.target} not found, removing from nuspec [nuget model: package]"
+              trace { "files: #{package.files.map { |f| f.src }.inspect} [nuget model: package]" }
+            end
           end
         end
 
