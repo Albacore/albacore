@@ -161,8 +161,6 @@ end})
       self.extend Logging
 
       def self.from_xml node
-        debug { "constructing NugetModel::Metadata from node #{node.inspect} [nuget model: metadata]" }
-
         m = Metadata.new
         node.children.reject { |n| n.text? }.each do |n|
           if n.name == 'dependencies'
@@ -258,7 +256,7 @@ end})
       end
 
       def to_s
-        "NugetModel::Package(files: #{@files.map(&:to_s)}, metadata: #{ })"
+        "NugetModel::Package(files: #{@files.map(&:to_s)}, metadata: #{ @metadata.to_s })"
       end
 
       # gimme some logging lööve
@@ -335,7 +333,7 @@ end})
 
           debug "add compiled files: #{compile_files} [nuget model: package]"
           compile_files.each do |f|
-            target = %W[src #{f.include}].join('/')
+            target = %W[src #{f.include.gsub(/\\/, '/')}].join('/')
             package.add_file f.include, target
           end 
 

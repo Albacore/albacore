@@ -15,12 +15,13 @@ module Albacore
     
     # get the project name specified in the project file
     def name
-      read_property "Name"
+      prop = read_property 'Name' || asmname
+      prop || asmname
     end
 
     # get the assembly name specified in the project file
     def asmname
-      read_property "AssemblyName"
+      read_property 'AssemblyName'
     end
 
     # gets the version from the project file
@@ -35,8 +36,11 @@ module Albacore
 
     # gets the output path of the project given the configuration
     def output_path conf
-      path = @proj_xml_node.css "Project PropertyGroup[Condition*=#{conf}] OutputPath"
-      debug "#{name}: output path node: #{path} [albacore: project]"
+      path = @proj_xml_node.css("Project PropertyGroup[Condition*=#{conf}] OutputPath")
+      debug "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]"
+      return path.inner_text unless path.empty?
+
+      path = @proj_xml_node.css("Project PropertyGroup OutputPath")
       path.inner_text
     end
     
@@ -126,7 +130,7 @@ module Albacore
 
     def read_property prop_name
       txt = @proj_xml_node.css("Project PropertyGroup #{prop_name}").inner_text
-      (txt.nil? || txt.strip.empty?) ? nil : txt.strip
+      txt.length == 0 ? nil : txt.strip
     end
 
     # find the node of pkg_id

@@ -369,4 +369,15 @@ describe "creating nuget on dependent proj file" do
     has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
     has_file 'Library.fs', 'src/Library.fs'
   end
+
+  describe 'Release-only output' do
+    let :projfile do
+      curr = File.dirname(__FILE__)
+      File.join curr, "testdata", "EmptyProject", "EmptyProject.csproj"
+    end 
+    has_not_file 'bin/Debug/Sample.Commands.dll'
+    has_not_file 'bin/Debug/EmptyProject.dll' 
+    has_not_file 'bin/Debug/EmptyProject.xml' 
+    has_file 'bin/Release/EmptyProject.dll', 'lib/net40'
+  end
 end
