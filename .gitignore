@@ -3,3 +3,7 @@ tmp/
 *.swp
 pkg/
 .DS_Store
+spec/testdata/TestingDependencies/Sample.Commands/Sample.Commands.nuspec
+spec/testdata/Project/Sample.Nuget.nuspec
+spec/testdata/TestingDependencies/Sample.Core/Sample.Core.nuspec
+

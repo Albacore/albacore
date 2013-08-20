@@ -1,0 +1,22 @@
+require 'albacore'
+require 'albacore/ext/teamcity'
+
+desc 'build the sample solution'
+build :b do |b|
+  b.sln = 'TestingDependencies/Sample.sln'
+end
+
+directory 'pkg'
+
+desc 'create some sweeet nugets'
+nugets_pack :pack => [:b, 'pkg'] do |p|
+  p.files   = FileList["./TestingDependencies/**/*.fsproj"]
+  p.out     = './pkg'
+  p.exe     = '../support/Nuget/NuGet.exe'
+  p.with_metadata do |m|
+    m.authors     = 'Henrik'
+    m.version     = '1.2.0'
+    m.description = 'this is awesome'
+  end
+  p.gen_symbols
+end

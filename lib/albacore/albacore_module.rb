@@ -1,4 +1,5 @@
 require 'albacore/application'
+require 'albacore/logging'
 
 # The albacore module instance methods.
 module Albacore
@@ -50,8 +51,6 @@ module Albacore
       end
     end
 
-    unless ENV.fetch('DEBUG', nil).nil?
-      Albacore.log_level = Logger::DEBUG
-    end
+    Albacore.log_level = Logger::DEBUG if ENV["DEBUG"]
   end
 end

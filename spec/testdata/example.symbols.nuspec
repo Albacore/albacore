@@ -12,10 +12,10 @@
     <tags>example spec</tags>
   </metadata>
   <files>
-    <file src="Full\bin\Debug\*.dll" target="lib\net40" /> 
-    <file src="Full\bin\Debug\*.pdb" target="lib\net40" /> 
-    <file src="Silverlight\bin\Debug\*.dll" target="lib\sl40" /> 
-    <file src="Silverlight\bin\Debug\*.pdb" target="lib\sl40" /> 
-    <file src="**\*.cs" target="src" />
+    <file src="Full/bin/Debug/*.dll" target="lib/net40" /> 
+    <file src="Full/bin/Debug/*.pdb" target="lib/net40" /> 
+    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40" /> 
+    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40" /> 
+    <file src="**/*.cs" target="src" />
   </files>
 </package>

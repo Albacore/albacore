@@ -4,48 +4,78 @@ require 'albacore'
 require 'albacore/task_types/nugets_pack'
 
 shared_context "pack_config" do
-  let :cfg do 
+  let :id do
+    'Sample.Nuget'
+  end
+  let :curr do
+    File.dirname(__FILE__)
+  end
+  let :config do
     cfg = Albacore::NugetsPack::Config.new
-    cfg.out = 'src/packages'
-    cfg.files = FileList['src/**/*.{csproj,fsproj}']
+    cfg.target        = 'net40'
+    cfg.configuration = 'Debug'
+    cfg.files         = Dir.glob(File.join(curr, 'testdata', 'Project', '*.fsproj'))
+    cfg.out           = 'spec/testdata/pkg'
+    cfg.exe           = 'NuGet.exe'
+    cfg.with_metadata do |m|
+      m.id            = id
+      m.authors       = 'haf'
+      m.owners        = 'haf owner'
+      m.description   = 'a nice lib'
+      m.language      = 'Danish'
+      m.project_url   = 'https://github.com/haf/Reasonable'
+      m.license_url   = 'https://github.com/haf/README.md'
+      m.release_notes = %{
+v10.0.0:
+  - Some notes
+}
+      m.require_license_acceptance = false
+
+      m.add_dependency 'Abc.Package', '>= 1.0.2'
+      m.add_framework_dependency 'System.Transactions', '4.0.0'
+    end
+    cfg.gen_symbols # files: *.{pdb,dll,all compiled files}
     cfg
   end
 end
+
+# testing the command for nuget
 
 describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   
   include_context 'pack_config'
 
   let :cmd do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', cfg.opts()
+    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
   end
 
   subject do 
     cmd.extend ShInterceptor
-    cmd.execute './spec/testdata/example.nuspec', './spec/testdata/example.symbols.spec'
+    cmd.execute './spec/testdata/example.nuspec', './spec/testdata/example.symbols.nuspec'
+    #puts "## INVOCATIONS:"
+    #cmd.invocations.each do |i|
+    #  puts "#{i}"
+    #end
     cmd
   end
 
-  describe "normal operation" do
+  describe "first invocation" do
     it "should run the correct executable" do
-      subject.mono_command.should eq('NuGet.exe')
+      subject.mono_command(0).should eq('NuGet.exe')
     end
     it "should include the correct parameters" do
-      subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
+      subject.mono_parameters(0).should eq(%w[Pack -OutputDirectory spec/testdata/pkg ./spec/testdata/example.nuspec])
     end
   end
-  describe 'packing with -Symbols' do
-    before do
-      cfg.gen_symbols
-    end
+
+  describe "second invocation" do
     it "should include -Symbols" do
-      pending "waiting for a class that generates nuspecs and nothing else"
-      subject.mono_parameters.should eq(%w[Pack -OutputDirectory src/packages -Symbols ./spec/testdata/example.nuspec])
+      subject.mono_parameters(1).should eq(%w[Pack -OutputDirectory spec/testdata/pkg -Symbols ./spec/testdata/example.symbols.nuspec])
     end
-  end 
+  end
 end
 
-describe Albacore::NugetsPack::NuspecTask do
+describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
   include_context 'pack_config'
 
   it "accepts .nuspec files" do
@@ -53,7 +83,7 @@ describe Albacore::NugetsPack::NuspecTask do
   end
 
   let (:cmd) do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', cfg.opts()
+    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
   end
 
   subject do
@@ -62,7 +92,7 @@ describe Albacore::NugetsPack::NuspecTask do
 
   before do
     cmd.extend(ShInterceptor)
-    task = Albacore::NugetsPack::NuspecTask.new cmd, cfg, './spec/testdata/example.nuspec'
+    task = Albacore::NugetsPack::NuspecTask.new cmd, config, './spec/testdata/example.nuspec'
     task.execute
   end
 
@@ -70,20 +100,44 @@ describe Albacore::NugetsPack::NuspecTask do
     subject.mono_command.should eq('NuGet.exe')
   end
   it "should give the correct parameters" do
-    pending "waiting for a class that generates the nuspec xml"
-    subject.mono_parameters.should eq(%W[Pack -OutputDirectory src/packages ./spec/testdata/example.nuspec])
+    subject.mono_parameters.should eq(%W[Pack -OutputDirectory spec/testdata/pkg ./spec/testdata/example.nuspec])
   end
 end
 
-describe Albacore::NugetsPack::ProjectTask do
+describe Albacore::NugetsPack::ProjectTask, "when testing public interface" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project.fsproj"
   end
   it "can be created" do
-    Albacore::NugetsPack::ProjectTask.new "", "", projfile
+    Albacore::NugetsPack::ProjectTask.new(Map.new(:files => [projfile]))
   end
   it "rejects .nuspec files" do
     Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
+  end
+end
+
+describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
+  let(:cmdo) { Hash.new }
+
+  include_context 'pack_config'
+
+  subject do
+    Albacore::NugetsPack::ProjectTask.new(config.opts()) do |cmd|
+      cmd.extend ShInterceptor
+      cmdo[:cmd] = cmd
+    end
+  end 
+
+  before :each do
+    subject.execute
+  end
+
+  it "should have generated a nuspec" do
+    cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+  end
+
+  it "should have generated a symbol nuspec" do
+    cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.symbols.nuspec')
   end
 end

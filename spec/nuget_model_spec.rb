@@ -7,12 +7,13 @@ describe Albacore::NugetModel::Metadata do
       subject.should respond_to(prop)
     end
   end
+
   describe "when adding a dependency" do
     before do 
       subject.add_dependency 'DepId', '=> 3.4.5'
     end
     let :dep do
-      subject.dependencies.first
+      subject.dependencies['DepId']
     end
     it "should contain the dependency version" do
       dep.version.should eq('=> 3.4.5')
@@ -24,12 +25,13 @@ describe Albacore::NugetModel::Metadata do
       subject.dependencies.length.should eq(1)
     end
   end
+
   describe "when adding a framework dependency" do
     before do
       subject.add_framework_dependency 'System.Transactions', '2.0.0' 
     end
     let :dep do
-      subject.framework_assemblies.first
+      subject.framework_assemblies.first[1]
     end
     it "should contain the dependency id" do
       dep.id.should eq('System.Transactions')
@@ -83,11 +85,11 @@ describe Albacore::NugetModel::Package, "from XML" do
     </dependencies>
   </metadata>
   <files>
-    <file src="Full\\bin\\Debug\\*.dll" target="lib\\net40" /> 
-    <file src="Full\\bin\\Debug\\*.pdb" target="lib\\net40" /> 
-    <file src="Silverlight\\bin\\Debug\\*.dll" target="lib\\sl40" /> 
-    <file src="Silverlight\\bin\\Debug\\*.pdb" target="lib\\sl40" /> 
-    <file src="**\\*.cs" target="src" />
+    <file src="Full/bin/Debug/*.dll" target="lib/net40" /> 
+    <file src="Full/bin/Debug/*.pdb" target="lib/net40" /> 
+    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40" /> 
+    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40" /> 
+    <file src="**/*.cs" target="src" />
   </files>
 </package>
 }
@@ -99,8 +101,8 @@ describe Albacore::NugetModel::Package, "from XML" do
   end
   subject do
     package = Albacore::NugetModel::Package.from_xml xml
-    puts "node: #{package.inspect}"
-    puts "node meta: #{package.metadata.inspect}"
+    #puts "node: #{package.inspect}"
+    #puts "node meta: #{package.metadata.inspect}"
     package
   end
   it "should exist" do
@@ -108,7 +110,7 @@ describe Albacore::NugetModel::Package, "from XML" do
   end
   it "should have the metadata properties of the XML above" do
     parser.
-      xpath('.//metadata').
+      xpath('./metadata').
       children.
       reject { |n| n.name == 'dependencies' }.
       reject { |n| n.text? }.
@@ -117,42 +119,254 @@ describe Albacore::NugetModel::Package, "from XML" do
       subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
     end
   end
+
   describe "all dependencies" do
     it "should have the SampleDependency dependency of the XML above" do
-      parser.xpath('.//metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
-        subject.metadata.dependencies.find{ |d| d.id == dep['id'] }.should_not be_nil
+      parser.xpath('./metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
+        subject.metadata.dependencies[dep['id']].should_not be_nil
       end
     end 
   end
+
   it "should have all the files of the XML above" do
     subject.files.length.should eq(5)
   end
+
   it "should have a dep on SampleDependency version 1.0" do
-    subject.metadata.dependencies.find { |d| d.id == 'SampleDependency' }.should_not be_nil
+    subject.metadata.dependencies['SampleDependency'].should_not be_nil
   end
 end
 
 
-describe "when reading xml from a fsproj file into a hash" do
-  let :fsproj do
-    %{
-
-
-}
+shared_context 'metadata_dsl' do
+  let :m do
+    subject.metadata
   end
-  it "should the project name" do
-    
+
+  def self.has_value sym, e
+    it "should have overridden #{sym}, to be #{e}" do
+      m.send(sym).should eq e
+    end
   end
-  it "should find the the author"
-  # etc ..
+
+  def self.has_dep name, version
+    it "has dependency on '#{name}'" do
+      m.dependencies.has_key?(name).should be_true
+    end
+    it "overrode dependency on '#{name}'" do
+      m.dependencies[name].version.should eq version
+    end
+  end
+
+  def self.has_not_dep name
+    it "does not have a dependency on #{name}" do
+      m.dependencies.has_key?(name).should be_false
+    end
+  end
+
+  def self.has_file src, target, exclude = nil
+    it "has file[#{src}] (should not be nil)" do
+      file = subject.files.find { |f| f.src == src }
+#       puts "## ALL FILES ##"
+#       subject.files.each do |f|
+#         #puts "subject.files: #{subject.files}, index of: #{subject.files.find_index { |f| f.src == src }}"
+#         puts "#{f.inspect}"
+#       end
+      file.should_not be_nil 
+    end
+
+    it "has file[#{src}].target == '#{target}'" do
+      file = subject.files.find { |f| f.src == src }
+      file.target.should eq target
+    end 
+  end
+
+  def self.has_not_file src
+    it "has not file[#{src}]" do
+      file = subject.files.find { |f| f.src == src }
+      file.should be_nil
+    end
+  end
 end
 
-describe "how to merge data from an xml, an fsproj and a hash" do
-  let :xml do ; end
-  let :fsproj do ; end
-  let :hash do ; end
-  let :sources do
+describe "when reading xml from a fsproj file into Project/Metadata" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project", "Project.fsproj"
+  end 
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile
   end
-  it "should select the value from the topmost source"
-  it "if the topmost source doesn't have value, moves to next"
+
+  include_context 'metadata_dsl'
+
+  it "should find Name element" do
+    m.id.should eq 'Project'
+  end
+
+  it "should not find Version element" do
+    m.version.should eq nil
+  end
+
+  it "should find Authors element" do
+    m.authors.should eq "Henrik Feldt"
+  end
+
+  describe "when including files" do
+    subject do
+      Albacore::NugetModel::Package.from_xxproj_file projfile, :symbols => true
+    end
+    it "should contain all files (just one) and all dll and pdb files (two)" do
+      subject.files.length.should eq 3
+    end
+
+    has_file 'Library1.fs', 'src/Library1.fs'
+    has_file 'bin/Debug/Project.dll', 'lib/net40'
+    has_file 'bin/Debug/Project.pdb', 'lib/net40'
+  end
+end
+
+
+describe Albacore::NugetModel::Package, "overriding metadata" do
+  let :p1 do
+    p = Albacore::NugetModel::Package.new.with_metadata do |m|
+      m.id = 'A.B'
+      m.version = '2.1.3'
+      m.add_dependency 'NLog', '2.0'
+    end
+    p.add_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
+    p.add_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
+  end 
+  let :p2 do
+    Albacore::NugetModel::Package.new.with_metadata do |m|
+      m.id = 'A.B.C'
+      m.add_dependency 'NLog', '2.3'
+      m.add_dependency 'Castle.Core', '3.0.0'
+      m.owners = 'Henrik Feldt'
+    end
+  end
+  subject do
+    p1.merge_with p2
+  end
+
+  include_context 'metadata_dsl'
+
+  describe "when overriding:" do
+    has_value :id, 'A.B.C'
+    has_value :owners, 'Henrik Feldt'
+    has_value :version, '2.1.3'
+
+    has_dep 'NLog', '2.3'
+    has_dep 'Castle.Core', '3.0.0'
+
+    has_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
+    has_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
+  end
+end
+
+describe "creating nuget (not symbols) from dependent proj file" do
+
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+  end 
+
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile,
+      :known_projects => %w[Sample.Core],
+      :version        => '2.3.0',
+      :configuration  => 'Debug'
+  end
+  
+  include_context 'metadata_dsl'
+
+  # from fsproj
+  has_dep 'Sample.Core', '2.3.0'
+
+  # from packages.config
+  has_dep 'Magnum', '2.1.0'
+  has_dep 'MassTransit', '2.8.0'
+  has_dep 'Newtonsoft.Json', '5.0.6'
+
+  # actual nuspec contents
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+end
+
+describe "creating nuget on dependent proj file" do
+
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+  end 
+
+  let :opts do
+    { project_dependencies: false,
+      known_projects:       %w[Sample.Core],
+      version:             '2.3.0' }
+  end
+
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile, opts
+  end
+  
+  include_context 'metadata_dsl'
+
+  describe 'without project_dependencies' do
+    # just as the opts in the main describe says...
+    has_not_dep 'Sample.Core'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
+  end
+
+  describe 'without nuget_dependencies' do
+    let :opts do
+      { nuget_dependencies: false,
+        known_projects:     %w[Sample.Core],
+        version:           '2.3.0' }
+    end
+
+    has_dep 'Sample.Core', '2.3.0'
+    has_not_dep 'Magnum'
+    has_not_dep 'MassTransit'
+    has_not_dep 'Newtonsoft.Json'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
+  end
+
+  describe 'without symbols' do
+    let :opts do
+      { symbols:        false,
+        known_projects: %w[Sample.Core],
+        version:       '2.3.0' }
+    end
+    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
+  end
+
+  describe 'with symbols' do
+    let :opts do
+      { symbols:        true,
+        known_projects: %w[Sample.Core],
+        version:        '2.3.0' }
+    end
+    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_not_file 'bin/Debug/Sample.Commands.xml'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
+    has_file 'Library.fs', 'src/Library.fs'
+  end
 end
