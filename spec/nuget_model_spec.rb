@@ -165,7 +165,7 @@ shared_context 'metadata_dsl' do
   end
 
   def self.has_file src, target, exclude = nil
-    src = Albacore::Paths.normalise_slashes src
+    src, target = norm(src), norm(target)
     it "has file[#{src}] (should not be nil)" do
       file = subject.files.find { |f| f.src == src }
 #       puts "## ALL FILES ##"
@@ -183,12 +183,16 @@ shared_context 'metadata_dsl' do
   end
 
   def self.has_not_file src
-    src = Albacore::Paths.normalise_slashes src
+    src = norm src
     it "has not file[#{src}]" do
       file = subject.files.find { |f| f.src == src }
       file.should be_nil
     end
   end
+
+  def self.norm str
+    Albacore::Paths.normalise_slashes str
+  end  
 end
 
 describe "when reading xml from a fsproj file into Project/Metadata" do
