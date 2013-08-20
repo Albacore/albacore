@@ -138,6 +138,6 @@ describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
   end
 
   it "should have generated a symbol nuspec" do
-    cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.nuspec')
+    cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.symbols.nuspec')
   end
 end

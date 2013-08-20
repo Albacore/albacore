@@ -176,8 +176,8 @@ module Albacore
       # execute, for each project file
       private
       def execute_inner! proj, nuspec, nuspec_symbols
-        nuspec_path = write_nuspec! proj, nuspec
-        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols
+        nuspec_path = write_nuspec! proj, nuspec, false
+        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols, true
 
         create_nuget! proj.proj_path_base, nuspec_path, nuspec_symbols_path
       rescue => e
@@ -204,8 +204,8 @@ module Albacore
       end
 
       private
-      def write_nuspec! proj, nuspec
-        nuspec_path = File.join(proj.proj_path_base, nuspec.metadata.id + '.nuspec')
+      def write_nuspec! proj, nuspec, symbols
+        nuspec_path = File.join(proj.proj_path_base, nuspec.metadata.id + "#{ symbols ? '.symbols' : '' }.nuspec")
         File.write(nuspec_path, nuspec.to_xml)
         nuspec_path
       end
