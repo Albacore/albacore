@@ -158,6 +158,12 @@ shared_context 'metadata_dsl' do
     end
   end
 
+  def self.has_not_dep name
+    it "does not have a dependency on #{name}" do
+      m.dependencies.has_key?(name).should be_false
+    end
+  end
+
   def self.has_file src, target, exclude = nil
     it "has file[#{src}] (should not be nil)" do
       file = subject.files.find { |f| f.src == src }
@@ -168,10 +174,18 @@ shared_context 'metadata_dsl' do
 #       end
       file.should_not be_nil 
     end
+
     it "has file[#{src}].target == '#{target}'" do
       file = subject.files.find { |f| f.src == src }
       file.target.should eq target
     end 
+  end
+
+  def self.has_not_file src
+    it "has not file[#{src}]" do
+      file = subject.files.find { |f| f.src == src }
+      file.should be_nil
+    end
   end
 end
 
@@ -279,53 +293,80 @@ describe "creating nuget (not symbols) from dependent proj file" do
   has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
 end
 
-describe "creating nuget (no symbols) with :project_dependencies => false, on dependent proj file" do
+describe "creating nuget on dependent proj file" do
 
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
   end 
 
+  let :opts do
+    { project_dependencies: false,
+      known_projects:       %w[Sample.Core],
+      version:             '2.3.0' }
+  end
+
   subject do
-    Albacore::NugetModel::Package.from_xxproj_file projfile,
-      :known_projects => %w[Sample.Core],
-      :version        => '2.3.0',
-      :configuration  => 'Debug',
-      :project_dependencies => false
+    Albacore::NugetModel::Package.from_xxproj_file projfile, opts
   end
   
   include_context 'metadata_dsl'
 
-  it 'should not have dependency on Sample.Core' do
-    m.dependencies['Sample.Core'].should be_nil
+  describe 'without project_dependencies' do
+    # just as the opts in the main describe says...
+    has_not_dep 'Sample.Core'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
   end
 
-  # from packages.config
-  has_dep 'Magnum', '2.1.0'
-  has_dep 'MassTransit', '2.8.0'
-  has_dep 'Newtonsoft.Json', '5.0.6'
+  describe 'without nuget_dependencies' do
+    let :opts do
+      { nuget_dependencies: false,
+        known_projects:     %w[Sample.Core],
+        version:           '2.3.0' }
+    end
 
-  # actual nuspec contents
-  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
-end
-
-describe 'creating nuget symbols from dependent proj file' do
-  let :projfile do
-    curr = File.dirname(__FILE__)
-    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
-  end 
-  subject do
-    Albacore::NugetModel::Package.from_xxproj_file projfile,
-      :symbols        => true,
-      :version        => '2.1.0',
-      :known_projects => %w[Sample.Core],
-      :configuration  => 'Debug'
+    has_dep 'Sample.Core', '2.3.0'
+    has_not_dep 'Magnum'
+    has_not_dep 'MassTransit'
+    has_not_dep 'Newtonsoft.Json'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
   end
-  
-  include_context 'metadata_dsl'
-  
-  has_file 'Library.fs', 'src/Library.fs'
-  has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
-  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+
+  describe 'without symbols' do
+    let :opts do
+      { symbols:        false,
+        known_projects: %w[Sample.Core],
+        version:       '2.3.0' }
+    end
+    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
+  end
+
+  describe 'with symbols' do
+    let :opts do
+      { symbols:        true,
+        known_projects: %w[Sample.Core],
+        version:        '2.3.0' }
+    end
+    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_not_file 'bin/Debug/Sample.Commands.xml'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
+    has_file 'Library.fs', 'src/Library.fs'
+  end
 end

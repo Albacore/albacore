@@ -251,7 +251,8 @@ end})
             dotnet_version:       'net40',
             known_projects:       Set.new,
             configuration:        'Debug',
-            project_dependencies: true })
+            project_dependencies: true,
+            nuget_dependencies:   true })
 
         debug = Albacore.application.logger.method :debug
         version = opts.get :version
@@ -260,9 +261,11 @@ end})
         package.metadata.version = version
         package.metadata.authors = proj.authors
 
-        # add declared packages as dependencies
-        proj.declared_packages.each do |p|
-          package.metadata.add_dependency p.id, p.version
+        if opts.get :nuget_dependencies
+          # add declared packages as dependencies
+          proj.declared_packages.each do |p|
+            package.metadata.add_dependency p.id, p.version
+          end
         end
 
         if opts.get :project_dependencies
