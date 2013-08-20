@@ -6,6 +6,10 @@ module Albacore
   # module methods for handling paths
   module Paths
     class << self
+      def separator
+        ::Rake::Win32.windows? ? '\\' : '/'
+      end
+
       # normalize the slashes of the path to what the operating system prefers
       def normalise_slashes path
         raise ArgumentError, "path is nil" if path.nil?

@@ -326,27 +326,27 @@ end})
         end
 
         output = proj.output_path(opts.get(:configuration))
-        target_lib = %W[lib #{opts.get(:dotnet_version)}].join('/')
+        target_lib = %W[lib #{opts.get(:dotnet_version)}].join(Albacore::Paths.separator)
 
         if opts.get :symbols 
           compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
 
           debug "add compiled files: #{compile_files} [nuget model: package]"
           compile_files.each do |f|
-            target = %W[src #{f.include.gsub(/\\/, '/')}].join('/')
+            target = %W[src #{Albacore::Paths.normalise_slashes(f.include)}].join(Albacore::Paths.separator)
             package.add_file f.include, target
           end 
 
           debug "add dll and pdb files [nuget model: package]"
-          package.add_file (output + proj.asmname + '.pdb').gsub(/\\/, '/'), target_lib
-          package.add_file (output + proj.asmname + '.dll').gsub(/\\/, '/'), target_lib
+          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.pdb'), target_lib)
+          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.dll'), target_lib)
         else
           # add *.{dll,xml,config}
           %w[dll xml config].each do |ext|
             file = %W{#{output} #{proj.asmname}.#{ext}}.
               map { |f| f.gsub /\\$/, '' }.
-              map { |f| f.gsub /\\/, '/' }.
-              join '/'
+              map { |f| Albacore::Paths.normalise_slashes f }.
+              join(Albacore::Paths.separator)
             debug "adding binary file #{file} [nuget model: package]"
             package.add_file file, target_lib
           end

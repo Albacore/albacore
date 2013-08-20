@@ -165,6 +165,7 @@ shared_context 'metadata_dsl' do
   end
 
   def self.has_file src, target, exclude = nil
+    src = Albacore::Paths.normalise_slashes src
     it "has file[#{src}] (should not be nil)" do
       file = subject.files.find { |f| f.src == src }
 #       puts "## ALL FILES ##"
@@ -182,6 +183,7 @@ shared_context 'metadata_dsl' do
   end
 
   def self.has_not_file src
+    src = Albacore::Paths.normalise_slashes src
     it "has not file[#{src}]" do
       file = subject.files.find { |f| f.src == src }
       file.should be_nil
