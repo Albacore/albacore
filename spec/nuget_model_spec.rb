@@ -85,11 +85,11 @@ describe Albacore::NugetModel::Package, "from XML" do
     </dependencies>
   </metadata>
   <files>
-    <file src="Full\\bin\\Debug\\*.dll" target="lib\\net40" /> 
-    <file src="Full\\bin\\Debug\\*.pdb" target="lib\\net40" /> 
-    <file src="Silverlight\\bin\\Debug\\*.dll" target="lib\\sl40" /> 
-    <file src="Silverlight\\bin\\Debug\\*.pdb" target="lib\\sl40" /> 
-    <file src="**\\*.cs" target="src" />
+    <file src="Full/bin/Debug/*.dll" target="lib/net40" /> 
+    <file src="Full/bin/Debug/*.pdb" target="lib/net40" /> 
+    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40" /> 
+    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40" /> 
+    <file src="**/*.cs" target="src" />
   </files>
 </package>
 }
@@ -110,7 +110,7 @@ describe Albacore::NugetModel::Package, "from XML" do
   end
   it "should have the metadata properties of the XML above" do
     parser.
-      xpath('.//metadata').
+      xpath('./metadata').
       children.
       reject { |n| n.name == 'dependencies' }.
       reject { |n| n.text? }.
@@ -122,7 +122,7 @@ describe Albacore::NugetModel::Package, "from XML" do
 
   describe "all dependencies" do
     it "should have the SampleDependency dependency of the XML above" do
-      parser.xpath('.//metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
+      parser.xpath('./metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
         subject.metadata.dependencies[dep['id']].should_not be_nil
       end
     end 
@@ -206,9 +206,9 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
       subject.files.length.should eq 3
     end
 
-    has_file 'Library1.fs', 'src\\Library1.fs'
-    has_file 'bin\\Debug\\Project.dll', 'lib\\net40'
-    has_file 'bin\\Debug\\Project.pdb', 'lib\\net40'
+    has_file 'Library1.fs', 'src/Library1.fs'
+    has_file 'bin/Debug/Project.dll', 'lib/net40'
+    has_file 'bin/Debug/Project.pdb', 'lib/net40'
   end
 end
 
@@ -221,7 +221,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
       m.add_dependency 'NLog', '2.0'
     end
     p.add_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
-    p.add_file 'CodeFolder\\*.fs', 'lib', 'AssemblyInfo.fs'
+    p.add_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
   end 
   let :p2 do
     Albacore::NugetModel::Package.new.with_metadata do |m|
@@ -246,7 +246,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
     has_dep 'Castle.Core', '3.0.0'
 
     has_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
-    has_file 'CodeFolder\\*.fs', 'lib', 'AssemblyInfo.fs'
+    has_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
   end
 end
 
@@ -275,8 +275,8 @@ describe "creating nuget (not symbols) from dependent proj file" do
   has_dep 'Newtonsoft.Json', '5.0.6'
 
   # actual nuspec contents
-  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
-  has_file 'bin\\Debug\\Sample.Commands.xml', 'lib\\net40'
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
 end
 
 describe "creating nuget (no symbols) with :project_dependencies => false, on dependent proj file" do
@@ -306,8 +306,8 @@ describe "creating nuget (no symbols) with :project_dependencies => false, on de
   has_dep 'Newtonsoft.Json', '5.0.6'
 
   # actual nuspec contents
-  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
-  has_file 'bin\\Debug\\Sample.Commands.xml', 'lib\\net40'
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
 end
 
 describe 'creating nuget symbols from dependent proj file' do
@@ -325,7 +325,7 @@ describe 'creating nuget symbols from dependent proj file' do
   
   include_context 'metadata_dsl'
   
-  has_file 'Library.fs', 'src\\Library.fs'
-  has_file 'bin\\Debug\\Sample.Commands.pdb', 'lib\\net40'
-  has_file 'bin\\Debug\\Sample.Commands.dll', 'lib\\net40'
+  has_file 'Library.fs', 'src/Library.fs'
+  has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
 end

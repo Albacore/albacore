@@ -17,7 +17,7 @@ end})
           self.class_eval(
 %{def #{sym}= val
   @#{sym} = val
-  @set_fields << :#{sym}
+  @set_fields.add? :#{sym}
 end})                      
         end 
       end
@@ -70,7 +70,7 @@ end})
 
       # initialise a new package data object
       def initialize dependencies = nil, framework_assemblies = nil
-        @set_fields = []
+        @set_fields   = Set.new
         @dependencies = dependencies ||  Hash.new
         @framework_assemblies = framework_assemblies || Hash.new
 
@@ -246,15 +246,15 @@ end})
       # read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
       def self.from_xxproj proj, *opts
         opts = Map.options(opts).
-          apply(
-            :symbols        => false,
-            :dotnet_version => 'net40',
-            :known_projects => Set.new,
-            :configuration  => 'Debug',
-            :project_dependencies => true)
+          apply({
+            symbols:              false,
+            dotnet_version:       'net40',
+            known_projects:       Set.new,
+            configuration:        'Debug',
+            project_dependencies: true })
 
-        debug = Albacore.application.logger.method(:debug)
-        version = opts.get(:version)
+        debug = Albacore.application.logger.method :debug
+        version = opts.get :version
         package = Package.new
         package.metadata.id = proj.name
         package.metadata.version = version
@@ -277,24 +277,27 @@ end})
         end
 
         output = proj.output_path(opts.get(:configuration))
-        target_lib = %W[lib #{opts.get(:dotnet_version)}].join('\\')
+        target_lib = %W[lib #{opts.get(:dotnet_version)}].join('/')
 
         if opts.get :symbols 
           compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
 
           debug.call "add compiled files: #{compile_files}"
           compile_files.each do |f|
-            target = %W[src #{f.include}].join('\\')
+            target = %W[src #{f.include}].join('/')
             package.add_file f.include, target
           end 
 
           debug.call "add dll and pdb files"
-          package.add_file (output + proj.asmname + '.pdb'), target_lib
-          package.add_file (output + proj.asmname + '.dll'), target_lib
+          package.add_file (output + proj.asmname + '.pdb').gsub(/\\/, '/'), target_lib
+          package.add_file (output + proj.asmname + '.dll').gsub(/\\/, '/'), target_lib
         elsif
           # add *.{dll,xml,config}
           %w[dll xml config].each do |ext|
-            file = output + "#{proj.asmname}.#{ext}"
+            file = %W{#{output} #{proj.asmname}.#{ext}}.
+              map { |f| f.gsub /\\$/, '' }.
+              map { |f| f.gsub /\\/, '/' }.
+              join '/'
             debug.call "adding file #{file}"
             package.add_file file, target_lib
           end

@@ -85,6 +85,7 @@ module Albacore
         @package = Albacore::NugetModel::Package.new
         @target  = 'net40'
         @symbols = false
+        fill_required
       end
 
       def with_metadata &block
@@ -105,6 +106,10 @@ module Albacore
       # gets the options specified for the task
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
+
+        [:authors, :description, :version].each do |required|
+          warn "metadata##{required} is missing from nugets_pack" if @package.metadata.send(required) == 'MISSING' 
+        end
         
         Map.new({
           :out           => @out,
@@ -116,6 +121,14 @@ module Albacore
           :configuration => @configuration,
           :original_path => FileUtils.pwd
         })
+      end
+
+      private
+      def fill_required
+        # see http://docs.nuget.org/docs/reference/nuspec-reference
+        with_metadata do |m|
+          m.authors = m.description = m.version = 'MISSING'
+        end
       end
     end
 
@@ -171,7 +184,7 @@ module Albacore
         err (e.inspect)
         raise $!
       ensure
-        #[nuspec_path, nuspec_symbols_path].each{|n| cleanup_nuspec n}
+        [nuspec_path, nuspec_symbols_path].each{|n| cleanup_nuspec n}
       end
 
       ## Creating

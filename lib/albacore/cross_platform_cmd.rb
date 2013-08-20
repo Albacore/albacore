@@ -65,16 +65,20 @@ module Albacore
       raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
 
       exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
-      block = lambda { |ok, status| ok or raise_failure(exe, status) } unless block_given?
+      printable = %Q{#{exe} #{pars.join(' ')}}
+      block = lambda { |ok, status| ok or raise_failure(printable, status) } unless block_given?
 
       trace "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s})"
 
       chdir opts.get(:work_dir) do
-        puts %Q{#{exe} #{pars.join(' ')}} unless opts.get :silent, false # log cmd verbatim
+        puts printable unless opts.get :silent, false # log cmd verbatim
         begin
           lines = ''
           IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
-            io.each { |line| lines << line }
+            io.each do |line|
+              lines << line
+              puts line if opts.get(:output, true) or not opts.get(:silent, false)
+            end
           end
         rescue Errno::ENOENT => e
           return block.call(nil, PseudoStatus.new(127))
@@ -178,9 +182,9 @@ module Albacore
     def chdir wd, &block
       return block.call if wd.nil?
       Dir.chdir wd do
-        trace "pushd #{wd}"
+        debug "pushd #{wd}"
         res = block.call
-        trace "popd #{wd}"
+        debug "popd #{wd}"
         return res
       end
     end
