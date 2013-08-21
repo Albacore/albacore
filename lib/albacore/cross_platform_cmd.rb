@@ -97,6 +97,10 @@ module Albacore
       end
     end
 
+    # http://www.ruby-doc.org/core-2.0/Process.html#method-c-spawn
+    # https://practicingruby.com/articles/shared/ujxrxprnlugz
+    # https://github.com/jonleighton/poltergeist/blob/3365dadfb6242b0b91fe00359ff881e582cc2557/lib/capybara/poltergeist/client.rb
+
     # run in shell
     def sh *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
