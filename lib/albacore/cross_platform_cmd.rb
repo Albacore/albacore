@@ -78,7 +78,7 @@ module Albacore
           IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
             io.each do |line|
               lines << line
-              puts line if opts.get(:output, true) or not opts.get(:silent, false)
+              puts line if opts.get(:output, true) or not opts.getopt(:silent, false)
             end
           end
         end
@@ -91,8 +91,8 @@ module Albacore
     # only handles err and out so far
     def spawn_opts call_opts
       opts = {}
-      opts[:err] = Albacore.application.output_err unless call_opts.get :silent, false
-      opts[:out] = Albacore.application.output if call_opts.get :output, true
+      opts[:err] = Albacore.application.output_err unless call_opts.getopt :silent, false
+      opts[:out] = Albacore.application.output if call_opts.getopt :output, true
       opts
     end
 
@@ -107,14 +107,14 @@ module Albacore
       chdir opts.get(:work_dir) do
 
         trace "# sh( ...,  options: #{opts.to_s})"
-        puts cmd unless opts.get :silent, false # log cmd verbatim
+        puts cmd unless opts.getopt :silent, false # log cmd verbatim
 
         lines = ''
         handle_not_found block do
           IO.popen(cmd, 'r') do |io|
             io.each do |line|
               lines << line
-              puts line if opts.get(:output, true) or not opts.get(:silent, false)
+              puts line if opts.getopt(:output, true) or not opts.getopt(:silent, false)
             end
           end
         end
@@ -158,7 +158,7 @@ module Albacore
       trace "#{cmd} #{parameters.join(' ')}"
 
       null = ::Rake::Win32.windows? ? "NUL" : "/dev/null"
-      res = IO.popen([cmd, *parameters], { :err => null, :out => null }) do |io|
+      res = IO.popen([cmd, *parameters]) do |io|
         io.read.chomp
       end
       
