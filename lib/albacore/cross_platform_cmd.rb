@@ -59,41 +59,42 @@ module Albacore
     #
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
+      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}). # same arg parsing as rake
+        apply(
+          silent: false,
+          output: true,
+          out: Albacore.application.output,
+          err: Albacore.application.output_err)
 
-      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
-      pars = cmd[1..-1].flatten
+      exe, pars, printable, block = prepare_command cmd, &block
 
-      raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
+      # TODO: figure out how to interleave output and error streams
+      out, _, inmem = opts.get(:out), opts.get(:err), StringIO.new
 
-      exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
-      printable = %Q{#{exe} #{pars.join(' ')}}
-      block = lambda { |ok, status| ok or raise_failure(printable, status) } unless block_given?
+      trace "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s}), in directory: #{opts.getopt(:workdir, '<<current>>')}"
 
-      trace "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s})"
+      puts printable unless opts.get :silent, false # log cmd verbatim
 
-      chdir opts.get(:work_dir) do
-        puts printable unless opts.get :silent, false # log cmd verbatim
-        lines = ''
-        handle_not_found block do
-          IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
-            io.each do |line|
-              lines << line
-              puts line if opts.get(:output, true) or not opts.getopt(:silent, false)
-            end
+      handle_not_found block do
+        # create a pipe for the process to work with
+        read, write = IO.pipe
+
+        # this thread chews through the output
+        out_thread = Thread.new {
+          while !read.eof? && data = read.readpartial(1024)
+            out.write data
+            inmem.write data # to give the block at the end
           end
-        end
-        return block.call($? == 0 && lines, $?)
-      end
-    end
+        }
 
-    # gets the spawn options based on a #Map input for a #system or #sh or #shie call.
-    # see http://www.ruby-doc.org/core-1.9.3/Process.html#method-c-spawn
-    # only handles err and out so far
-    def spawn_opts call_opts
-      opts = {}
-      opts[:err] = Albacore.application.output_err unless call_opts.getopt :silent, false
-      opts[:out] = Albacore.application.output if call_opts.getopt :output, true
-      opts
+        # execute the new process, letting it write to the write FD (file descriptor)
+        pid = Process.spawn(*[exe, *pars], out: write, chdir: opts.getopt(:workdir, FileUtils.pwd))
+
+        # wait for completion
+        _, status = Process.wait2 pid
+
+        return block.call(status.success? && inmem.to_s, status)
+      end
     end
 
     # run in shell
@@ -184,13 +185,27 @@ module Albacore
     
     private
 
+    def prepare_command cmd, &block
+      pars = cmd[1..-1].flatten
+      raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
+
+      exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
+      printable = %Q{#{exe} #{pars.join(' ')}}
+      handler = block_given? ? block : handler_with_message(printable)
+      [exe, pars, printable, handler]
+    end
+
+    def handler_with_message printable
+      lambda { |ok, status| ok or raise_failure(printable, status) }
+    end
+
     # handles the errors from not finding the executable on the system
     def handle_not_found rescue_block
       yield
     rescue Errno::ENOENT => e
-      return rescue_block.call(nil, PseudoStatus.new(127))
+      rescue_block.call(nil, PseudoStatus.new(127))
     rescue IOError => e # rescue for JRuby
-      return rescue_block.call(nil, PseudoStatus.new(127)) 
+      rescue_block.call(nil, PseudoStatus.new(127)) 
     end
 
 
