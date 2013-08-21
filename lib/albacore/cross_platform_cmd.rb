@@ -59,6 +59,7 @@ module Albacore
     #
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
+
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
       pars = cmd[1..-1].flatten
 
@@ -73,15 +74,13 @@ module Albacore
       chdir opts.get(:work_dir) do
         puts printable unless opts.get :silent, false # log cmd verbatim
         lines = ''
-        begin
+        handle_not_found block do
           IO.popen([exe, *pars], spawn_opts(opts)) do |io| # when given a block, returns #IO
             io.each do |line|
               lines << line
               puts line if opts.get(:output, true) or not opts.get(:silent, false)
             end
           end
-        rescue Errno::ENOENT => e
-          return block.call(nil, PseudoStatus.new(127))
         end
         return block.call($? == 0 && lines, $?)
       end
@@ -108,24 +107,18 @@ module Albacore
       chdir opts.get(:work_dir) do
 
         trace "# sh( ...,  options: #{opts.to_s})"
-
         puts cmd unless opts.get :silent, false # log cmd verbatim
-        begin
-          lines = ''
+
+        lines = ''
+        handle_not_found block do
           IO.popen(cmd, 'r') do |io|
             io.each do |line|
               lines << line
               puts line if opts.get(:output, true) or not opts.get(:silent, false)
             end
           end
-        rescue Errno::ENOENT => e
-          trace { "got error #{e}" }
-          return block.call(nil, PseudoStatus.new(127))
-        # rescue for JRuby:
-        rescue IOError => e
-          trace { "got error #{e}" }
-          return block.call(nil, PseudoStatus.new(127)) 
         end
+
         return block.call($? == 0 && lines, $?)
       end
     end
@@ -190,6 +183,17 @@ module Albacore
     end
     
     private
+
+    # handles the errors from not finding the executable on the system
+    def handle_not_found rescue_block
+      yield
+    rescue Errno::ENOENT => e
+      return rescue_block.call(nil, PseudoStatus.new(127))
+    rescue IOError => e # rescue for JRuby
+      return rescue_block.call(nil, PseudoStatus.new(127)) 
+    end
+
+
     def knowns
       { 127 => 'number 127 in particular means that the operating system could not find the executable' }
     end
