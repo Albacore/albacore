@@ -1,28 +1,36 @@
-language: objective-c
-
-env:
- matrix:
-  - MONO_VER="3.1.12"
-
-before_install:
- - wget "http://download.mono-project.com/archive/${MONO_VER}/macos-10-x86/MonoFramework-MDK-${MONO_VER}.macos10.xamarin.x86.pkg"
- - sudo installer -pkg "MonoFramework-MDK-${MONO_VER}.macos10.xamarin.x86.pkg" -target /
+# kisses and hugs to https://raw.github.com/NancyFx/Nancy/master/.travis.yml
 
 language: ruby
+
+install:
+  - sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
+  - sudo apt-get update
+  - sudo apt-get install mono-devel mono-gmcs mono-vbnc
+  - sudo apt-get install gettext
+  - sudo wget -q -P "/opt"  "http://samples.nancyfx.org/content/mono-3.0.12-x64-bin.tar.bz2"
+  - gem install rake
+  - gem install albacore
+  - echo set -e >> ./travis.sh
+  - echo set -o pipefail >> ./travis.sh
+  - echo echo Running on Mono 3.x >> ./travis.sh
+  - echo sudo tar xkv -C "/opt" -f /opt/mono-3.0.12-x64-bin.tar.bz2 >> ./travis.sh
+  - echo export PATH="/opt/mono/bin:$PATH" >> ./travis.sh
+  - echo export LD_LIBRARY_PATH="/opt/mono/bin" >> ./travis.sh
+  - echo bundle exec rake spec >> ./travis.sh
+  - chmod +x ./travis.sh
+
+script: ./travis.sh
 
 rvm:
   - 1.9.3
   - 2.0.0
   - jruby
 
-script: "bundle exec rake spec"
-
 branches:
-  only:
-    - clean_slate
-#env:
+  only: clean_slate
 
 notifications:
-  email: false
+  email: henrik@haf.se
 
 gemfile: Gemfile
