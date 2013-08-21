@@ -1,6 +1,7 @@
 require 'map'
 require 'albacore/logging'
 require 'albacore/project'
+require 'albacore/paths'
 
 module Albacore
   module NugetModel
@@ -17,6 +18,8 @@ module Albacore
     class FileItem
       attr_reader :src, :target, :exclude
       def initialize src, target, excl
+        src, target = Albacore::Paths.normalise_slashes(src),
+          Albacore::Paths.normalise_slashes(target)
         @src, @target, @exclude = src, target, excl
       end
       def to_s
