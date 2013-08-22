@@ -112,14 +112,15 @@ end})
       end
 
       def to_xml_builder
-        Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
+        # alt: new(encoding: 'utf-8')
+        Nokogiri::XML::Builder.new do |x|
           x.metadata {
             @set_fields.each do |f|
-              x.send(f, send(f))
+              x.send(Metadata.pascal_case(f), send(f))
             end
             x.dependencies {
               @dependencies.each { |k, d|
-                x.dependency(:id => d.id, :version => d.version)
+                x.dependency id: d.id, version: d.version
               }
             }
           }
@@ -181,6 +182,12 @@ end})
         end
         m
       end
+
+      def self.pascal_case str
+        str = str.to_s unless str.respond_to? :split
+        str = str.split('_').inject([]){ |buffer,e| buffer.push(buffer.empty? ? e : e.capitalize) }.join
+        :"#{str}"
+      end
       
       def self.underscore str
         str.gsub(/::/, '/').
@@ -230,14 +237,20 @@ end})
 
       # gets the current package as a xml builder
       def to_xml_builder
-        md = Nokogiri::XML(@metadata.to_xml)
-        Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |x|
-          x.package(:xmlns => 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd') {
-            x << md.at_css("metadata").to_xml
+        md = Nokogiri::XML(@metadata.to_xml).at_css('metadata').to_xml
+        Nokogiri::XML::Builder.new(encoding: 'utf-8') do |x|
+          x.package(xmlns: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd') {
+            x << md
+            #x.__send__ :insert, md.at_css("metadata")
+#           x << md.at_css("metadata").to_xml(indent: 4)
             x.files {
-              @files.each { |f|
-                x.file(:src => f.src, :target => f.target, :exclude => f.exclude)
-              }
+              @files.each do |f|
+                if f.exclude
+                  x.file src: f.src, target: f.target, exclude: f.exclude
+                else
+                  x.file src: f.src, target: f.target
+                end
+              end
             }
           }
         end
@@ -267,10 +280,11 @@ end})
 
       # read the nuget specification from a nuspec file
       def self.from_xml xml
+        ns = { ng: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' }
         parser = Nokogiri::XML(xml)
-        meta = Metadata.from_xml(parser.xpath('.//metadata'))
+        meta = Metadata.from_xml(parser.xpath('.//ng:metadata', ns))
         files = parser.
-          xpath('.//files').
+          xpath('.//ng:files', ns).
           children.
           reject { |n| n.text? or n['src'].nil? }.
           collect { |n| FileItem.new n['src'], n['target'], n['exclude'] }

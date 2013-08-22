@@ -68,9 +68,9 @@ describe Albacore::NugetModel::Package, "from XML" do
     File.basename(__FILE__)
   end
   let :xml do
-    %{
-<?xml version="1.0"?>
-<package>
+    <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Example</id>
     <version>1.2.3.4</version>
@@ -82,25 +82,29 @@ describe Albacore::NugetModel::Package, "from XML" do
     <copyright>none</copyright>
     <tags>example spec</tags>
     <dependencies>
-      <dependency id="SampleDependency" version="1.0" />
+      <dependency id="SampleDependency" version="1.0"/>
     </dependencies>
   </metadata>
   <files>
-    <file src="Full/bin/Debug/*.dll" target="lib/net40" /> 
-    <file src="Full/bin/Debug/*.pdb" target="lib/net40" /> 
-    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40" /> 
-    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40" /> 
-    <file src="**/*.cs" target="src" />
+    <file src="Full/bin/Debug/*.dll" target="lib/net40"/>
+    <file src="Full/bin/Debug/*.pdb" target="lib/net40"/>
+    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40"/> 
+    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40"/> 
+    <file src="**/*.cs" target="src"/>
   </files>
 </package>
-}
-
+XML
   end
+
   let :parser do
     io = StringIO.new xml    
     Nokogiri::XML(io)
   end
+  let :ns do
+    { ng: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' }
+  end
   subject do
+    puts "parser: #{parser}"
     package = Albacore::NugetModel::Package.from_xml xml
     #puts "node: #{package.inspect}"
     #puts "node meta: #{package.metadata.inspect}"
@@ -111,7 +115,7 @@ describe Albacore::NugetModel::Package, "from XML" do
   end
   it "should have the metadata properties of the XML above" do
     parser.
-      xpath('./metadata').
+      xpath('./ng:metadata', ns).
       children.
       reject { |n| n.name == 'dependencies' }.
       reject { |n| n.text? }.
@@ -120,10 +124,13 @@ describe Albacore::NugetModel::Package, "from XML" do
       subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
     end
   end
+  it "should generate the same (semantic) XML as above" do
+    Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+  end
 
   describe "all dependencies" do
     it "should have the SampleDependency dependency of the XML above" do
-      parser.xpath('./metadata/dependencies').children.reject{ |c| c.text? }.each do |dep|
+      parser.xpath('./ng:metadata/ng:dependencies', ns).children.reject{ |c| c.text? }.each do |dep|
         subject.metadata.dependencies[dep['id']].should_not be_nil
       end
     end 
