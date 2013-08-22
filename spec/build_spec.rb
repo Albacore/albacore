@@ -5,28 +5,30 @@ require 'albacore/task_types/build'
 
 shared_context 'config' do
   let(:cfg) do
-    cfg = Albacore::Build::Config.new
-    cfg
+    Albacore::Build::Config.new
   end
 end
 
 describe 'when running with sln' do
 
   include_context 'config'
+  include_context 'path testing'
 
-  let(:cmd) { 
+  let(:cmd) do
     cmd = Albacore::Build::Cmd.new cfg.work_dir, 'xbuild', cfg.parameters
     cmd.extend ShInterceptor
-  }
+  end
 
-  before {
+  before do
     cfg.sln = 'src/HelloWorld.sln'
     cmd.execute
-  }
+  end
 
-  subject { cmd }
+  subject do
+    cmd
+  end
 
   it { subject.executable.should eq('xbuild') }
-  it { subject.parameters.should eq(%W[/verbosity:minimal src/HelloWorld.sln]) }
-  it { subject.is_mono_command?().should be_false }
+  it { subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'}|) }
+  it { subject.is_mono_command?.should be_false }
 end

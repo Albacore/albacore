@@ -12,3 +12,9 @@ RSpec.configure do |config|
     #::Albacore.set_application(::Albacore::Application.new)
   end
 end
+
+shared_context 'path testing' do
+  def path p
+    ::Albacore::Paths.normalise_slashes p
+  end
+end 

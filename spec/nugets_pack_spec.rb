@@ -79,6 +79,7 @@ end
 describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   
   include_context 'pack_config'
+  include_context 'path testing'
 
   let :cmd do
     Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
@@ -99,19 +100,20 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
       subject.mono_command(0).should eq('NuGet.exe')
     end
     it "should include the correct parameters" do
-      subject.mono_parameters(0).should eq(%w[Pack -OutputDirectory spec/testdata/pkg ./spec/testdata/example.nuspec])
+      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
     end
   end
 
   describe "second invocation" do
     it "should include -Symbols" do
-      subject.mono_parameters(1).should eq(%w[Pack -OutputDirectory spec/testdata/pkg -Symbols ./spec/testdata/example.symbols.nuspec])
+      subject.mono_parameters(1).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} -Symbols ./spec/testdata/example.symbols.nuspec])
     end
   end
 end
 
 describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
   include_context 'pack_config'
+  include_context 'path testing'
 
   it "accepts .nuspec files" do
     Albacore::NugetsPack::NuspecTask.accept?('some.nuspec').should be_true
@@ -135,7 +137,7 @@ describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
     subject.mono_command.should eq('NuGet.exe')
   end
   it "should give the correct parameters" do
-    subject.mono_parameters.should eq(%W[Pack -OutputDirectory spec/testdata/pkg ./spec/testdata/example.nuspec])
+    subject.mono_parameters.should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
   end
 end
 

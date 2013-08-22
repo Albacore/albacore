@@ -104,7 +104,7 @@ XML
     { ng: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' }
   end
   subject do
-    puts "parser: #{parser}"
+    #puts "parser: #{parser}"
     package = Albacore::NugetModel::Package.from_xml xml
     #puts "node: #{package.inspect}"
     #puts "node meta: #{package.metadata.inspect}"
