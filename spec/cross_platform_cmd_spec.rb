@@ -53,12 +53,12 @@ end
         folder = File.dirname(__FILE__)
         ::Rake::Win32.windows? ? folder : "mono #{folder}"
       end
-      let :nl do
-        ::Rake::Win32.windows? ? "\r\n" : "\n"
-      end
       it "should output from echo" do
         res = subject.call("#{prefix}/support/echo/echo.exe this is a test")
-        res.should eq("this is a test#{nl}")
+        # #system => \r\n$ on windows
+        # #sh => \n$ on windows/powershell
+        # #shie => \n$ on windows/powershell
+        res.should include("this is a test")
       end
     end
   end
