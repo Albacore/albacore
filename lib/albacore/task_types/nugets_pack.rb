@@ -4,6 +4,7 @@ require 'fileutils'
 require 'albacore'
 require 'albacore/paths'
 require 'albacore/cmd_config'
+require 'albacore/config_dsl'
 require 'albacore/cross_platform_cmd'
 require 'albacore/project'
 require 'albacore/logging'
@@ -101,9 +102,10 @@ module Albacore
     #  end
     class Config
       include CmdConfig
+      self.extend ConfigDSL
 
       # the output directory to place the newfangled nugets in
-      attr_writer :out
+      attr_path :out
 
       # the .net target (e.g. net40, mono2.0)
       attr_writer :target

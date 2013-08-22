@@ -24,9 +24,22 @@ module Albacore
     # The configuration class for xbuild and msbuild. MSDN docs at: http://msdn.microsoft.com/en-us/library/vstudio/ms164311.aspx
     class Config
       include CmdConfig
+      self.extend ConfigDSL
       include Logging
 
-      attr_accessor :sln, :file, :target, :properties
+      # TODO: move towards #opts() for all task types rather than
+      # reading these public properties.
+
+      # this is the solution file to build (or the project files themselves)
+      attr_path_accessor :sln, :file do |val|
+        @parameters.add val
+      end
+
+      # this is the target of the compilation with MsBuild/XBuild
+      attr_reader :target
+
+      # any properties you want to set
+      attr_accessor :properties
 
       def initialize
         @parameters = Set.new
@@ -38,26 +51,8 @@ module Albacore
                heuristic_executable
 
         debug "build using '#{@exe}'"
+
         logging "minimal"
-      end
-
-      # the sln file to build
-      def sln= val
-        @parameters.add val
-        @sln = val
-      end
-
-      def sln
-        @sln
-      end
-
-      def file= val
-        @parameters.add val
-        @file = val
-      end
-
-      def file
-        @file
       end
 
       # see target method for docs

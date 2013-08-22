@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 require 'set'
+require 'albacore/config_dsl'
 
 module Albacore
 
@@ -11,14 +12,24 @@ module Albacore
   # and defined a method that joins paths relative to the work_dir
   module CmdConfig
     include Logging
-    
+    self.extend ConfigDSL
+
+    # TODO: move towards opts for all task types rather than
+    # reading these public properties.
+
     # the working directory for this command
-    attr_accessor :work_dir
+    attr_path_accessor :work_dir
     
+    # TODO: move towards opts for all task types rather than
+    # reading these public properties.
+
     # field field denoting the path of the executable that should be on the path
     # specified in the work_dir parameter.
-    attr_accessor :exe
+    attr_path_accessor :exe
     
+    # TODO: move towards opts for all task types rather than
+    # reading these public properties.
+
     # returns a Set with parameters
     def parameters
       @parameters ||= Set.new
