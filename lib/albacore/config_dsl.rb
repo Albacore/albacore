@@ -16,7 +16,8 @@ module Albacore
           instance_exec(val, &block) if given
         end
 
-        # this is the setter
+        # this is the setter, it also calls the callback method
+        # defined above.
         self.class_eval(
 %{def #{sym}= val
   @#{sym} = ::Albacore::Paths.normalise_slashes val
@@ -37,6 +38,8 @@ end})
           instance_exec(val, &block) if given
         end
 
+        # this is the setter and getter. The setter also calls
+        # the callback method defined above.
         self.class_eval(
 %{def #{sym}= val
   @#{sym} = ::Albacore::Paths.normalise_slashes val
