@@ -69,10 +69,10 @@ module Albacore
       # regexpes the package path from the output
       def get_nuget_path_of
         out = yield
-        out.match /Successfully created package '([\s\w\\\/\d\.]+\.symbols\.nupkg)'.$/ if out.respond_to? :match
+        out.match /Successfully created package '([:\s\w\\\/\d\.]+\.symbols\.nupkg)'.$/ if out.respond_to? :match
         return $1 if $1
 
-        out.match /Successfully created package '([\s\w\\\/\d\.]+\.nupkg)'.$/ if out.respond_to? :match
+        out.match /Successfully created package '([:\s\w\\\/\d\.]+\.nupkg)'.$/ if out.respond_to? :match
         $1
       end
 
