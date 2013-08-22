@@ -39,6 +39,41 @@ v10.0.0:
   end
 end
 
+describe Albacore::NugetsPack::Cmd, "when calling #execute" do
+  include_context 'pack_config'
+
+  subject do
+    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
+  end
+
+  let :sample1 do
+<<EXAMPLE_OUTPUT
+Attempting to build package from 'MyNuget.Package.nuspec'.
+Successfully created package 'Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.nupkg'.
+Successfully created package 'Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.symbols.nupkg'.
+EXAMPLE_OUTPUT
+  end
+
+  let :sample2 do
+<<EXAMPLE_OUTPUT
+Attempting to build package from 'MyNuget.Package.nuspec'.
+Successfully created package '/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.nupkg'.
+Successfully created package '/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.symbols.nupkg'.
+EXAMPLE_OUTPUT
+  end
+
+  it "should match sample1 with last nupkg mentioned" do
+    match = subject.send(:get_nuget_path_of) { sample1 }
+    match.should eq('Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
+  end
+
+  it 'should match sample2 with last nupkg mentioned' do
+    match = subject.send(:get_nuget_path_of) { sample2 }
+    match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.symbols.nupkg')
+  end
+end
+
+
 # testing the command for nuget
 
 describe Albacore::NugetsPack::Cmd, "when calling #execute" do

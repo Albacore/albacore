@@ -124,8 +124,12 @@ XML
       subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
     end
   end
-  it "should generate the same (semantic) XML as above" do
-    Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+
+  # on Windows this fails due to replacement of path separators (by design)
+  unless ::Rake::Win32.windows?
+    it "should generate the same (semantic) XML as above" do
+      Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+    end
   end
 
   describe "all dependencies" do
