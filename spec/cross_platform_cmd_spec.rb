@@ -46,20 +46,19 @@ end
         e.message.should include('Command failed')
       end
     end
-    # TODO it "should redirect stderr" do ; end
-    # TODO it "should return output"
-    # TODO: cmd DSL w/ mono_command
+    # it "should redirect stderr"
   end
 end
 
-describe Albacore::CrossPlatformCmd.method(:sh), "#sh" do
-  let(:prefix) { 
-    folder = File.dirname(__FILE__)
-    # TODO: cmd DSL w/ mono_command
-    ::Rake::Win32.windows? ? folder : "mono #{folder}"
-  }
-  it "should output from echo" do
-    res = subject.call("#{prefix}/support/echo/echo.exe this is a test")
-    res.should eq("this is a test\n")
+[:system, :sh, :shie].each do |method|
+  describe Albacore::CrossPlatformCmd.method(method), "##{method}'s return value" do
+    let(:prefix) { 
+      folder = File.dirname(__FILE__)
+      ::Rake::Win32.windows? ? folder : "mono #{folder}"
+    }
+    it "should output from echo" do
+      res = subject.call("#{prefix}/support/echo/echo.exe this is a test")
+      res.should eq("this is a test\n")
+    end
   end
 end

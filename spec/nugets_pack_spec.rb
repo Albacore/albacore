@@ -39,7 +39,7 @@ v10.0.0:
   end
 end
 
-describe Albacore::NugetsPack::Cmd, "when calling #execute" do
+describe Albacore::NugetsPack::Cmd, "when calling :get_nuget_path_of" do
   include_context 'pack_config'
 
   subject do
@@ -49,8 +49,8 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   let :sample1 do
 <<EXAMPLE_OUTPUT
 Attempting to build package from 'MyNuget.Package.nuspec'.
-Successfully created package 'Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.nupkg'.
-Successfully created package 'Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.symbols.nupkg'.
+Successfully created package 'Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.nupkg'.
+Successfully created package 'Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.symbols.nupkg'.
 EXAMPLE_OUTPUT
   end
 
@@ -64,7 +64,7 @@ EXAMPLE_OUTPUT
 
   it "should match sample1 with last nupkg mentioned" do
     match = subject.send(:get_nuget_path_of) { sample1 }
-    match.should eq('Y:/Shared/build/pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
+    match.should eq('Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
   end
 
   it 'should match sample2 with last nupkg mentioned' do

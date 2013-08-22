@@ -42,7 +42,7 @@ module Albacore
           system @executable, pars, :work_dir => @work_dir
         end
 
-        debug "package at #{pkg}"
+        debug "package at '#{pkg}'"
 
         # if the symbols flag is set and there's a symbols file specified
         # then run NuGet.exe to generate the .symbols.nupkg file
@@ -56,7 +56,7 @@ module Albacore
             end
           end
 
-          debug "symbol package at #{spkg}"
+          debug "symbol package at '#{spkg}'"
 
           [pkg, spkg]
         else

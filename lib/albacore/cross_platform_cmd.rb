@@ -93,7 +93,7 @@ module Albacore
         # wait for completion
         _, status = Process.wait2 pid
 
-        return block.call(status.success? && inmem.to_s, status)
+        return block.call(status.success? && inmem.string, status)
       end
     end
 
@@ -135,7 +135,7 @@ module Albacore
     #    #exitstatus : Int
     #    #pid      : Int
     def shie *cmd, &block
-      block = lambda { |ok, status| [ok, status] } unless block_given?
+      block = lambda { |ok, status| ok } unless block_given?
       sh *cmd, &block
     end
     
