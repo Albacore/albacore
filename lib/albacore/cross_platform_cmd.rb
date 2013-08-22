@@ -107,7 +107,7 @@ module Albacore
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
 
       cmd = cmd.join(' ') # shell needs a single string
-      block = lambda { |ok, status| ok or format_failure(cmd, status) } unless block_given?
+      block = handler_with_message cmd unless block_given?
 
       chdir opts.get(:work_dir) do
 
@@ -221,7 +221,7 @@ module Albacore
       if status.exitstatus == 127
         raise CommandNotFoundError.new(format_failure(cmd, status), cmd)
       else
-        fail(format_failure(cmd, status))
+        raise CommandFailedError.new(format_failure(cmd, status), cmd)
       end
     end
 
