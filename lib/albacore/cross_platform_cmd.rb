@@ -1,10 +1,12 @@
 require 'rake'
 require 'map'
+require 'open3'
+require 'timeout'
 require 'processpilot/processpilot'
 require 'albacore/paths'
 require 'albacore/logging'
 require 'albacore/errors/command_not_found_error'
-require 'open3'
+require 'albacore/errors/command_failed_error'
 
 module Albacore
   # module for normalising slashes across operating systems
@@ -36,13 +38,13 @@ module Albacore
       include CrossPlatformCmd
     end
 
-    def normalise_slashes path
-      ::Albacore::Paths.normalise_slashes path
-    end
+    attr_reader :pid
 
-    # create
-    def make_command
-      ::Albacore::Paths.make_command @executable, @parameters
+    KILL_TIMEOUT = 2 # seconds
+
+    def initialize
+      pid = Process.pid
+      at_exit { stop if Process.pid == pid }
     end
 
     # run executable
@@ -53,9 +55,11 @@ module Albacore
     # options are passed as the last argument
     #
     # options:
-    #  :work_dir => a file path (default '.')
-    #  :silent   => whether to supress all output or not (default false)
-    #  :output   => whether to supress the command's output (default false)
+    #  work_dir: a file path (default '.')
+    #  silent:   whether to supress all output or not (default false)
+    #  output:   whether to supress the command's output (default false)
+    #  out:      output pipe
+    #  err:      error pipe
     #
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
@@ -63,6 +67,7 @@ module Albacore
         apply(
           silent: false,
           output: true,
+          work_dir: FileUtils.pwd,
           out: Albacore.application.output,
           err: Albacore.application.output_err)
 
@@ -78,22 +83,50 @@ module Albacore
       handle_not_found block do
         # create a pipe for the process to work with
         read, write = IO.pipe
+        eread, ewrite = IO.pipe
 
         # this thread chews through the output
-        out_thread = Thread.new {
-          while !read.eof? && data = read.readpartial(1024)
+        @out_thread = Thread.new {
+          while !read.eof?
+            data = read.readpartial(1024)
             out.write data
             inmem.write data # to give the block at the end
           end
         }
 
-        # execute the new process, letting it write to the write FD (file descriptor)
-        pid = Process.spawn(*[exe, *pars], out: write, chdir: opts.getopt(:workdir, FileUtils.pwd))
+        debug 'execute the new process, letting it write to the write FD (file descriptor)'
+        @pid = Process.spawn(*[exe, *pars],
+          out:   write,
+        #  err:   ewrite,
+          chdir: opts.get(:work_dir))
 
-        # wait for completion
-        _, status = Process.wait2 pid
+        debug 'waiting for process completion'
+        _, status = Process.wait2 @pid
+
+        #debug 'waiting for thread completion'
+        #@out_thread.join
 
         return block.call(status.success? && inmem.string, status)
+      end
+    end  
+
+    def stop
+      if pid
+        begin
+          Process.kill('TERM', pid)
+
+          begin
+            Timeout.timeout(KILL_TIMEOUT) { Process.wait(pid) }
+          rescue Timeout::Error
+            Process.kill('KILL', pid)
+            Process.wait(pid)
+          end
+        rescue Errno::ESRCH, Errno::ECHILD
+          # Zed's dead, baby
+        end
+
+        @out_thread.kill
+        @pid = nil
       end
     end
 
@@ -147,7 +180,16 @@ module Albacore
         ProcessPilot::pilot cmd, opts, &block
       end
     end
-    
+
+    def normalise_slashes path
+      ::Albacore::Paths.normalise_slashes path
+    end
+
+    # create a new command string
+    def make_command
+      ::Albacore::Paths.make_command @executable, @parameters
+    end
+
     def which executable
       raise ArgumentError, "executable is nil" unless executable
 

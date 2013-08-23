@@ -6,6 +6,11 @@ This branch is the next official version. It is currently being used for
 numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and
 jRuby.
 
+# TODO
+
+ * Kill thread from Process#spawn
+ * Why isn't #system matching output in NuGet pack?
+
 ## getting started
 
 In a command prompt, run:
