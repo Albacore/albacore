@@ -22,8 +22,8 @@ module Albacore
     def fatal *str, &block
       ::Albacore.application.logger.fatal *str, &block
     end
-    def puts str
-      ::Albacore.application.puts str
+    def puts *str
+      ::Albacore.application.puts *str
     end
     def err str
       ::Albacore.application.err str
