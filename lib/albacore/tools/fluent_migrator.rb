@@ -147,7 +147,7 @@ module Albacore::Tools
               info ''
               info " ********** Starting '#{server}' ************ " 
               info ''
-              ::Albacore::Migrate::Cmd.new(@args.set(:conn => server)).execute
+              ::Albacore::Tools::FluentMigrator::Cmd.new(@args.set(:conn => server)).execute
               info ''
               info " ********** Finished '#{server}' ************ " 
               info ''
