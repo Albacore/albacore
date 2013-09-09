@@ -4,6 +4,7 @@ $: << File.join(albacore_root, "albacore")
 $: << File.join(albacore_root, "albacore", 'support')
 $: << File.join(albacore_root, "albacore", 'config')
 
+require "albacore/version"
 require "albacore/albacoretask"
 require "albacore/aspnetcompiler"
 require "albacore/assemblyinfo"
