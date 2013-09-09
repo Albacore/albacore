@@ -10,6 +10,6 @@ class VbNetEngine < AssemblyInfoEngine
   end
   
   def build_attribute_re(attr_name)
-    /^\<assembly: #{attr_name}(.+)/  
+    /^\<assembly: #{attr_name}(.+)/i  
   end
 end

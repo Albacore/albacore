@@ -12,7 +12,7 @@ class NuGetPack
                  :output,
                  :base_folder,
                  :command,
-				         :symbols
+                 :symbols
 
   attr_hash :properties
 
@@ -28,7 +28,7 @@ class NuGetPack
     
     params = []
     params << "pack"
-	params << "-Symbols" if @symbols
+    params << "-Symbols" if @symbols
     params << "#{nuspec}"
     params << "-BasePath #{base_folder}" unless @base_folder.nil?
     params << "-OutputDirectory #{output}" unless @output.nil?

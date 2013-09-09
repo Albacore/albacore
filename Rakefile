@@ -1,17 +1,16 @@
-require 'bundler/setup'
-Bundler::GemHelper.install_tasks
+require "bundler/gem_tasks"
 
-task :default => :'specs:all'
+task :default => :"specs:all"
 
 namespace :specs do
-  require 'rspec/core/rake_task'
+  require "rspec/core/rake_task"
 
   desc "Run all specs"
   RSpec::Core::RakeTask.new(:all)
 
   # generate tasks for each *_spec.rb file in the root spec folder
   exceptNCov = []
-  FileList['spec/*_spec.rb'].each do |fname|
+  FileList["spec/*_spec.rb"].each do |fname|
     spec = $1 if /spec\/(.+)_spec\.rb/ =~ fname
     exceptNCov << spec unless /ncover|ndepend/ =~ spec
     desc "Run the #{spec} spec"

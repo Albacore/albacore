@@ -158,3 +158,58 @@ describe ZipDirectory, 'when zipping a directory of files with additional files'
     end
   end
 end
+
+describe ZipDirectory, "without flatten_zip set" do
+    before :each do
+      zip = ZipDirectory.new
+      zip.directories_to_zip File.join('spec', 'support', 'yamlconfig')
+      zip.output_file = 'test.zip'
+      zip.output_path = ZipTestData.folder
+      zip.additional_files = [File.join('spec', 'support', 'test.yml'), File.join('spec', 'support', 'AssemblyInfo', 'assemblyinfo.yml')]
+      zip.execute
+
+      unzip = Unzip.new
+      unzip.file = File.join(ZipTestData.folder, 'test.zip')
+      unzip.destination = ZipTestData.output_folder
+      unzip.execute
+    end
+
+    after :each do
+      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
+    end
+
+    it "should add additional file" do
+      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
+      Dir.exist?(File.join(ZipTestData.output_folder, 'spec', 'support', 'yamlconfig')).should be_true
+      File.exist?(File.join(ZipTestData.output_folder, 'spec', 'support', 'yamlconfig', 'msbuild.yml')).should be_true
+      File.exist?(File.join(ZipTestData.output_folder, 'spec', 'support', 'test.yml')).should be_true
+    end
+end
+
+describe ZipDirectory, "with flatten_zip set" do
+    before :each do
+      zip = ZipDirectory.new
+      zip.flatten_zip
+      zip.directories_to_zip File.join('spec', 'support', 'yamlconfig')
+      zip.output_file = 'test.zip'
+      zip.output_path = ZipTestData.folder
+      zip.additional_files = [File.join('spec', 'support', 'test.yml'), File.join('spec', 'support', 'AssemblyInfo', 'assemblyinfo.yml')]
+      zip.execute
+
+      unzip = Unzip.new
+      unzip.file = File.join(ZipTestData.folder, 'test.zip')
+      unzip.destination = ZipTestData.output_folder
+      unzip.execute
+    end
+
+    after :each do
+      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
+    end
+
+    it "should add additional file" do
+      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
+      Dir.exist?(File.join(ZipTestData.output_folder, 'spec', 'support', 'yamlconfig')).should be_false
+      File.exist?(File.join(ZipTestData.output_folder, 'msbuild.yml')).should be_true
+      File.exist?(File.join(ZipTestData.output_folder, 'test.yml')).should be_true
+    end
+end
