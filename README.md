@@ -10,7 +10,7 @@ Details about goals and releases can be found at [albacorebuild.net](http://alba
 Add this line to the Gemfile where you maintain the dependencies for your build:
 
 ```ruby
-gem 'albacore'
+gem "albacore"
 ```
 
 And then execute
@@ -30,7 +30,7 @@ Or install it yourself:
 Require the Albacore gem at the top of your rakefile and start using the custom tasks. Consult the [quick start][3] or the detailed [task instructions][1] for more information on how to use Albacore tasks in your Rake build.
 
 ```ruby
-require 'albacore'
+require "albacore"
 ```
 
 ## Supported Rubies
