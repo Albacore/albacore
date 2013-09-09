@@ -7,7 +7,7 @@ class IlMerge
   include Albacore::RunCommand
   include Configuration::ILMerge
 
-  attr_accessor :output, :resolver
+  attr_accessor :output, :resolver, :target_platform
   
   attr_array :parameters
 
@@ -24,6 +24,7 @@ class IlMerge
   def build_parameters
     params = Array.new @parameters
     params << %Q{/out:"#{output}"}
+    params << %Q{/targetPlatform:#{target_platform}} if @target_platform
     raise ArgumentError, "you are required to call assemblies" if @assemblies == nil
     params += @assemblies
     params
@@ -62,4 +63,3 @@ module Albacore
 
   end
 end
-

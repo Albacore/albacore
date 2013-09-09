@@ -1,23 +1,31 @@
-# -*- encoding: utf-8 -*-
+# coding: utf-8
+lib = File.expand_path("../lib", __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
-$:.push File.expand_path("../lib", __FILE__)
-require 'version'
+require "albacore/version"
 
-Gem::Specification.new do |s|
-  s.name        = 'albacore'
-  s.version     = Albacore::VERSION
-  s.platform    = Gem::Platform::RUBY
-  s.authors     = ['Henrik Feldt', 'Anthony Mastrean']
-  s.email       = 'henrik@haf.se'
-  s.homepage    = 'http://albacorebuild.net'
-  s.summary     = 'Dolphin-safe and awesome Mono and .Net Rake-tasks'
-  s.description = 'Easily build your .Net or Mono project using this collection of Rake tasks.'
+Gem::Specification.new do |spec|
+  spec.name          = "albacore"
+  spec.version       = Albacore::VERSION
+  spec.authors       = ["Henrik Feldt", "Anthony Mastrean"]
+  spec.email         = ["albacorebuild@gmail.com"]
+  spec.description   = %q{Albacore is a professional quality suite of Rake tasks for building .NET or Mono based systems.}
+  spec.summary       = %q{Dolphin-safe .NET and Mono rake tasks}
+  spec.homepage      = "http://albacorebuild.net"
+  spec.license       = "MIT"
 
-  s.add_dependency 'rubyzip'
+  spec.files         = `git ls-files`.split($/)
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
 
-  s.rubyforge_project = 'albacore'
+  spec.add_dependency "nokogiri", "~> 1.5"
+  spec.add_dependency "rake"
+  spec.add_dependency "rubyzip", "< 1.0.0"
 
-  s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {spec}/*`.split("\n")
-  s.require_paths = ['lib']
+  spec.add_development_dependency "guard"
+  spec.add_development_dependency "guard-rspec"
+  spec.add_development_dependency "rspec"
+
+  spec.rubyforge_project = "albacore"
 end
