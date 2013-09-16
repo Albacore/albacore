@@ -51,7 +51,7 @@ module Albacore::Tools
         raise ArgumentError, 'cannot execute with empty connection string' if nil_or_white conn
         raise ArgumentError, 'cannot execute with no dll file specified' if nil_or_white(opts.get(:dll))
 
-        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn}]
+        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn} --timeout=200]
 
         unless opts.get :task_override
           @parameters.push '--task'
