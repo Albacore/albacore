@@ -15,7 +15,7 @@ shared_context 'cmd context' do
 end
 
 
-describe Albacore::NugetsRestore::RemoveSourceCmd, 'when calling #execute' do
+describe Albacore::NugetsRestore::RemoveSourceCmd, 'when calling #execute should remove source' do
   let(:cmd) { Albacore::NugetsRestore::RemoveSourceCmd.new 'nuget.exe', hafsrc }
   include_context 'cmd context'
   %w[remove sources -name haf-source].each { |k|
@@ -23,7 +23,7 @@ describe Albacore::NugetsRestore::RemoveSourceCmd, 'when calling #execute' do
   }
 end
 
-describe Albacore::NugetsRestore::AddSourceCmd, 'when calling #execute' do
+describe Albacore::NugetsRestore::AddSourceCmd, 'when calling #execute should remove source' do
   let (:cmd) { Albacore::NugetsRestore::AddSourceCmd.new 'nuget.exe', hafsrc, 'u', 'p' }
   include_context 'cmd context'
   %w[sources add -name haf-source].each { |k|
@@ -31,7 +31,7 @@ describe Albacore::NugetsRestore::AddSourceCmd, 'when calling #execute' do
   }
 end
 
-describe Albacore::NugetsRestore::Cmd, "when calling #execute" do
+describe Albacore::NugetsRestore::Cmd, 'when calling #execute with specific source' do
   
   let (:cmd) { 
     cfg = Albacore::NugetsRestore::Config.new

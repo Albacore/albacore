@@ -82,7 +82,12 @@ module Albacore
       def packages
         list_spec = File.join '**', 'packages.config'
         # it seems FileList doesn't care about the curr dir
-        in_work_dir do FileList[Dir.glob(list_spec)] end
+        in_work_dir do
+          FileList[
+            Dir.glob(list_spec, File::FNM_DOTMATCH).
+              reject { |a| a =~ /^\.{1,2}$/ }
+          ]
+        end
       end
 
       # whether to include the official
