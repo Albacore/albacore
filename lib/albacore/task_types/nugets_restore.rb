@@ -17,7 +17,9 @@ module Albacore
         mono_command
       end
       def execute
-        system @executable, @parameters, :verbose => true
+        system @executable, @parameters, :verbose => true do |ok, status|
+          ok
+        end
       end
     end
 
