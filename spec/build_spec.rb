@@ -28,7 +28,13 @@ describe 'when running with sln' do
     cmd
   end
 
-  it { subject.executable.should eq('xbuild') }
-  it { subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'}|) }
-  it { subject.is_mono_command?.should be_false }
+  it do
+    subject.executable.should eq('xbuild')
+  end
+  it do
+    subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'}|)
+  end
+  it do
+    subject.is_mono_command?.should be_false
+  end
 end
