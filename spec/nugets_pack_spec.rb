@@ -3,14 +3,8 @@ require 'support/sh_interceptor'
 require 'albacore'
 require 'albacore/task_types/nugets_pack'
 
-shared_context "pack_config" do
-  let :id do
-    'Sample.Nuget'
-  end
-  let :curr do
-    File.dirname(__FILE__)
-  end
-  let :config do
+class ConfigFac
+  def self.create id, curr, gen_symbols = true
     cfg = Albacore::NugetsPack::Config.new
     cfg.target        = 'net40'
     cfg.configuration = 'Debug'
@@ -25,6 +19,7 @@ shared_context "pack_config" do
       m.language      = 'Danish'
       m.project_url   = 'https://github.com/haf/Reasonable'
       m.license_url   = 'https://github.com/haf/README.md'
+      m.version       = '0.2.3'
       m.release_notes = %{
 v10.0.0:
   - Some notes
@@ -34,12 +29,89 @@ v10.0.0:
       m.add_dependency 'Abc.Package', '>= 1.0.2'
       m.add_framework_dependency 'System.Transactions', '4.0.0'
     end
-    cfg.gen_symbols # files: *.{pdb,dll,all compiled files}
+    cfg.gen_symbols if gen_symbols # files: *.{pdb,dll,all compiled files}
     cfg
   end
 end
 
-describe Albacore::NugetsPack::Cmd, "when calling :get_nuget_path_of" do
+shared_context 'pack_config' do
+  let :id do
+    'Sample.Nuget'
+  end
+  let :curr do
+    File.dirname(__FILE__)
+  end
+  let :config do
+    cfg = ConfigFac.create id, curr, true
+  end
+end
+
+shared_context 'pack_config no symbols' do
+  let :id do
+    'Sample.Nuget'
+  end
+  let :curr do
+    File.dirname(__FILE__)
+  end
+  let :config do
+    cfg = ConfigFac.create id, curr, false
+  end
+end
+
+# testing the command for nuget
+
+describe Albacore::NugetsPack::Cmd, "when calling #execute" do
+  
+  include_context 'path testing'
+
+  let :cmd do
+    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
+  end
+
+  subject do 
+    cmd.extend ShInterceptor
+    cmd.execute './spec/testdata/example.nuspec', './spec/testdata/example.symbols.nuspec'
+    #puts "## INVOCATIONS:"
+    #cmd.invocations.each do |i|
+    #  puts "#{i}"
+    #end
+    cmd
+  end
+
+  describe "first invocation" do
+    include_context 'pack_config'
+    it "should run the correct executable" do
+      subject.mono_command(0).should eq('NuGet.exe')
+    end
+    it "should include the correct parameters" do
+      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
+    end
+  end
+
+  describe "second invocation" do
+    include_context 'pack_config'
+    it "should include -Symbols" do
+      subject.mono_parameters(1).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} -Symbols ./spec/testdata/example.symbols.nuspec])
+    end
+  end
+
+  describe "without symbols" do
+    include_context 'pack_config no symbols'
+    subject do
+      cmd.extend ShInterceptor
+      cmd.execute './spec/testdata/example.nuspec'
+      cmd
+    end
+    it 'should not include -Symbols'  do
+      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
+    end
+    it 'should not have a second invocation' do
+      subject.invocations.length.should eq(1)
+    end
+  end
+end
+
+describe Albacore::NugetsPack::Cmd, 'when calling :get_nuget_path_of' do
   include_context 'pack_config'
 
   subject do
@@ -73,43 +145,6 @@ EXAMPLE_OUTPUT
   end
 end
 
-
-# testing the command for nuget
-
-describe Albacore::NugetsPack::Cmd, "when calling #execute" do
-  
-  include_context 'pack_config'
-  include_context 'path testing'
-
-  let :cmd do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
-  end
-
-  subject do 
-    cmd.extend ShInterceptor
-    cmd.execute './spec/testdata/example.nuspec', './spec/testdata/example.symbols.nuspec'
-    #puts "## INVOCATIONS:"
-    #cmd.invocations.each do |i|
-    #  puts "#{i}"
-    #end
-    cmd
-  end
-
-  describe "first invocation" do
-    it "should run the correct executable" do
-      subject.mono_command(0).should eq('NuGet.exe')
-    end
-    it "should include the correct parameters" do
-      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
-    end
-  end
-
-  describe "second invocation" do
-    it "should include -Symbols" do
-      subject.mono_parameters(1).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} -Symbols ./spec/testdata/example.symbols.nuspec])
-    end
-  end
-end
 
 describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
   include_context 'pack_config'
@@ -157,8 +192,6 @@ end
 describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
   let(:cmdo) { Hash.new }
 
-  include_context 'pack_config'
-
   subject do
     Albacore::NugetsPack::ProjectTask.new(config.opts()) do |cmd|
       cmd.extend ShInterceptor
@@ -170,11 +203,29 @@ describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
     subject.execute
   end
 
-  it "should have generated a nuspec" do
-    cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+  describe 'when generating symbols' do
+    include_context 'pack_config'
+    it 'should have generated a nuspec' do
+      cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+    end
+    it 'should have generated a symbol nuspec' do
+      cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.symbols.nuspec')
+    end
   end
 
-  it "should have generated a symbol nuspec" do
-    cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.symbols.nuspec')
+  describe 'when not generating symbols' do
+    include_context 'pack_config no symbols'
+    it 'should have generated a nuspec' do
+      cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+    end
+    it 'should have done no further calls' do
+      cmdo[:cmd].invocations.length.should eq(1)
+    end
+    it 'should have no further invocations' do
+      begin
+        cmdo[:cmd].mono_parameters(1)
+      rescue RuntimeError
+      end
+    end
   end
 end

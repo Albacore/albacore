@@ -201,7 +201,6 @@ module Albacore
         knowns = compute_knowns
         @files.each do |p|
           proj, n, ns = generate_nuspec p, knowns
-          #nuspecs[p] = OpenStruct.new({:proj => proj, :nuspec => n, :nuspec_symbols => ns })
           nuspecs[proj.name] = OpenStruct.new({:proj => proj, :nuspec => n, :nuspec_symbols => ns })
         end
         nuspecs
@@ -222,7 +221,7 @@ module Albacore
       # execute, for each project file
       def execute_inner! proj, nuspec, nuspec_symbols
         nuspec_path = write_nuspec! proj, nuspec, false
-        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols, true
+        nuspec_symbols_path = write_nuspec! proj, nuspec_symbols, true if nuspec_symbols
 
         create_nuget! proj.proj_path_base, nuspec_path, nuspec_symbols_path
       rescue => e
@@ -237,7 +236,7 @@ module Albacore
 
  PROJECT #{proj.name} symbol nuspec:
 
-#{nuspec_symbols.to_xml}}
+#{if nuspec_symbols then nuspec_symbols.to_xml else 'NO SYMBOLS' end}}
         end
 
         # now remove them all
@@ -261,17 +260,22 @@ module Albacore
         nuspec = nuspec.merge_with @opts.get(:package)
         trace { "nuspec: #{nuspec.to_s} [nugets pack: task]" }
 
-        trace "creating SYMBOL package for #{proj.name} [nugets pack: task]"
-        nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
-          symbols:        true,
-          verify_files:   true,
-          known_projects: knowns,
-          version:        version
+        if @opts.get(:symbols)
+          trace { "creating SYMBOL package for #{proj.name} [nugets pack: task]" }
+          nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
+            symbols:        true,
+            verify_files:   true,
+            known_projects: knowns,
+            version:        version
 
-        nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
-        trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
+          nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
+          trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
 
-        [nuspec, nuspec_symbols]
+          [nuspec, nuspec_symbols]
+        else
+          trace { "skipping SYMBOL package for #{proj.name} [nugets pack: task]" }
+          [nuspec, nil]
+        end
       end
 
       def write_nuspec! proj, nuspec, symbols
@@ -282,12 +286,12 @@ module Albacore
         nuspec_path
       end
 
-      def create_nuget! cwd, nuspec, nuspec_symbols
+      def create_nuget! cwd, nuspec, nuspec_symbols = nil
         # create the command
         exe = path_to(@opts.get(:exe), cwd)
         out = path_to(@opts.get(:out), cwd)
         nuspec = path_to nuspec, cwd
-        nuspec_symbols = path_to nuspec_symbols, cwd
+        nuspec_symbols = path_to nuspec_symbols, cwd if nuspec_symbols
         cmd = Albacore::NugetsPack::Cmd.new exe,
                 work_dir: cwd,
                 out:      out
@@ -295,13 +299,13 @@ module Albacore
         # run any concerns that modify the command
         @before_execute.call cmd if @before_execute
 
-        debug "generating nuspec at #{nuspec}, and symbols (possibly) at #{nuspec_symbols} [nugets pack: task]"
+        debug { "generating nuspec at #{nuspec}, and symbols (possibly) at '#{nuspec_symbols}' [nugets pack: task]" }
 
         # run the command for the file
         pkg, spkg = cmd.execute nuspec, nuspec_symbols
 
         publish_artifact nuspec, pkg
-        publish_artifact nuspec_symbols, spkg if spkg
+        publish_artifact nuspec_symbols, spkg if spkg && nuspec_symbols
       end
 
       ## Cleaning up after generation

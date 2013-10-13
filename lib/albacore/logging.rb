@@ -8,7 +8,7 @@ module Albacore
       ::Albacore.application.logger.debug *str, &block
     end
     def debug *str, &block
-      ::Albacore.application.logger.debug  *str, &block
+      ::Albacore.application.logger.debug *str, &block
     end
     def info *str, &block
       ::Albacore.application.logger.info *str, &block
