@@ -1,0 +1,20 @@
+require 'albacore'
+
+build do |b|
+  b.file = 'Degbu.fsproj'
+end
+
+directory 'pkg'
+
+nugets_pack :nugets_pack => 'pkg' do |p|
+  p.exe   = '../NuGet.exe'
+  p.files = FileList['*.fsproj']
+  p.out   = 'pkg'
+  p.with_metadata do |m|
+    m.version     = '0.0.1'
+    m.authors     = 'Henrik'
+    m.description = 'A desc'
+  end
+end
+
+task :default => :nugets_pack
