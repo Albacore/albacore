@@ -2,6 +2,7 @@ require 'albacore'
 
 build do |b|
   b.file = 'Degbu.fsproj'
+  b.prop 'Configuration', 'Release'
 end
 
 directory 'pkg'
@@ -10,6 +11,7 @@ nugets_pack :nugets_pack => [:build, 'pkg'] do |p|
   p.exe   = '../NuGet.exe'
   p.files = FileList['*.fsproj']
   p.out   = 'pkg'
+  p.configuration = 'Release'
   p.with_metadata do |m|
     m.version     = '0.0.1'
     m.authors     = 'Henrik'
