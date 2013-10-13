@@ -30,11 +30,6 @@ module Albacore
       # TODO: move towards #opts() for all task types rather than
       # reading these public properties.
 
-      # this is the solution file to build (or the project files themselves)
-      attr_path_accessor :sln, :file do |val|
-        @parameters.add val
-      end
-
       # this is the target of the compilation with MsBuild/XBuild
       attr_reader :target
 
@@ -50,14 +45,13 @@ module Albacore
                w.call( "xbuild" )  ||
                heuristic_executable
 
-        debug "build using '#{@exe}'"
-
-        logging "minimal"
+        debug { "build using '#{@exe}'" }
+        set_logging 'minimal'
       end
 
-      # see target method for docs
-      def target= t
-        target t
+      # this is the solution file to build (or the project files themselves)
+      attr_path_accessor :sln, :file do |val|
+        @parameters.add val
       end
 
       # Call for each target that you want to add, or pass an array or
@@ -71,7 +65,7 @@ module Albacore
       # A target is a group of tasks. For more information, see MSBuild Targets (http://msdn.microsoft.com/en-us/library/vstudio/ms171462.aspx)."
       #
       # t  :: the array or string target to add to the list of tarets to build
-      def target t
+      attr_path_accessor :target do |t|
         update_array_prop "target", method(:make_target), :targets, t
       end
 
@@ -97,19 +91,13 @@ module Albacore
       # Each logger displays events based on the verbosity level that you set for that logger.
       # You can specify the following verbosity levels: q[uiet], m[inimal], 
       # n[ormal], d[etailed], and diag[nostic]. 
-      def logging mode
-        modes = %w{quiet minimal normal detailed diagnostic}.collect{ |m| "/verbosity:#{m}" }
-        @parameters.subtract modes
-        @parameters.add "/verbosity:#{mode}"
-      end
-
-      def logging= mode
-        logging mode
+      attr_path_accessor :logging do |mode|
+        set_logging mode
       end
 
       # Specifies the number of parallel worker processes to build with
       # Defaults to the number of logical cores
-      def cores num
+      attr_path_accessor :cores do |num|
         @parameters.add "/maxcpucount:#{num}"
       end
 
@@ -134,7 +122,7 @@ module Albacore
 
       # Set logging verbosity to quiet
       def be_quiet
-        logging "quiet"
+        logging = "quiet"
       end
 
       # Don't display the startup banner or the copyright message.
@@ -143,6 +131,12 @@ module Albacore
       end
 
       private
+      def set_logging mode
+        modes = %w{quiet minimal normal detailed diagnostic}.collect{ |m| "/verbosity:#{m}" }
+        @parameters.subtract modes
+        @parameters.add "/verbosity:#{mode}"
+      end
+
       def update_array_prop prop_name, callable_prop_val, field_sym, value
         field = :"@#{field_sym}"
         # @targets ||= []

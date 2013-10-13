@@ -3,15 +3,34 @@ require 'support/sh_interceptor'
 require 'albacore'
 require 'albacore/task_types/build'
 
-shared_context 'config' do
-  let(:cfg) do
+describe 'build config' do
+  subject do
     Albacore::Build::Config.new
+  end
+  %w[file= sln= target target= logging logging= prop cores cores=].each do |writer|
+    it "should have property :#{writer}" do
+      subject.respond_to?(:"#{writer}").should be_true
+    end
+  end
+  it 'should not have any property' do
+    subject.respond_to?(:something_nonexistent).should be_false
+  end
+
+  describe 'when setting properties' do
+    before do
+      subject.logging = 'minimal'
+    end
+    it do
+      subject.parameters.should include('/verbosity:minimal')
+    end
   end
 end
 
 describe 'when running with sln' do
+  let :cfg do
+    Albacore::Build::Config.new
+  end
 
-  include_context 'config'
   include_context 'path testing'
 
   let(:cmd) do
@@ -38,3 +57,4 @@ describe 'when running with sln' do
     subject.is_mono_command?.should be_false
   end
 end
+

@@ -76,7 +76,7 @@ module Albacore
       # TODO: figure out how to interleave output and error streams
       out, _, inmem = opts.get(:out), opts.get(:err), StringIO.new
 
-      trace "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s}), in directory: #{opts.getopt(:workdir, '<<current>>')}"
+      trace { "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s}), in directory: #{opts.getopt(:workdir, '<<current>>')} [cross_platform_cmd #system]" }
 
       puts printable unless opts.get :silent, false # log cmd verbatim
 
@@ -144,7 +144,7 @@ module Albacore
 
       chdir opts.get(:work_dir) do
 
-        trace "# sh( ...,  options: #{opts.to_s})"
+        trace { "#sh( ...,  options: #{opts.to_s}) [cross_platform_cmd #sh]" }
         puts cmd unless opts.getopt :silent, false # log cmd verbatim
 
         lines = ''
@@ -202,7 +202,7 @@ module Albacore
       parameters << Paths.normalise_slashes("#{dir}:#{file}") unless dir == '.'
       cmd, parameters = Paths.normalise cmd, parameters
 
-      trace "#{cmd} #{parameters.join(' ')}"
+      trace { "#{cmd} #{parameters.join(' ')} [cross_platform_cmd #which]" }
 
       null = ::Rake::Win32.windows? ? "NUL" : "/dev/null"
       res = IO.popen([cmd, *parameters]) do |io|
@@ -215,16 +215,16 @@ module Albacore
         res
       end
     rescue Errno::ENOENT => e
-      trace "which/where returned #{$?}: #{e}"
+      trace "which/where returned #{$?}: #{e} [cross_platform_cmd #which]"
       nil
     end
     
     def chdir wd, &block
       return block.call if wd.nil?
       Dir.chdir wd do
-        debug "pushd #{wd}"
+        debug { "pushd #{wd} [cross_platform_cmd #chdir]" }
         res = block.call
-        debug "popd #{wd}"
+        debug { "popd #{wd} [cross_platform_cmd #chdir]" }
         return res
       end
     end
