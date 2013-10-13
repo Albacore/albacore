@@ -50,99 +50,108 @@ like these:
 
     Albacore::Tasks::Versionizer.new :versioning
 
-    desc "Perform fast build (warn: doesn't d/l deps)"
+    desc 'Perform fast build (warn: doesn't d/l deps)'
     build :quick_build do |b|
       b.logging = 'detailed'
-      b.sln = 'src/MyProj.sln'
+      b.sln     = 'src/MyProj.sln'
     end
 
-    desc "Perform full build"
-    build :build => [:versioning, :restore] do |b|
-      b.sln = 'src/MyProj.sln'
-    end
-
-    directory 'build/pkg'
-
+    desc 'restore all nugets as per the packages.config files'
     nugets_restore :restore do |p|
       p.out = 'src/packages'
       p.exe = 'buildsupport/NuGet.exe'
     end
 
-    desc "package nugets"
+    desc 'Perform full build'
+    build :build => [:versioning, :restore] do |b|
+      b.sln = 'src/MyProj.sln'
+      # alt: b.file = 'src/MyProj.sln'
+    end
+
+    directory 'build/pkg'
+
+    desc 'package nugets - finds all projects and package them'
     nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
       p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
-        exclude('src/Fsharp.Actor/*.nuspec').
-        exclude(/Tests/).
-        exclude(/Spec/).
-        exclude(/sample/).
-        exclude(/packages/)
+        exclude(/Tests/)
       p.out     = 'build/pkg'
       p.exe     = 'buildsupport/NuGet.exe'
-      p.version = ENV['NUGET_VERSION']
+      p.with_metadata do |m|
+        m.description = 'A cool nuget'
+        m.authors = 'Henrik'
+        m.version = ENV['NUGET_VERSION']
+      end
     end
+
+    task :default => :create_nugets
  
 You can now run:
 
     rake
 
-## hack guidelines
+## Ideas:
 
-Use pair-of-three: `Cmd`, `Config` and `Task`. Add Rakefile-methods in `dsl.rb`.
-You can `include CmdConfig` in your `Config` to get access to parameters, and do
-`include CrossPlatformCmd` in your `Cmd` to get correct cross-platform, logging
-and invocation of system and shell statements.
+When building multiple configurations,
+Build tasks should be invoked with different parameters
+According to the graph of tasks to be executed
 
-Read the READMEs in the `lib/ext` and `lib/tasks` folders. Write unit-tests for
-your functionality. Try to make the execution of the command that you have
-prepared be a single line of code that does something like: `sh make_command`
-thereby delegating to `CrossPlatformCmd`. To ignore exit codes, call `shie`
-instead.
+```
+require 'albacore'
 
-Use and document `attr_accessor` in `Config` with [TomDoc](http://tomdoc.org/),
-so that docs can be automatically generated. Have sane defaults. If an option is
-true/false, have a sane default and provide a method that sets the opposite.
-Document the default. Document required properties to set. Don't set properties
-by providing single-parameter methods, because it's confusing with regards to
-reading those same properties.
+Albacore.vary_by_parameters do |params|
+  # write to dynamic method
+  params.Configuration = ['Debug-Tests', 'Release']
+end
 
-'Execute' the configuration as much as possible when configuring it through the
-DSL block, but don't do side-effects other than fail bad config. Remember that
-multiple interactions with the `Config` object is desired. Do side-effects when
-the task is run.
+build :b do |b|
+  b.vary_by_param 'Configuration'
+end
 
-How to write commands:
+nugets_pack :p => :b do |p|
+ # ... 
+end
 
-    require 'map'
+task :default => :p
+```
 
-    # ...
+Creating two runs
+  * `:b[Debug-Tests] => :p => :default` and
+  * `:b[Release] => :p => :default`
 
-    def initialize executable, *args
-      opts = Map.options(args)
-      @executable = executable  
-    end
+where only :b is invoked twice, but :p and :default are only invoked only once
+each.
 
-In general: look at the written code and do something similar =).
+---
 
-Provide further blocks/lambdas/procs, passed from the `Config` to the `Task` or
-even `Cmd` if you need to decide values when the task is run. This makes it
-easier to compose tasks.
+When building services and/or web sites,
+The bundling task_type should take care of packaging for deployment
 
-I use a vague concept of 'core albacore' for tasktypes (nugets_restore,
-nugets_pack, build) and 'extensions' for things that depend on published
-symbols, and 'tasks' for things that can be instantiated (added to the Rake
-Tasks collection) in the Rakefile. Your extension probably is a 'task' or
-'extension'.
 
-Use ideomatic ruby. If you have more than 3 levels of indentation in a method,
-you're probably not being ideomatic. Can you use a higher-level language
-construct or the null-object pattern or some functional programming concept that
-makes the code easier to read, reason about and maintain? Don't mutate unless
-you have to - code that doesn't mutate much can be gotten by using the builder
-pattern (`Config` is the builder most of the time); then, a lot of the logic of
-how to construct the command-line/expression to run, can be done in the
-constructor (`Cmd#initialize`), rather than when executing it.
+### Docs: build
 
-### Usage of csprojfiles
+TBD
+
+### Docs: nugets_pack
+
+TBD
+
+### Docs: nugets_restore
+
+TBD
+
+### Docs: asmver
+
+TBD
+
+### Docs: test_runner
+
+TBD
+
+### Docs: nugets_authentication
+
+TBD
+
+### Docs: csprojfiles
 
     desc "Check the difference between the filesystem and the files referenced in a csproj"
 	csprojfiles do |f|
