@@ -6,7 +6,7 @@ end
 
 directory 'pkg'
 
-nugets_pack :nugets_pack => 'pkg' do |p|
+nugets_pack :nugets_pack => [:build, 'pkg'] do |p|
   p.exe   = '../NuGet.exe'
   p.files = FileList['*.fsproj']
   p.out   = 'pkg'

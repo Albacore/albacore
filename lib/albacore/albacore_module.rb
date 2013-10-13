@@ -21,6 +21,7 @@ module Albacore
     # Defines a new task with all of what that entails:
     # will call application.define_task.
     def define_task *args, &block
+      args = [caller[0][/`.*'/][1..-2]] if args.nil? or args.empty?
       # delegate to the application singleton
       application.define_task *args, &block
     end
