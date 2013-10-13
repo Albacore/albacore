@@ -29,6 +29,7 @@ end
 describe 'calling dsl method without symbol name' do
   subject do
     x = X.new
+    # calling the #build method in the dsl without any name should name it
     x.method(:build).call do |b|
     end
   end
