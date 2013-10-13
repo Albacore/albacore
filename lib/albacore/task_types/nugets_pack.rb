@@ -253,7 +253,8 @@ module Albacore
           symbols:        false,
           verify_files:   true,
           known_projects: knowns,
-          version:        version
+          version:        version,
+          configuration:  (@opts.get(:configuration))
 
         # take data from package as configured in Rakefile, choosing what is in
         # Rakefile over what is in projfile.
@@ -266,7 +267,8 @@ module Albacore
             symbols:        true,
             verify_files:   true,
             known_projects: knowns,
-            version:        version
+            version:        version,
+            configuration:  (@opts.get(:configuration))
 
           nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
           trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
