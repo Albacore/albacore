@@ -1,6 +1,6 @@
 require 'albacore/albacoretask'
-require 'zip/zip'
-require 'zip/zipfilesystem'
+require 'zip'
+require 'zip/filesystem'
 include Zip
 
 class Unzip
@@ -17,7 +17,7 @@ class Unzip
     fail_with_message 'Zip File cannot be empty' if @file.nil?
     return if @file.nil?
   
-    Zip::ZipFile.open(@file) do |zip_f|
+    Zip::File.open(@file) do |zip_f|
       zip_f.each do |f|
         out_path = File.join(@destination, f.name)
         FileUtils.mkdir_p(File.dirname(out_path))

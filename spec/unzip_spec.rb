@@ -32,7 +32,7 @@ describe Unzip, "when executing the task" do
     zip_file.stub(:each).and_yield(zipped_file)
     zip_file.stub(:extract)
 
-    Zip::ZipFile.stub!(:open).and_yield(zip_file)
+    Zip::File.stub!(:open).and_yield(zip_file)
     FileUtils.stub(:mkdir_p)
     File.stub!(:file?).and_return(true)
 

@@ -1,7 +1,6 @@
 require 'albacore/albacoretask'
-require 'zip/zip'
-require 'zip/zipfilesystem'
-include Zip
+require 'zip'
+require 'zip/filesystem'
 
 class ZipDirectory
   TaskName = :zip
@@ -24,7 +23,7 @@ class ZipDirectory
     clean_directories_names
     remove zip_name
 
-    ZipFile.open(zip_name, 'w')  do |zipfile|
+    Zip::File.open(zip_name, 'w')  do |zipfile|
       zip_directory(zipfile)
       zip_additional(zipfile)
     end
