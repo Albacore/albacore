@@ -6,6 +6,7 @@ require 'ziptestdata'
 describe ZipDirectory, 'when zipping a directory of files' do
   before :each do
     zip = ZipDirectory.new
+    zip.flatten_zip
     zip.directories_to_zip ZipTestData.folder
     zip.output_file = "test.zip"
     zip.execute
@@ -19,6 +20,7 @@ end
 describe ZipDirectory, 'when zipping a directory with string exclusions' do
   before :each do
     zip = ZipDirectory.new
+    zip.flatten_zip
     zip.directories_to_zip ZipTestData.folder
     zip.output_file = 'test.zip'
     zip.exclusions File.join(ZipTestData.folder, 'files', 'testfile.txt')
@@ -42,6 +44,7 @@ end
 describe ZipDirectory, 'when zipping a directory of files with regexp exclusions' do
   before :each do
     zip = ZipDirectory.new
+    zip.flatten_zip
     zip.directories_to_zip ZipTestData.folder
     zip.output_file = 'test.zip'
     zip.exclusions /testfile/
@@ -65,6 +68,7 @@ end
 describe ZipDirectory, 'when zipping a directory of files with glob string exclusions' do
   before :each do
     zip = ZipDirectory.new
+    zip.flatten_zip
     zip.directories_to_zip ZipTestData.folder
     zip.output_file = 'test.zip'
     zip.exclusions "**/subfolder/*"
@@ -107,6 +111,7 @@ describe ZipDirectory, 'when zipping a directory of files with additional files'
   describe 'and additional file is given as an array' do
     before :each do
       zip = ZipDirectory.new
+      zip.flatten_zip
       zip.directories_to_zip ZipTestData.folder
       zip.output_file = 'test.zip'
       zip.exclusions "**/subfolder/*"
@@ -134,6 +139,7 @@ describe ZipDirectory, 'when zipping a directory of files with additional files'
   describe 'and additional file is given as a string' do
     before :each do
       zip = ZipDirectory.new
+      zip.flatten_zip
       zip.directories_to_zip ZipTestData.folder
       zip.output_file = 'test.zip'
       zip.exclusions "**/subfolder/*"
