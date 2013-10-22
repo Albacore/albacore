@@ -5,10 +5,6 @@ rvm:
   - 2.0.0
   - jruby
 script: "bundle exec rake specs:assemblyinfo specs:albacoremodel specs:attrmethods"
-branches:
-  only:
-    - dev
-#env:
 bundler_args: --without=wiki
 notifications:
   email: false
