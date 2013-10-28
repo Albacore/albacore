@@ -1,10 +1,16 @@
 language: ruby
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - jruby
-script: "bundle exec rake specs:assemblyinfo specs:albacoremodel specs:attrmethods"
+- 1.9.3
+- 2.0.0
+- jruby
+script: bundle exec rake specs:assemblyinfo specs:albacoremodel specs:attrmethods
 bundler_args: --without=wiki
 notifications:
   email: false
 gemfile: Gemfile
+deploy:
+  provider: rubygems
+  api_key:
+    secure: c8WYx8M7i68fZzucth/eI7kj0OX55f6te5Toz88HhDRYdycJ7xu6GJBErOGQBK+26cLnu2sfi//TJXOBayCm7mluTcNSoQMrYalm9s5+oCNyNKbMCZtRZ/kYqHZY4cvOobqKeTTrTJH5puD3PUFbCqat3s4HKrQUjCthfd6ZUeY=
+  on:
+    tags: true
