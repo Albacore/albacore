@@ -1,9 +1,9 @@
 module Albacore::Asmver
   class Engine
     def build_attribute attr_name, attr_data
-      attribute = "#{@start_token}assembly: #{attr_name}("
+      attribute = "#{@start_token}assembly: #{format_attribute_name attr_name}("
       
-      if attr_data
+      unless attr_data.nil?
         if attr_data.is_a? Hash
           # Only named parameters
           attribute << build_named_parameters(attr_data)
@@ -19,7 +19,7 @@ module Albacore::Asmver
           end
         else
           # Single positional parameter
-          attribute << "#{attr_data.to_s}"
+          attribute << "#{format_value attr_data}"
         end
       end
       
@@ -29,17 +29,24 @@ module Albacore::Asmver
     def build_named_parameters data
       params = []
       data.each_pair do |k, v|
-        params << "#{k.to_s} #{@assignment} #{v.to_s}"
+        params << "#{k.to_s} #{@assignment} #{format_value v}"
       end
       params.join ", "
     end
     
     def build_positional_parameters data
-      data.flatten.map{ |a| a.to_s }.join(", ")
+      data.flatten.map{ |a| format_value a }.join(", ")
     end
 
     def build_using_statement namespace
       "#{@using} #{namespace}#{@statement_terminator}"
+    end
+
+    def build_namespace namespace, writer, &in_namespace
+      raise ArgumentError, "missing block to #build_namespace on #{self.inspect}" unless block_given?
+      writer << namespace_start(namespace)
+      in_namespace.call namespace
+      writer << namespace_end
     end
 
     # builds a comment, as a single line if it's a single line
@@ -52,9 +59,43 @@ module Albacore::Asmver
       end
     end
 
-    private
+    protected
 
     NL = /\r\n?|\n/
+
+    # For formatting
+
+    # formats what might be a snake_case attribute, in CamelCase.
+    def format_attribute_name name
+      return name if name !~ /_/ && name =~ /[A-Z]+.*/
+      name.split('_').map{ |e| e.capitalize }.join 
+    end
+
+    # formats a value according to its type to make it more rubyesque
+    def format_value v
+      case v
+      when String
+        v.inspect
+      when TrueClass
+        'true'
+      when FalseClass
+        'false'
+      else
+        v.to_s
+      end
+    end
+    
+    # For namespaces
+
+    def namespace_start namespace
+      "namespace #{namespace} {"
+    end
+
+    def namespace_end
+      "}" 
+    end
+
+    # For comments
 
     def is_multiline str
       str =~ NL

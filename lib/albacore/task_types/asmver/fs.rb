@@ -13,14 +13,18 @@ module Albacore::Asmver
     def build_attribute_re(attr_name)
       /^\[\<assembly: #{attr_name}(.+)/
     end
-    
-    def before
-      "module AssemblyInfo" # this could be anything
+
+    # namespaces
+
+    def namespace_start ns
+      "namespace #{ns}"
     end
-    
-    def after
-      "()" # need to yield unit
-    end
+
+    def namespace_end
+      "()\n"
+    end 
+
+    # comments
 
     def comment_multiline_start
       '(*'
