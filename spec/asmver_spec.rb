@@ -71,5 +71,32 @@ end
         comment.should =~ expected
       end
     end
+    describe 'building a multi-line comment' do
+      let :comment do
+        subject.build_comment %{This is a very interesting comment
+on many lines}
+      end
+      let :expected do
+        { 'Cs' => %{/*
+ This is a very interesting comment
+ on many lines
+*/},
+          'Fs' => %{(*
+ This is a very interesting comment
+ on many lines
+*)},
+          'Vb' =>
+%{' This is a very interesting comment
+' on many lines},
+          'Cpp' => %{/*
+ This is a very interesting comment
+ on many lines
+*/}
+        }[lang]
+      end
+      it 'should build the multiline comment' do
+        comment.should eq(expected)
+      end
+    end
   end
 end

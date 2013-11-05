@@ -21,5 +21,13 @@ module Albacore::Asmver
     def after
       "()" # need to yield unit
     end
+
+    def comment_multiline_start
+      '(*'
+    end
+
+    def comment_multiline_end
+      '*)'
+    end
   end
 end

@@ -45,7 +45,41 @@ module Albacore::Asmver
     # builds a comment, as a single line if it's a single line
     # otherwise builds a multiline comment
     def build_comment string_data
-      %Q|// #{string_data}|
+      if is_multiline string_data
+        build_multiline_comment string_data
+      else
+        build_singleline_comment string_data
+      end
+    end
+
+    private
+
+    NL = /\r\n?|\n/
+
+    def is_multiline str
+      str =~ NL
+    end
+
+    def comment_singleline_token
+      '//'
+    end
+
+    def comment_multiline_start
+      '/*'
+    end
+
+    def comment_multiline_end
+      '*/'
+    end
+
+    def build_multiline_comment string_data
+      comment_multiline_start + "\n" +
+        string_data.split(NL).map{ |s| " " + s }.join("\n") + "\n" +
+        comment_multiline_end
+    end
+
+    def build_singleline_comment string_data
+      %Q|#{comment_singleline_token} #{string_data}|
     end
   end
 end

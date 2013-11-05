@@ -14,8 +14,14 @@ module Albacore::Asmver
       /^\<assembly: #{attr_name}(.+)/i  
     end
 
-    def build_comment string_data
-      "' #{string_data}"
+    # override
+    def comment_singleline_token
+      '\''
+    end
+
+    # override
+    def build_multiline_comment string_data
+      string_data.split(NL).map { |s| "' " + s }.join("\n")
     end
   end
 end
