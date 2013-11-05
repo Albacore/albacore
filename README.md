@@ -3,13 +3,7 @@
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
 
 This branch is the next official version. It is currently being used for
-numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and
-jRuby.
-
-# TODO
-
- * Kill thread from Process#spawn
- * Why isn't #system matching output in NuGet pack?
+numerous builds for us and is free of known bugs. It works on RMI 1.9.3.
 
 ## getting started
 
@@ -42,49 +36,51 @@ Now, install albacore from this repository by running:
 In order to build your project, you need to create a `Rakefile`, with contents
 like these:
 
-    require 'bundler/setup'
+``` ruby
+require 'bundler/setup'
 
-    require 'albacore'
-    require 'albacore/tasks/versionizer'
-    require 'albacore/ext/teamcity'
+require 'albacore'
+require 'albacore/tasks/versionizer'
+require 'albacore/ext/teamcity'
 
-    Albacore::Tasks::Versionizer.new :versioning
+Albacore::Tasks::Versionizer.new :versioning
 
-    desc 'Perform fast build (warn: doesn't d/l deps)'
-    build :quick_build do |b|
-      b.logging = 'detailed'
-      b.sln     = 'src/MyProj.sln'
-    end
+desc 'Perform fast build (warn: doesn't d/l deps)'
+build :quick_build do |b|
+  b.logging = 'detailed'
+  b.sln     = 'src/MyProj.sln'
+end
 
-    desc 'restore all nugets as per the packages.config files'
-    nugets_restore :restore do |p|
-      p.out = 'src/packages'
-      p.exe = 'buildsupport/NuGet.exe'
-    end
+desc 'restore all nugets as per the packages.config files'
+nugets_restore :restore do |p|
+  p.out = 'src/packages'
+  p.exe = 'buildsupport/NuGet.exe'
+end
 
-    desc 'Perform full build'
-    build :build => [:versioning, :restore] do |b|
-      b.sln = 'src/MyProj.sln'
-      # alt: b.file = 'src/MyProj.sln'
-    end
+desc 'Perform full build'
+build :build => [:versioning, :restore] do |b|
+  b.sln = 'src/MyProj.sln'
+  # alt: b.file = 'src/MyProj.sln'
+end
 
-    directory 'build/pkg'
+directory 'build/pkg'
 
-    desc 'package nugets - finds all projects and package them'
-    nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
-      p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
-        exclude(/Tests/)
-      p.out     = 'build/pkg'
-      p.exe     = 'buildsupport/NuGet.exe'
-      p.with_metadata do |m|
-        m.description = 'A cool nuget'
-        m.authors = 'Henrik'
-        m.version = ENV['NUGET_VERSION']
-      end
-    end
+desc 'package nugets - finds all projects and package them'
+nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
+  p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
+    exclude(/Tests/)
+  p.out     = 'build/pkg'
+  p.exe     = 'buildsupport/NuGet.exe'
+  p.with_metadata do |m|
+    m.description = 'A cool nuget'
+    m.authors = 'Henrik'
+    m.version = ENV['NUGET_VERSION']
+  end
+end
 
-    task :default => :create_nugets
- 
+task :default => :create_nugets
+```
+
 You can now run:
 
     rake
@@ -95,7 +91,7 @@ When building multiple configurations,
 Build tasks should be invoked with different parameters
 According to the graph of tasks to be executed
 
-```
+``` ruby
 require 'albacore'
 
 Albacore.vary_by_parameters do |params|
@@ -144,7 +140,7 @@ TBD
 Generate a single file with assembly attributes. Code comments in example below
 mention output in F#.
 
-```
+``` ruby
 asmver :asmver do |a|
   a.file_path  = 'src/Version.fs' # required, no default
   a.namespace  = 'Hello.World'    # required, no default
@@ -155,7 +151,6 @@ asmver :asmver do |a|
   a.out        = StringIO.new     # optional, don't use it this way: takes an IO/Stream
 end
 ```
-
 
 ### Docs: test_runner
 
@@ -170,7 +165,7 @@ TBD
 Checks the difference between the filesystem and the files referenced in a
 csproj, to make sure that they match. Run as a part of a CI build.
 
-```
+``` ruby
 desc "Check the difference between the filesystem and the files referenced in a csproj"
 csprojfiles do |f|
   # Files to ignore
