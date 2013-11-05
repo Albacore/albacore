@@ -4,7 +4,7 @@ require 'albacore/task_types/asmver/file_generator'
 include Albacore::Asmver
 
 %w|Fs Vb Cpp Cs|.each do |lang|
-  require "albacore/task_types/asmver/#{lang}"
+  require "albacore/task_types/asmver/#{lang.downcase}"
   describe "the #{lang} engine" do
     subject do
       "Albacore::Asmver::#{lang}".split('::').inject(Object) { |o, c| o.const_get c }.new

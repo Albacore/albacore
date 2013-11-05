@@ -13,8 +13,8 @@ describe ::Albacore::Asmver::Config, 'when setting attributes and out' do
   before :each do
     subject.file_path = 'Version.fs'
     subject.namespace = 'Hello.World'
-    subject.attributes :guid => 'b766f4f3-3f4e-49d0-a451-9c152059ae81',
-      :assembly_version => '0.1.2'
+    subject.attributes guid: 'b766f4f3-3f4e-49d0-a451-9c152059ae81',
+      assembly_version: '0.1.2'
     subject.out = strio
     @task = ::Albacore::Asmver::Task.new(subject.opts)
     @task.execute
