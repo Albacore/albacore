@@ -10,10 +10,10 @@ System.Runtime.InteropServices|
 
     def initialize engine, ns, opts
       raise ArgumentError, 'engine is nil' unless engine
-      raise ArgumentErorr, 'ns is nil' unless ns
+      raise ArgumentError, 'ns is nil' unless ns
       @engine = engine 
       @ns     = ns
-      @opts   = Map.new(opts) || Map.new
+      @opts   = Map.new(opts)
     end
     
     def generate attrs = {}
