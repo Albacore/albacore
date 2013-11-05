@@ -141,7 +141,21 @@ TBD
 
 ### Docs: asmver
 
-TBD
+Generate a single file with assembly attributes. Code comments in example below
+mention output in F#.
+
+```
+asmver :asmver do |a|
+  a.file_path  = 'src/Version.fs' # required, no default
+  a.namespace  = 'Hello.World'    # required, no default
+  # optional
+  a.attributes assembly_title: 'Hello.World', # generates: [<AssemblyTitle("Hello.World")>]
+    assembly_version: '0.1.2',                # generates: [<AssemblyVersion("0.1.2")>]
+    my_product_attr: 'Hello world',           # generates: [<MyProductAttr("Hello World")>]
+  a.out        = StringIO.new     # optional, don't use it this way: takes an IO/Stream
+end
+```
+
 
 ### Docs: test_runner
 
@@ -153,35 +167,39 @@ TBD
 
 ### Docs: csprojfiles
 
-    desc "Check the difference between the filesystem and the files referenced in a csproj"
-	csprojfiles do |f|
-		# Files to ignore
-		# for instance if you have source control specific files that are not supposed to be in the project 
-    	f.ignore_files = [/.*\.srccontrol/] 
-    	f.project = "src/MyMvcSite/MyMvcSite.csproj"
-  	end
+Checks the difference between the filesystem and the files referenced in a
+csproj, to make sure that they match. Run as a part of a CI build.
 
-When you run this task it will report any differences between the filesystem and the csproj file.
+```
+desc "Check the difference between the filesystem and the files referenced in a csproj"
+csprojfiles do |f|
+  # Files to ignore
+  # for instance if you have source control specific files that are not supposed to be in the project 
+  f.ignore_files = [/.*\.srccontrol/] 
+  f.project = "src/MyMvcSite/MyMvcSite.csproj"
+end
+```
 
-Why is this important? It's important to know what resources will be deployed. For instance if you have added an image. If you forgot to include the image in the .csproj, it will show up while developing but not when you do a web deployment (i.e. a release).
+When you run this task it will report any differences between the filesystem and
+the csproj file.
 
-It could also be that you have deleted a file, but forgotten to save the project when you send your latest commit to source control&hellip;
+Why is this important? It's important to know what resources will be deployed.
+For instance if you have added an image. If you forgot to include the image in
+the .csproj, it will show up while developing but not when you do a web
+deployment (i.e. a release).
 
-How do you use it? The best way is to have it on a CI server in order to get a notification whenever it detects deviations.
+It could also be that you have deleted a file, but forgotten to save the project
+when you send your latest commit to source control&hellip;
 
-The task will fail with a message and rake will return with an non zero exit code. For instance if a file is missing from csproj and another from the filesystem:
+How do you use it? The best way is to have it on a CI server in order to get a
+notification whenever it detects deviations.
+
+The task will fail with a message and rake will return with an non zero exit
+code. For instance if a file is missing from csproj and another from the
+filesystem:
 
     - Files in src/MyMvcSite/MyMvcSite.csproj but not on filesystem: 
-    file_missing_on_filesystem.cshtml
+      file_missing_on_filesystem.cshtml
     + Files not in src/MyMvcSite/MyMvcSite.csproj but on filesystem:
-    file_missing_in_csproj.png
+      file_missing_in_csproj.png
 
-## Links
-
- * http://guides.rubygems.org/make-your-own-gem/
- * http://postmodern.github.com/2012/05/22/rubygems-tasks.html
- * https://github.com/guard/guard-rspec
- * http://barkingiguana.com/2011/12/13/how-i-structure-rubygems/
- * http://rakeroutes.com/blog/lets-write-a-gem-part-one/
- * https://github.com/sj26/ruby-1.9.3-p0/blob/master/lib/rake/application.rb
- * https://github.com/sj26/ruby-1.9.3-p0/blob/master/lib/rake/rake_module.rb
