@@ -1,4 +1,4 @@
-require 'albacore/asmver/engine'
+require 'albacore/task_types/asmver/engine'
 
 module Albacore::Asmver
   class Fs < Engine
@@ -13,13 +13,25 @@ module Albacore::Asmver
     def build_attribute_re(attr_name)
       /^\[\<assembly: #{attr_name}(.+)/
     end
-    
-    def before
-      "module AssemblyInfo" # this could be anything
+
+    # namespaces
+
+    def namespace_start ns
+      "namespace #{ns}"
     end
-    
-    def after
-      "()" # need to yield unit
+
+    def namespace_end
+      "()\n"
+    end 
+
+    # comments
+
+    def comment_multiline_start
+      '(*'
+    end
+
+    def comment_multiline_end
+      '*)'
     end
   end
 end

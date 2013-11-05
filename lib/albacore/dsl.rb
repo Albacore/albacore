@@ -12,13 +12,9 @@ module Albacore
     def asmver *args, &block
       require 'albacore/task_types/asmver'
       Albacore.define_task *args do
-        c = AsmVer::Config.new
+        c = Albacore::Asmver::Config.new
         yield c
-      
-        c.projects.each { |p|
-          cmd = AsmVer::Cmd.new p
-          AsmVer::Task.new(cmd).execute
-        }
+        Albacore::Asmver::Task.new(c.opts).execute
       end
     end
 
