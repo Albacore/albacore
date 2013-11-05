@@ -1,4 +1,4 @@
-require 'albacore/asmver/engine'
+require 'albacore/task_types/asmver/engine'
 
 module Albacore::Asmver
   class Vb < Engine
@@ -12,6 +12,10 @@ module Albacore::Asmver
     
     def build_attribute_re(attr_name)
       /^\<assembly: #{attr_name}(.+)/i  
+    end
+
+    def build_comment string_data
+      "' #{string_data}"
     end
   end
 end

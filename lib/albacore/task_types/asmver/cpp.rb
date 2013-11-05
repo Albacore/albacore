@@ -1,7 +1,7 @@
-require 'albacore/asmver/engine'
+require 'albacore/task_types/asmver/engine'
 
 module Albacore::Asmver
-  class CppCliEngine < Engine
+  class Cpp < Engine
     def initialize
       @start_token = "["
       @end_token   = "]"

@@ -1,4 +1,4 @@
-require 'albacore/asmver/engine'
+require 'albacore/task_types/asmver/engine'
 
 module Albacore::Asmver
   class Fs < Engine

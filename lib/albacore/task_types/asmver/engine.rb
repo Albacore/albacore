@@ -1,9 +1,9 @@
 module Albacore::Asmver
   class Engine
-    def build_attribute(attr_name, attr_data)
+    def build_attribute attr_name, attr_data
       attribute = "#{@start_token}assembly: #{attr_name}("
       
-      if attr_data != nil
+      if attr_data
         if attr_data.is_a? Hash
           # Only named parameters
           attribute << build_named_parameters(attr_data)
@@ -19,25 +19,33 @@ module Albacore::Asmver
           end
         else
           # Single positional parameter
-          attribute << "#{attr_data.inspect}"
+          attribute << "#{attr_data.to_s}"
         end
       end
       
       attribute << ")#{@end_token}"
     end
     
-    def build_named_parameters(data)
+    def build_named_parameters data
       params = []
-      data.each_pair { |k, v| params << "#{k.to_s} #{@assignment} #{v.inspect}" }
-      params.join(", ")
+      data.each_pair do |k, v|
+        params << "#{k.to_s} #{@assignment} #{v.to_s}"
+      end
+      params.join ", "
     end
     
-    def build_positional_parameters(data)
-      data.flatten.map{ |a| a.inspect }.join(", ")
+    def build_positional_parameters data
+      data.flatten.map{ |a| a.to_s }.join(", ")
     end
 
-    def build_using_statement(namespace)
+    def build_using_statement namespace
       "#{@using} #{namespace}#{@statement_terminator}"
+    end
+
+    # builds a comment, as a single line if it's a single line
+    # otherwise builds a multiline comment
+    def build_comment string_data
+      %Q|// #{string_data}|
     end
   end
 end
