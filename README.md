@@ -47,7 +47,7 @@ require 'albacore/ext/teamcity'
 
 Albacore::Tasks::Versionizer.new :versioning
 
-desc 'Perform fast build (warn: doesn't d/l deps)'
+desc 'Perform fast build (warn: doesn\'t d/l deps)'
 build :quick_build do |b|
   b.logging = 'detailed'
   b.sln     = 'src/MyProj.sln'
