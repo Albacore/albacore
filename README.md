@@ -27,7 +27,7 @@ build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
     source 'http://rubygems.org'
-    gem "albacore", :git => "git://github.com/Albacore/albacore.git", :branch => 'clean_slate'
+    gem 'albacore', '2.0.0.rc.1'
 
 Now, install albacore from this repository by running:
 
