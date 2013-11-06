@@ -5,6 +5,8 @@
 This branch is the next official version. It is currently being used for
 numerous builds for us and is free of known bugs. It works on RMI 1.9.3.
 
+    gem install albacore --prerelease
+
 ## getting started
 
 In a command prompt, run:
