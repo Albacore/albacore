@@ -2,12 +2,14 @@
 
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
 
+Version 2.0 of Albacore.
+
 This branch is the next official version. It is currently being used for
 numerous builds for us and is free of known bugs. It works on RMI 1.9.3.
 
     gem install albacore --prerelease
 
-## getting started
+## Getting Started
 
 In a command prompt, run:
 
@@ -87,42 +89,14 @@ You can now run:
 
     rake
 
-## Ideas:
+## Contributing
 
-When building multiple configurations,
-Build tasks should be invoked with different parameters
-According to the graph of tasks to be executed
-
-``` ruby
-require 'albacore'
-
-Albacore.vary_by_parameters do |params|
-  # write to dynamic method
-  params.Configuration = ['Debug-Tests', 'Release']
-end
-
-build :b do |b|
-  b.vary_by_param 'Configuration'
-end
-
-nugets_pack :p => :b do |p|
- # ... 
-end
-
-task :default => :p
-```
-
-Creating two runs
-  * `:b[Debug-Tests] => :p => :default` and
-  * `:b[Release] => :p => :default`
-
-where only :b is invoked twice, but :p and :default are only invoked only once
-each.
-
----
-
-When building services and/or web sites,
-The bundling task_type should take care of packaging for deployment
+ 1. Create a feature branch with your change:
+    a. With unit test
+    b. With feature
+ 1. Send a PR with that feature branch to this branch
+    a. Make sure TravisCI is OK with it
+    b. Describe your PR in English.
 
 ## Task Types
 
@@ -213,7 +187,7 @@ desc "Check the difference between the filesystem and the files referenced in a 
 csprojfiles do |f|
   # Files to ignore
   # for instance if you have source control specific files that are not supposed to be in the project 
-  f.ignore_files = [/.*\.srccontrol/] 
+  f.ignore_files = [/.*\.srccontrol/]
   f.project = "src/MyMvcSite/MyMvcSite.csproj"
 end
 ```
@@ -240,4 +214,41 @@ filesystem:
       file_missing_on_filesystem.cshtml
     + Files not in src/MyMvcSite/MyMvcSite.csproj but on filesystem:
       file_missing_in_csproj.png
+
+## Ideas:
+
+When building multiple configurations,
+Build tasks should be invoked with different parameters
+According to the graph of tasks to be executed
+
+``` ruby
+require 'albacore'
+
+Albacore.vary_by_parameters do |params|
+  # write to dynamic method
+  params.Configuration = ['Debug-Tests', 'Release']
+end
+
+build :b do |b|
+  b.vary_by_param 'Configuration'
+end
+
+nugets_pack :p => :b do |p|
+ # ... 
+end
+
+task :default => :p
+```
+
+Creating two runs
+  * `:b[Debug-Tests] => :p => :default` and
+  * `:b[Release] => :p => :default`
+
+where only :b is invoked twice, but :p and :default are only invoked only once
+each.
+
+---
+
+When building services and/or web sites,
+The bundling task_type should take care of packaging for deployment
 
