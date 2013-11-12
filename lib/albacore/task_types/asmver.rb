@@ -18,6 +18,7 @@ module Albacore
       # the file name to write the assembly info to
       attr_path_accessor :file_path
 
+      # the namespace to output into the version file
       attr_writer :namespace
 
 
@@ -34,11 +35,12 @@ module Albacore
       
       def opts
         raise Error, "#file_path is not set" unless (file_path or out)
+        ns   = @namespace || '' # defaults to empty namespace if not set.
         lang = lang_for file_path
         m = Map.new attributes: @attributes,
-          namespace: @namespace,
+          namespace: ns,
           file_path: @file_path,
-          language: lang
+          language:  lang
         m[:out] = @out if @out
         m
       end

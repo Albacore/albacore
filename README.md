@@ -145,7 +145,7 @@ mention output in F#.
 ``` ruby
 asmver :asmver do |a|
   a.file_path  = 'src/Version.fs' # required, no default
-  a.namespace  = 'Hello.World'    # required, no default
+  a.namespace  = 'Hello.World'    # required for F#, defaults to empty string '' for C#
   # optional
   a.attributes assembly_title: 'Hello.World', # generates: [<AssemblyTitle("Hello.World")>]
     assembly_version: '0.1.2',                # generates: [<AssemblyVersion("0.1.2")>]
