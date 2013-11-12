@@ -5,7 +5,9 @@ with tasks. Files should be named after the tasks they 'create'.
 
 For example, in a Rakefile, you can write:
 
-```ruby Albacore::Tasks::Versionizer.new :versioning ```
+``` ruby
+Albacore::Tasks::Versionizer.new :versioning
+```
 
 to create a new task, named `:versioning` that you can then depend on from other
 tasks.
