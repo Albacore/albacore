@@ -29,7 +29,7 @@ build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
     source 'http://rubygems.org'
-    gem 'albacore', '2.0.0.rc.1'
+    gem 'albacore', '2.0.0.rc.2'
 
 Now, install albacore from this repository by running:
 
