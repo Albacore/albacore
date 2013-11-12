@@ -124,6 +124,10 @@ each.
 When building services and/or web sites,
 The bundling task_type should take care of packaging for deployment
 
+## Task Types
+
+Task types are the pre-built factories for rake tasks. They often take care of
+what's slightly more complex, beyond just invoking commands.
 
 ### Docs: build
 
@@ -161,6 +165,43 @@ TBD
 ### Docs: nugets_authentication
 
 TBD
+
+## Tasks
+
+Tasks are things you can include that create singleton ruby tasks that are
+pre-named and pre-made. As opposed to the task types, these are 'includeable'.
+More info can be found in the
+[README](https://github.com/Albacore/albacore/blob/clean_slate/lib/albacore/tasks/README.md).
+
+### Versionizer
+
+Helper for reading a `.semver` file and moving information from that file, as
+well as information from the git commit being built upon, to the execution of
+rake/albacore.
+
+Defines/sets ENV vars:
+
+ * BUILD_VERSION
+ * NUGET_VERSION
+ * FORMAL_VERSION
+
+BUILD_VERSION s constructed as such: `.semver-file -> %Major.%minor.%patch%special.git-sha1`.
+
+NUGET_VERSION leaves out the git commit hash.
+
+FORMAL_VERSION uses only the integers 'major', 'minor' and 'patch'.
+
+Publishes symbol `:build_version`.
+
+``` ruby
+Albacore::Tasks::Versionizer.new :versioning
+```
+
+## Tools
+
+Tools are auxilliary items in albacore. They do not have the same amount of
+testing and are more often one-off utilities. Most of these should be moved to
+being commands in an albacore binary.
 
 ### Docs: csprojfiles
 
