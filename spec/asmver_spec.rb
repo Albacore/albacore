@@ -106,6 +106,9 @@ describe FileGenerator do
   it do
     subject.should respond_to(:generate)
   end
+  it 'can be constructed with empty namespace' do
+    FileGenerator.new(Fs.new, '', {})
+  end
 end
 describe FileGenerator, 'when generating F# file' do
   subject do
@@ -147,5 +150,20 @@ describe FileGenerator, 'when generating F# file' do
   end
   it 'should end with ()\n' do
     generated.should =~ /\(\)(\r\n?|\n)$/m
+  end
+end
+describe FileGenerator do
+  subject do
+    FileGenerator.new(Cs.new, '', {})
+  end
+  let :generated do
+    subject.generate com_visible: false,
+      assembly_title: 'My.Asm',
+      assembly_version: '0.1.2',
+      custom_thing: %w|a b c|,
+      named_thing: { :b => 3, :c => 'hi' }
+  end
+  it 'should not include \'namespace\'' do
+    generated.should_not include('namespace')
   end
 end
