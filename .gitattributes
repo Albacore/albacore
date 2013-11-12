@@ -1,0 +1,4 @@
+ text eol=lf
+
+*.csproj false
+*.fsproj false
