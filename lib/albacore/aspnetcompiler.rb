@@ -27,7 +27,7 @@ class AspNetCompiler
     p << "-d" if @debug
     p << "-u" if @updateable
     p << "-f" if @force
-    p << format_path @target_path if @target_path
+    p << format_path(@target_path) if @target_path
     
     result = run_command "AspNetCompiler", p
     fail_with_message "AspNetCompiler failed, see the build log for more details." unless result
