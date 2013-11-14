@@ -46,7 +46,7 @@ module Albacore
                heuristic_executable
 
         debug { "build using '#{@exe}'" }
-        set_logging 'minimal'
+        set_logging (ENV['DEBUG'] ? 'detailed' : 'minimal')
       end
 
       # this is the solution file to build (or the project files themselves)
