@@ -304,6 +304,8 @@ end})
       #  - known_projects
       #  - configuration
       #  - project_dependencies
+      #   Specifies whether to follow the project dependencies. See nuget_model_spec.rb
+      #   for examples of usage of this property.
       #  - nuget_dependencies
       def self.from_xxproj proj, *opts
         opts = Map.options(opts || {}).

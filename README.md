@@ -111,6 +111,14 @@ TBD
 
 TBD
 
+#### #no_project_dependencies
+
+Cancel following of references between projects that cause nugets_pack to find and add as nuget dependencies, linked projects.
+
+```
+# TODO
+```
+
 ### Docs: nugets_restore
 
 TBD

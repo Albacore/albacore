@@ -99,8 +99,11 @@ module Albacore
     #    p.files   = FileList['src/**/*.csproj']
     #    p.out     = 'build/pkg'
     #    p.exe     = 'buildsupport/NuGet.exe'
-    #    p.version = ENV['NUGET_VERSION']
+    #    p.with_metadata do |m|
+    #      m.version = ENV['NUGET_VERSION']
+    #    end
     #    p.gen_symbols
+    #    p.no_project_dependencies
     #  end
     class Config
       include CmdConfig
@@ -123,6 +126,7 @@ module Albacore
         @package = Albacore::NugetModel::Package.new
         @target  = 'net40'
         @symbols = false
+        @project_dependencies = true
         fill_required
       end
 
@@ -141,6 +145,12 @@ module Albacore
         @symbols = true
       end
 
+      # call this if you want to cancel 'smart' scanning of the *proj
+      # file for its dependencies
+      def no_project_dependencies
+        @project_dependencies = false
+      end
+
       # gets the options specified for the task, used from the task
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
@@ -157,6 +167,7 @@ module Albacore
           :target        => @target,
           :files         => @files,
           :configuration => @configuration,
+          :project_dependencies => @project_dependencies,
           :original_path => FileUtils.pwd
         })
       end
@@ -247,6 +258,7 @@ module Albacore
 
       def create_nuspec proj, knowns
         version = @opts.get(:package).metadata.version
+        project_dependencies = @opts.get(:project_dependencies, true)
 
         trace "creating NON-SYMBOL package for #{proj.name} [nugets pack: task]"
         nuspec = Albacore::NugetModel::Package.from_xxproj proj, 
@@ -254,7 +266,8 @@ module Albacore
           verify_files:   true,
           known_projects: knowns,
           version:        version,
-          configuration:  (@opts.get(:configuration))
+          configuration:  (@opts.get(:configuration)),
+          project_dependencies: project_dependencies
 
         # take data from package as configured in Rakefile, choosing what is in
         # Rakefile over what is in projfile.
@@ -268,7 +281,8 @@ module Albacore
             verify_files:   true,
             known_projects: knowns,
             version:        version,
-            configuration:  (@opts.get(:configuration))
+            configuration:  (@opts.get(:configuration)),
+            project_dependencies: project_dependencies
 
           nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
           trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
