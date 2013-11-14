@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.email       = 'henrik@haf.se'
   s.homepage    = 'http://albacorebuild.net'
   s.summary     = 'Dolphin-safe and awesome Mono and .Net Rake-tasks'
+  s.license     = 'MIT'
   s.description = <<-EOF
     Easily build your .Net or Mono project using this collection of Rake tasks.
     Albacore assist you in creating nugets, managing nugets, building your projects,
