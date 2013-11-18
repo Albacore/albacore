@@ -3,7 +3,7 @@ require 'albacore/paths'
 require 'albacore/nuget_model'
 
 describe Albacore::NugetModel::Metadata do
-  [:id, :version, :authors, :description, :language, :project_url, :license_url, :release_notes, :owners, :require_license_acceptance, :copyright, :tags, :dependencies, :framework_assemblies].each do |prop|
+  [:id, :version, :authors, :description, :summary, :language, :project_url, :license_url, :release_notes, :owners, :require_license_acceptance, :copyright, :tags, :dependencies, :framework_assemblies].each do |prop|
     it "responds to :#{prop}" do
       subject.should respond_to(prop)
     end
@@ -78,6 +78,7 @@ describe Albacore::NugetModel::Package, "from XML" do
     <owners>Ms.Example</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Example package</description>
+    <summary>Example package summary</summary>
     <releaseNotes>Used for specs</releaseNotes>
     <copyright>none</copyright>
     <tags>example spec</tags>

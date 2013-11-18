@@ -57,6 +57,9 @@ end})
       # gets or sets the description of this package
       nuspec_field :description
 
+      # gets or sets the summary of this package
+      nuspec_field :summary
+
       # gets or sets the language that this package has been built with
       nuspec_field :language
 
