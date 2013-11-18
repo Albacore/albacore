@@ -6,7 +6,7 @@ require 'albacore/task_types/nugets_pack'
 class ConfigFac
   def self.create id, curr, gen_symbols = true
     cfg = Albacore::NugetsPack::Config.new
-    cfg.target        = 'net40'
+    cfg.target        = 'mono32'
     cfg.configuration = 'Debug'
     cfg.files         = Dir.glob(File.join(curr, 'testdata', 'Project', '*.fsproj'))
     cfg.out           = 'spec/testdata/pkg'

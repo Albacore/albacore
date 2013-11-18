@@ -127,7 +127,7 @@ XML
   end
 
   # on Windows this fails due to replacement of path separators (by design)
-  unless ::Rake::Win32.windows?
+  unless ::Albacore.windows?
     it "should generate the same (semantic) XML as above" do
       Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
     end
@@ -310,6 +310,17 @@ describe "creating nuget (not symbols) from dependent proj file" do
   # actual nuspec contents
   has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
   has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+
+  describe 'when dotnet_version is set' do
+    subject do
+      Albacore::NugetModel::Package.from_xxproj_file projfile,
+        known_projects: %w[Sample.Core],
+        dotnet_version: 'mono32'
+    end
+    # actual nuspec contents
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/mono32'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/mono32'
+  end
 end
 
 describe "creating nuget on dependent proj file" do

@@ -304,6 +304,7 @@ end})
       # Options:
       #  - symbols
       #  - dotnet_version
+      #   Specifies the version to use for constructing the nuspec's lib folder
       #  - known_projects
       #  - configuration
       #  - project_dependencies
