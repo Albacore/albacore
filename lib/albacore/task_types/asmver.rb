@@ -70,6 +70,7 @@ module Albacore
           File.open(@opts.get(:file_path), 'w')
         end
         ::Albacore::Asmver::FileGenerator.new(lang, ns, @opts).generate out, attrs
+        trace { "asmver was written at '#{@opts.get :file_path}' [asmver-task #execute]" }
       ensure
         out.close if out
       end
