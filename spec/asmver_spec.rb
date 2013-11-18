@@ -100,9 +100,7 @@ on many lines}
   end
 end
 describe FileGenerator do
-  subject do
-    FileGenerator.new(Fs.new, 'MyNamespace.Here', {})
-  end
+  subject do FileGenerator.new(Fs.new, 'MyNamespace.Here', {}) end
   it do
     subject.should respond_to(:generate)
   end
@@ -111,15 +109,18 @@ describe FileGenerator do
   end
 end
 describe FileGenerator, 'when generating F# file' do
-  subject do
-    FileGenerator.new(Fs.new, 'My.Fs.Ns', {})
-  end
-  let :generated do
-    subject.generate com_visible: false,
+  before :all do
+    @out = StringIO.new
+    subject = FileGenerator.new(Fs.new, 'My.Fs.Ns', {})
+    subject.generate @out,
+      com_visible: false,
       assembly_title: 'My.Ns',
       assembly_version: '0.1.2',
       custom_thing: %w|a b c|,
       named_thing: { :b => 3, :c => 'hi' }
+  end
+  let :generated do
+    @out.string
   end
   it 'should include namespace' do
     generated.should =~ /namespace My\.Fs\.Ns(\r\n?|\n)/
@@ -153,15 +154,18 @@ describe FileGenerator, 'when generating F# file' do
   end
 end
 describe FileGenerator do
-  subject do
-    FileGenerator.new(Cs.new, '', {})
-  end
-  let :generated do
-    subject.generate com_visible: false,
+  before :all do
+    @out = StringIO.new
+    subject = FileGenerator.new(Cs.new, '', {})
+    subject.generate @out,
+      com_visible: false,
       assembly_title: 'My.Asm',
       assembly_version: '0.1.2',
       custom_thing: %w|a b c|,
       named_thing: { :b => 3, :c => 'hi' }
+  end
+  let :generated do
+    @out.string
   end
   it 'should not include \'namespace\'' do
     generated.should_not include('namespace')

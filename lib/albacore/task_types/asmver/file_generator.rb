@@ -1,8 +1,11 @@
 require 'albacore/task_types/asmver/engine'
+require 'albacore/logging'
 require 'map'
 
 module Albacore::Asmver
   class FileGenerator
+    include ::Albacore::Logging
+
     DEFAULT_USINGS = %w|
 System.Reflection
 System.Runtime.CompilerServices
@@ -13,33 +16,37 @@ System.Runtime.InteropServices|
       raise ArgumentError, 'ns is nil' unless ns
       @engine = engine 
       @ns     = ns
-      @opts   = Map.new(opts)
+      @opts   = Map.new opts
     end
     
-    def generate attrs = {}
+    def generate out, attrs = {}
+      trace { "generating file with attributes: #{attrs} [file_generator #generate]" }
+
       # https://github.com/ahoward/map/blob/master/test/map_test.rb#L374
       attrs = Map.new attrs
-      s = @opts.get(:out) { StringIO.new }
 
       # write the attributes in the namespace
-      @engine.build_namespace @ns, s do
+      @engine.build_namespace @ns, out do
         # after namespace My.Ns.Here
-        s << "\n"
+        out << "\n"
 
         # open all namespaces to use .Net attributes
         @opts.get(:usings) { DEFAULT_USINGS }.each do |ns|
-          s << @engine.build_using_statement(ns)
-          s << "\n"
+          out << @engine.build_using_statement(ns)
+          out << "\n"
         end
+
+        warn { 'no attributes have been given to [file_generator #generate]' } if attrs.empty?
 
         # write all attributes
         attrs.each do |name, data|
-          s << @engine.build_attribute(name, data)
-          s << "\n"
+          trace { "building attribute #{name}: '#{data}' [file_generator #generate]" }
+          out << @engine.build_attribute(name, data)
+          out << "\n"
         end
       end
 
-      s.string
+      nil
     end
   end
 end

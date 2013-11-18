@@ -4,7 +4,7 @@ require 'albacore/albacore_module'
 RSpec.configure do |config|
   config.before(:each) do
     @logout = StringIO.new
-    #@logout = STDOUT
+    @logout = STDOUT if ENV['TEST_DEBUG']
     @output = StringIO.new
     ::Albacore.set_application(::Albacore::Application.new(@logout, @output))
     ::Albacore.log_level = Logger::DEBUG

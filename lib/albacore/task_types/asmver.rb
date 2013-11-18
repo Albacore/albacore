@@ -57,6 +57,7 @@ module Albacore
       end
     end
     class Task
+      include Logging
       def initialize opts
         @opts = opts
       end
@@ -64,8 +65,11 @@ module Albacore
         lang  = @opts.get :language
         ns    = @opts.get :namespace
         attrs = @opts.get :attributes
-        out   = @opts.get(:out) { File.open(@opts.get(:file_path), 'w') }
-        ::Albacore::Asmver::FileGenerator.new(lang, ns, @opts).generate(attrs)
+        out   = @opts.get :out do
+          trace { "asmver being written at '#{@opts.get :file_path}' [asmver-task #execute]" }
+          File.open(@opts.get(:file_path), 'w')
+        end
+        ::Albacore::Asmver::FileGenerator.new(lang, ns, @opts).generate out, attrs
       ensure
         out.close if out
       end
