@@ -1,7 +1,11 @@
 require 'spec_helper'
+require 'shared_contexts'
 require 'support/sh_interceptor'
 require 'albacore'
 require 'albacore/task_types/nugets_pack'
+require 'albacore/nuget_model'
+
+include ::Albacore::NugetsPack
 
 class ConfigFac
   def self.create id, curr, gen_symbols = true
@@ -60,12 +64,12 @@ end
 
 # testing the command for nuget
 
-describe Albacore::NugetsPack::Cmd, "when calling #execute" do
+describe Cmd, "when calling #execute" do
   
   include_context 'path testing'
 
   let :cmd do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
+    Cmd.new 'NuGet.exe', config.opts()
   end
 
   subject do 
@@ -111,11 +115,11 @@ describe Albacore::NugetsPack::Cmd, "when calling #execute" do
   end
 end
 
-describe Albacore::NugetsPack::Cmd, 'when calling :get_nuget_path_of' do
+describe Cmd, 'when calling :get_nuget_path_of' do
   include_context 'pack_config'
 
   subject do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
+    Cmd.new 'NuGet.exe', config.opts()
   end
 
   let :sample1 do
@@ -145,17 +149,18 @@ EXAMPLE_OUTPUT
   end
 end
 
+# testing nuspec task
 
-describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
+describe NuspecTask, "when testing public interface" do
   include_context 'pack_config'
   include_context 'path testing'
 
   it "accepts .nuspec files" do
-    Albacore::NugetsPack::NuspecTask.accept?('some.nuspec').should be_true
+    NuspecTask.accept?('some.nuspec').should be_true
   end
 
   let (:cmd) do
-    Albacore::NugetsPack::Cmd.new 'NuGet.exe', config.opts()
+    Cmd.new 'NuGet.exe', config.opts()
   end
 
   subject do
@@ -164,7 +169,7 @@ describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
 
   before do
     cmd.extend(ShInterceptor)
-    task = Albacore::NugetsPack::NuspecTask.new cmd, config, './spec/testdata/example.nuspec'
+    task = NuspecTask.new cmd, config, './spec/testdata/example.nuspec'
     task.execute
   end
 
@@ -176,24 +181,47 @@ describe Albacore::NugetsPack::NuspecTask, "when testing public interface" do
   end
 end
 
-describe Albacore::NugetsPack::ProjectTask, "when testing public interface" do
+# testing project task
+
+describe ProjectTask do
+  include_context 'pack_config no symbols'
+  include_context 'package_metadata_dsl'
+
+  it 'sanity: should have config with target=mono32' do
+    config.opts().get(:target).should eq('mono32')
+  end
+
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project", "Project.fsproj"
+  end 
+
+  subject do
+    proj = Albacore::Project.new projfile
+    ProjectTask.new( config.opts() ).send(:create_nuspec, proj, [])[0] # index0 first nuspec Alabacore::Package
+  end 
+
+  has_file 'bin/Debug/Project.dll', 'lib/mono32'
+end
+
+describe ProjectTask, "when testing public interface" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project.fsproj"
   end
   it "can be created" do
-    Albacore::NugetsPack::ProjectTask.new(Map.new(:files => [projfile]))
+    ProjectTask.new(Map.new(:files => [projfile]))
   end
   it "rejects .nuspec files" do
-    Albacore::NugetsPack::ProjectTask.accept?('some.nuspec').should eq false
+    ProjectTask.accept?('some.nuspec').should eq false
   end
 end
 
-describe Albacore::NugetsPack::ProjectTask, "creating nuget from proj file" do
+describe ProjectTask, "creating nuget from proj file" do
   let(:cmdo) { Hash.new }
 
   subject do
-    Albacore::NugetsPack::ProjectTask.new(config.opts()) do |cmd|
+    ProjectTask.new(config.opts()) do |cmd|
       cmd.extend ShInterceptor
       cmdo[:cmd] = cmd
     end

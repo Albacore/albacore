@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'shared_contexts'
 require 'albacore/paths'
 require 'albacore/nuget_model'
 
@@ -151,63 +152,6 @@ XML
 end
 
 
-shared_context 'metadata_dsl' do
-  let :m do
-    subject.metadata
-  end
-
-  def self.has_value sym, e
-    it "should have overridden #{sym}, to be #{e}" do
-      m.send(sym).should eq e
-    end
-  end
-
-  def self.has_dep name, version
-    it "has dependency on '#{name}'" do
-      m.dependencies.has_key?(name).should be_true
-    end
-    it "overrode dependency on '#{name}'" do
-      m.dependencies[name].version.should eq version
-    end
-  end
-
-  def self.has_not_dep name
-    it "does not have a dependency on #{name}" do
-      m.dependencies.has_key?(name).should be_false
-    end
-  end
-
-  def self.has_file src, target, exclude = nil
-    src, target = norm(src), norm(target)
-    it "has file[#{src}] (should not be nil)" do
-      file = subject.files.find { |f| f.src == src }
-     #  puts "## ALL FILES ##"
-     #  subject.files.each do |f|
-     #    puts "subject.files: #{subject.files}, index of: #{subject.files.find_index { |f| f.src == src }}"
-     #    puts "#{f.inspect}"
-     #  end
-      file.should_not be_nil 
-    end
-
-    it "has file[#{src}].target == '#{target}'" do
-      file = subject.files.find { |f| f.src == src }
-      file.target.should eq target
-    end 
-  end
-
-  def self.has_not_file src
-    src = norm src
-    it "has not file[#{src}]" do
-      file = subject.files.find { |f| f.src == src }
-      file.should be_nil
-    end
-  end
-
-  def self.norm str
-    Albacore::Paths.normalise_slashes str
-  end  
-end
-
 describe "when reading xml from a fsproj file into Project/Metadata" do
   let :projfile do
     curr = File.dirname(__FILE__)
@@ -217,7 +161,7 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     Albacore::NugetModel::Package.from_xxproj_file projfile
   end
 
-  include_context 'metadata_dsl'
+  include_context 'package_metadata_dsl'
 
   it "should find Name element" do
     m.id.should eq 'Project'
@@ -268,7 +212,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
     p1.merge_with p2
   end
 
-  include_context 'metadata_dsl'
+  include_context 'package_metadata_dsl'
 
   describe "when overriding:" do
     has_value :id, 'A.B.C'
@@ -297,7 +241,7 @@ describe "creating nuget (not symbols) from dependent proj file" do
       :configuration  => 'Debug'
   end
   
-  include_context 'metadata_dsl'
+  include_context 'package_metadata_dsl'
 
   # from fsproj
   has_dep 'Sample.Core', '2.3.0'
@@ -340,7 +284,7 @@ describe "creating nuget on dependent proj file" do
     Albacore::NugetModel::Package.from_xxproj_file projfile, opts
   end
   
-  include_context 'metadata_dsl'
+  include_context 'package_metadata_dsl'
 
   describe 'without project_dependencies' do
     # just as the opts in the main describe says...

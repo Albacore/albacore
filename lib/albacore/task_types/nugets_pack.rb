@@ -112,7 +112,7 @@ module Albacore
       # the output directory to place the newfangled nugets in
       attr_path :out
 
-      # the .net target (e.g. net40, mono2.0)
+      # the .net target (e.g. net40, mono20, mono3, etc)
       attr_writer :target
 
       # sets the files to search
@@ -259,11 +259,13 @@ module Albacore
       def create_nuspec proj, knowns
         version = @opts.get(:package).metadata.version
         project_dependencies = @opts.get(:project_dependencies, true)
+        target = @opts.get :target
 
-        trace "creating NON-SYMBOL package for #{proj.name} [nugets pack: task]"
+        trace "creating NON-SYMBOL package for #{proj.name}, targeting #{target} [nugets pack: task]"
         nuspec = Albacore::NugetModel::Package.from_xxproj proj, 
           symbols:        false,
           verify_files:   true,
+          dotnet_version: target,
           known_projects: knowns,
           version:        version,
           configuration:  (@opts.get(:configuration)),
@@ -279,6 +281,7 @@ module Albacore
           nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
             symbols:        true,
             verify_files:   true,
+            dotnet_version: target,
             known_projects: knowns,
             version:        version,
             configuration:  (@opts.get(:configuration)),
