@@ -375,8 +375,8 @@ end})
           package.files.each do |file|
             file_path = File.expand_path file.src, proj.proj_path_base
             unless File.exists? file_path
+              info "while building nuspec for proj: #{proj.name}, file: #{file_path} => #{file.target} not found, removing from nuspec [nuget model: package]"
               package.remove_file file.src
-              info "while building nuspec for proj: #{proj.name}, file: #{file.src} => #{file.target} not found, removing from nuspec [nuget model: package]"
               trace { "files: #{package.files.map { |f| f.src }.inspect} [nuget model: package]" }
             end
           end
