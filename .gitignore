@@ -3,6 +3,7 @@
 .idea
 
 Gemfile.lock
+rspec/
 
 pkg/
 obj/

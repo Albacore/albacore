@@ -30,6 +30,27 @@ class NuspecDependency
   end
 end
 
+class NuspecDependencyGroup
+  attr_accessor :target_framework
+
+  def initialize(target_framework)
+    @target_framework = target_framework
+    @dependencies = []
+  end
+
+  def dependency(id, version)
+    @dependencies.push NuspecDependency.new(id, version)
+  end
+
+  def render ( xml )
+    if @dependencies.length > 0
+      group = xml.add_element('group')
+      group.add_attribute('targetFramework', @target_framework) unless @target_framework.nil?
+      @dependencies.each {|x| x.render(group)}
+    end
+  end
+end
+
 class NuspecFrameworkAssembly
 
   attr_accessor :name, :target_framework
@@ -75,7 +96,7 @@ class Nuspec
   alias :requireLicenseAcceptance= :require_license_acceptance=
 
   def initialize()
-    @dependencies = []
+    @dependencies = Hash.new
     @files = []
     @frameworkAssemblies = []
     @references = []
@@ -87,8 +108,13 @@ class Nuspec
     @pretty_formatting
   end
 
-  def dependency(id, version)
-    @dependencies.push NuspecDependency.new(id, version)
+  def dependency(id, version, target_framework = nil)
+    #Lazily create the dependency groups
+    if(!@dependencies.has_key?(target_framework))
+      @dependencies[target_framework] = NuspecDependencyGroup.new(target_framework)
+    end
+
+    @dependencies[target_framework].dependency id, version
   end
   
   def file(src, target = nil, exclude = nil)
@@ -152,7 +178,7 @@ class Nuspec
 
     if @dependencies.length > 0
       depend = metadata.add_element('dependencies')
-      @dependencies.each {|x| x.render(depend)}
+      @dependencies.each_value {|x| x.render(depend)}
     end
 
     if @files.length > 0

@@ -124,4 +124,45 @@ describe Nuspec do
       @filedata.downcase.should include("<reference file='testFile2'/>".downcase)
     end
   end
+
+  describe 'when creating a package with dependendencies' do
+    let(:nuspec) do
+      nuspec = Nuspec.new
+      nuspec.id="nuspec_test"
+      nuspec.output_file = "nuspec_test.nuspec"
+      nuspec.version = "1.2.3"
+      nuspec.authors = "Author Name"
+      nuspec.description = "test_xml_document"
+      nuspec.copyright = "copyright 2011"
+      nuspec.working_directory = working_dir
+      nuspec.dependency "dependency1", "1.13"
+      nuspec.dependency "dependency2", "1.13-pre", "net45"
+      nuspec
+    end
+
+    before do
+      nuspec.execute
+      File.open(nuspec_output, "r") do |f|
+        @filedata = f.read
+      end
+    end
+
+    it "should produce the nuspec xml" do
+      File.exist?(nuspec_output).should be_true
+    end
+
+    it "should produce a valid xml file" do
+      is_valid = XmlValidator.validate(nuspec_output, schema_file)
+      is_valid.should be_true
+    end
+
+    it "should contain default group element" do
+      @filedata.downcase.should include("<group>".downcase)
+      @filedata.downcase.should include("</group>".downcase)
+    end
+
+    it "should contain default group element for .NET 4.5" do
+      @filedata.downcase.should include("<group targetFramework='net45'>".downcase)
+    end
+  end
 end
