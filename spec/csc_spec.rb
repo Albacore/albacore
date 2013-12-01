@@ -112,7 +112,7 @@ end
 describe CSC, "when specifying the optimize option" do
   let :csc do
     csc = CSC.new
-    csc.optimize = true
+    csc.optimize
 
     csc.extend(SystemPatch)
     csc.disable_system = true
@@ -128,7 +128,7 @@ end
 describe CSC, "when specifying debug information be generated" do
   let :csc do
     csc = CSC.new
-    csc.debug = true
+    csc.debug
 
     csc.extend(SystemPatch)
     csc.disable_system = true
@@ -144,7 +144,7 @@ end
 describe CSC, "when specifying full debug information be generated" do
   let :csc do
     csc = CSC.new
-    csc.debug = :full
+    csc.debug :full
 
     csc.extend(SystemPatch)
     csc.disable_system = true
@@ -160,7 +160,7 @@ end
 describe CSC, "when specifying pdbonly debug information be generated" do
   let :csc do
     csc = CSC.new
-    csc.debug = :pdbonly
+    csc.debug :pdbonly
 
     csc.extend(SystemPatch)
     csc.disable_system = true
@@ -176,7 +176,6 @@ end
 describe CSC, "when specifying debug information not be generated" do
   let :csc do
     csc = CSC.new
-    csc.debug = false
 
     csc.extend(SystemPatch)
     csc.disable_system = true

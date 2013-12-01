@@ -6,16 +6,11 @@ module SupportsLinuxEnvironment
     super()
   end
   
-  def format_reference(reference)
-    "\"/reference:#{to_OS_format(reference)}\""
-  end
-
   def format_path(path)
     "\"#{to_OS_format(path)}\""
   end
 
   def to_OS_format(input)
-    formatted_input = @is_linux ? input : input.gsub("/", "\\")
-    formatted_input
+    @is_linux ? input : input.gsub("/", "\\")
   end
 end

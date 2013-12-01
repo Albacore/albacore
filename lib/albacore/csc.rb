@@ -1,6 +1,6 @@
-require 'albacore/albacoretask'
-require 'albacore/config/cscconfig'
-require 'albacore/support/supportlinux'
+require "albacore/albacoretask"
+require "albacore/config/cscconfig"
+require "albacore/support/supportlinux"
 
 class CSC
   include Albacore::Task
@@ -8,60 +8,57 @@ class CSC
   include Configuration::CSC
   include SupportsLinuxEnvironment
 
-  attr_accessor :output, :target, :optimize, :debug, :doc, :main,
-    :keyfile, :keycontainer, :delaysign # strong name flags
+  attr_reader   :debug,
+                :optimize,
+                :delay_sign
+
+  attr_accessor :output, 
+                :target, 
+                :doc, 
+                :main,
+                :key_file, 
+                :key_container
     
-  attr_array :compile, :references, :resources, :define
+  attr_array    :compile, 
+                :references, 
+                :resources, 
+                :define
 
   def initialize
-    @optimize = false
     super()
-    update_attributes csc.to_hash
+    update_attributes(csc.to_hash)
   end
 
   def execute
-    params = []
-    params << @references.map{|r| format_reference(r)} unless @references.nil?
-    params << @resources.map{|r| format_resource(r)} unless @resources.nil?
-    params << main_entry unless @main.nil?
-    params << "\"/out:#{@output}\"" unless @output.nil?
-    params << "/target:#{@target}" unless @target.nil?
-    params << "/optimize+" if @optimize
-    params << "\"/keyfile:#{@keyfile}\"" unless @keyfile.nil?
-    params << "\"/keycontainer:#{@keycontainer}\"" unless @keycontainer.nil?
-    params << "/delaysign+" if @delaysign
-    params << get_debug_param unless @debug.nil?
-    params << "/doc:#{@doc}" unless @doc.nil?
-    params << get_define_params unless @define.nil?
-    params << @compile.map{|f| format_path(f)} unless @compile.nil?
+    p = []
+    p << @references.map{ |ref| "\"/reference:#{to_OS_format(ref)}\"" } if @references
+    p << @resources.map{ |res| "/res:#{res}" } if @resources
+    p << "/main:#{@main}" if @main
+    p << "\"/out:#{@output}\"" if @output
+    p << "/target:#{@target}" if @target
+    p << "/optimize+" if @optimize
+    p << "\"/keyfile:#{@key_file}\"" if @key_file
+    p << "\"/keycontainer:#{@key_container}\"" if @key_container
+    p << "/delaysign+" if @delay_sign
+    p << "/debug#{":#{@debug_type}" if @debug_type}" if @debug
+    p << "/doc:#{@doc}" if @doc
+    p << "/define:#{@define.join(";")}" if @define
+    p << @compile.map{ |f| format_path(f) } if @compile
 
-    result = run_command "CSC", params
-    
-    failure_message = 'CSC Failed. See Build Log For Detail'
-    fail_with_message failure_message if !result
+    result = run_command("CSC", p)
+    fail_with_message("CSC failed, see the build log for more details.") unless result
   end
 
-  def get_define_params
-    symbols = @define.join(";")
-    "/define:#{symbols}"
+  def debug(type = nil)
+    @debug = true
+    @debug_type = type
   end
-
-  def get_debug_param
-    case @debug
-      when true
-        "/debug"
-      when :full
-        "/debug:full"
-      when :pdbonly
-        "/debug:pdbonly"
-    end
+  
+  def optimize
+    @optimize = true
   end
-
-    def main_entry
-      "/main:#{@main}"
-    end
-
-  def format_resource(resource)
-    "/res:#{resource}"
+  
+  def delay_sign
+    @delay_sign = true
   end
 end
