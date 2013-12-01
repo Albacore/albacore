@@ -9,7 +9,9 @@ class AspNetCompiler
   include SupportsLinuxEnvironment
 
   # http://msdn.microsoft.com/en-us/library/ms164291.aspx
-  attr_accessor :physical_path, :target_path, :virtual_path
+  attr_accessor :physical_path, 
+                :target_path, 
+                :virtual_path
 
   def initialize
     @virtual_path = "/"
