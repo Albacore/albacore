@@ -1,4 +1,17 @@
 class AssemblyInfoEngine
+  ENGINES = {
+    "F#" => lambda { FSharpEngine.new },
+    "C#" => lambda { CSharpEngine.new },
+    "C++.Net" => lambda { CppCliEngine.new },
+    "VB.Net" => lambda { VbNetEngine.new }
+  }
+  
+  DEFAULT = ENGINES["C#"]
+
+  def self.from_language(language)
+    (ENGINES[language] || DEFAULT).call
+  end
+
   def build_attribute(attr_name, attr_data)
     attribute = "#{@start_token}assembly: #{attr_name}("
     

@@ -48,7 +48,7 @@ describe AssemblyInfo, "when generating an assembly info file without an output 
   subject { @strio.string }
   
   it "should log an error message saying the output file is required" do
-    subject.should include("output_file cannot be nil")
+    subject.should include("output_file")
   end
 end
 
@@ -210,12 +210,13 @@ end
       @asm.title = @tester.title
       @asm.description = @tester.description
       @asm.copyright = @tester.copyright
-      @asm.com_visible = @tester.com_visible
       @asm.com_guid = @tester.com_guid
       @asm.file_version = @tester.file_version
       @asm.informational_version = @tester.informational_version
       @asm.trademark = @tester.trademark
       @asm.company_name = @tester.company_name
+      
+      @asm.com_visible
 
       using_engine settings[:engine] unless settings[:engine].nil?
     end
