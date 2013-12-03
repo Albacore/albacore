@@ -1,52 +1,73 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class FluentMigratorRunner
   TaskName = :fluentmigrator
   include Albacore::Task
   include Albacore::RunCommand
 
-  attr_accessor :target, :provider, :connection, :namespace, :output, :output_filename, :preview, :steps, :tag, :task, :version, :verbose, :script_directory, :profile, :timeout, :show_help
+  attr_reader   :output,
+                :verbose,
+                :preview
 
-  def initialize(command=nil)
+  attr_accessor :target, 
+                :provider, 
+                :connection, 
+                :namespace, 
+                :output_filename, 
+                :steps, 
+                :tag, 
+                :task, 
+                :version, 
+                :script_directory, 
+                :profile, 
+                :timeout
+
+  def initialize()
     super()
-    update_attributes Albacore.configuration.fluentmigrator.to_hash
-    @command = command
-  end
-
-  def get_command_line
-    commandline = "#{@command}"
-    commandline << get_command_parameters
-    @logger.debug "Build FuentMigrator Test Runner Command Line: " + commandline
-    commandline
-  end
-
-  def get_command_parameters
-    if @show_help
-      params = " /?"
-    else
-      params = " /target=\"#{@target}\""
-      params << " /provider=#{@provider}"
-      params << " /connection=\"#{@connection}\""
-      params << " /ns=#{@namespace}" if @namespace
-      params << " /out" if @output == true
-      params << " /outfile=\"#{@output_filename}\"" if @output_filename
-      params << " /preview" if @preview == true
-      params << " /steps=#{@steps}" if @steps
-      params << " /task=#{@task}" if @task
-      params << " /version=#{@version}" if @version
-      params << " /verbose=#{@verbose}" if @verbose == true
-      params << " /wd=\"#{@script_directory}\"" if @script_directory
-      params << " /profile=#{@profile}" if @profile
-      params << " /timeout=#{@timeout}" if @timeout
-      params << " /tag=#{@tag}" if @tag
-    end 
-    params
+    update_attributes(Albacore.configuration.fluentmigrator.to_hash)
   end
 
   def execute()
-    result = run_command "FluentMigrator", get_command_parameters
+    result = run_command("FluentMigrator", get_command_parameters)
+    fail_with_message("Fluent Migrator failed, see the build log for more details.") unless result
+  end
 
-    failure_message = "FluentMigrator failed. See build log for detail."
-    fail_with_message failure_message if !result
+  def verbose
+    @verbose = true
+  end
+  
+  def preview
+    @preview = true
+  end
+  
+  def output
+    @output = true
+  end
+
+  def get_command_parameters
+    p = []
+    p << "/target=\"#{@target}\""
+    p << "/provider=#{@provider}"
+    p << "/connection=\"#{@connection}\""
+    p << "/ns=#{@namespace}" if @namespace
+    p << "/out" if @output
+    p << "/outfile=\"#{@output_filename}\"" if @output_filename
+    p << "/preview" if @preview
+    p << "/steps=#{@steps}" if @steps
+    p << "/task=#{@task}" if @task
+    p << "/version=#{@version}" if @version
+    p << "/verbose=#{@verbose}" if @verbose
+    p << "/wd=\"#{@script_directory}\"" if @script_directory
+    p << "/profile=#{@profile}" if @profile
+    p << "/timeout=#{@timeout}" if @timeout
+    p << "/tag=#{@tag}" if @tag
+    p
+  end
+
+  def get_command_line
+    c = []
+    c << "#{@command}"
+    c << get_command_parameters
+    c
   end
 end
