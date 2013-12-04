@@ -1,38 +1,37 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class NAnt 
   include Albacore::Task
   include Albacore::RunCommand
+
+  attr_reader   :no_logo
   
   attr_accessor :build_file
-  attr_array :targets
-  attr_hash :properties
+  
+  attr_array    :targets
+  
+  attr_hash     :properties
   
   def initialize
     super()
-    update_attributes Albacore.configuration.nant.to_hash
+    update_attributes(Albacore.configuration.nant.to_hash)
   end
   
   def execute
-    command_parameters = []
-    command_parameters << "-buildfile:#{@build_file}" unless @build_file.nil?
-    command_parameters << "#{build_properties}" unless @properties.nil?
-    command_parameters << "#{build_targets}" unless @targets.nil?
-    
-    result = run_command "NAnt", command_parameters.join(" ")
-    
-    failure_msg = 'NAnt task Failed. See Build Log For Detail.'
-    fail_with_message failure_msg if !result
+    result = run_command("NAnt", build_parameters)
+    fail_with_message("NAnt failed, see the build log for more details.") unless result
   end
   
-  private 
-  
-  def build_targets
-    @targets.join " "
+  def no_logo
+    @no_logo = true
   end
   
-  def build_properties
-     @properties.map {|key, value| "-D:#{key}=#{value}" }.join(" ")
+  def build_parameters
+    p = []
+    p << "-buildfile:#{@build_file}" if @build_file
+    p << @properties.map { |key, value| "-D:#{key}=#{value}" } if @properties
+    p << targets if @targets
+    p << "-nologo" if @no_logo
+    p
   end
-  
 end
