@@ -1,78 +1,52 @@
-require 'albacore/albacoretask'
-require 'albacore/config/msbuildconfig.rb'
+require "albacore/albacoretask"
+require "albacore/config/msbuildconfig.rb"
 
 class MSBuild
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::MSBuild
   
-  attr_accessor :solution, :verbosity, :loggermodule, :max_cpu_count
-  attr_array :targets
-  attr_hash :properties, :other_switches
+  attr_reader   :no_logo
+  
+  attr_accessor :solution, 
+                :verbosity, 
+                # can't rename to 'logger' because it collides with the message 
+                # logger in the inheritance chain
+                :logger_module 
+  
+  attr_array    :targets
+  
+  attr_hash     :properties, 
+                :other_switches
   
   def initialize
     super()
-    update_attributes msbuild.to_hash
+    update_attributes(msbuild.to_hash)
   end
   
   def execute
-    build_solution(@solution)
+    unless @solution
+      fail_with_message("msbuild requires #solution")
+      return
+    end
+
+    result = run_command("MSBuild", build_parameters)
+    fail_with_message("MSBuild failed, see the build log for more details.") unless result
   end
 
-  def nologo
-    @nologo = true     
+  def no_logo
+    @no_logo = true
   end
   
-  def build_solution(solution)
-    check_solution solution
-    
-    command_parameters = []
-    command_parameters << "\"#{solution}\""
-    command_parameters << "\"/verbosity:#{@verbosity}\"" if @verbosity != nil
-    command_parameters << "\"/logger:#{@loggermodule}\"" if @loggermodule != nil
-    command_parameters << "\"/maxcpucount:#{@max_cpu_count}\"" if @max_cpu_count != nil
-    command_parameters << "\"/nologo\"" if @nologo
-    command_parameters << build_properties if @properties != nil
-    command_parameters << build_switches if @other_switches != nil
-    command_parameters << "\"/target:#{build_targets}\"" if @targets != nil
-    
-    result = run_command "MSBuild", command_parameters.join(" ")
-    
-    failure_message = 'MSBuild Failed. See Build Log For Detail'
-    fail_with_message failure_message if !result
-  end
-
-  def check_solution(file)
-    return if file
-    msg = 'solution cannot be nil'
-    fail_with_message msg
-  end
-  
-  def build_targets
-    @targets.join ";"
-  end
-
-  def build_properties
-    option_text = []
-    @properties.each do |key, value|
-      option_text << "/p:#{key}\=\"#{value}\""
-    end
-    option_text.join(" ")
-  end
-
-  def build_switches
-    switch_text = []
-    @other_switches.each do |key, value|
-      switch_text << print_switch(key, value)
-    end
-    switch_text.join(" ")
-  end
-
-  def print_switch(key, value)
-    pure_switch?(value) ? "/#{key}" : "/#{key}:\"#{value}\""
-  end
-
-  def pure_switch?(value)
-    value.is_a?(TrueClass) || value == :true
+  def build_parameters()
+    p = []
+    p << "\"#{@solution}\""
+    p << "/verbosity:#{@verbosity}" if @verbosity
+    p << "/logger:\"#{@logger_module}\"" if @logger_module
+    p << "/nologo" if @no_logo
+    p << @properties.map { |key, value| "/property:#{key}\=\"#{value}\"" } if @properties
+    p << @other_switches.map { |key, value| "/#{key}:\"#{value}\"" } if @other_switches
+    p << "/target:\"#{@targets.join(";")}\"" if @targets
+    p
   end
 end

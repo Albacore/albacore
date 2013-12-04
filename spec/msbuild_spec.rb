@@ -9,8 +9,10 @@ shared_context "prepping msbuild" do
     @msbuild = @testdata.msbuild
     @strio = StringIO.new
     @msbuild.log_device = @strio
-    @msbuild.log_level = :diagnostic
+    @msbuild.log_level = :verbose
     @msbuild.properties :platform => 'Any CPU'
+    @msbuild.no_logo
+    @msbuild.verbosity = :quiet
  end
 end
 
@@ -21,7 +23,6 @@ describe MSBuild, "when building a solution with verbose logging turned on" do
     @msbuild.solution = @testdata.solution_path
     @strio = StringIO.new
     @msbuild.log_device = @strio
-    @msbuild.log_level = :verbose
     @msbuild.execute
     
     @log_data = @strio.string
@@ -128,16 +129,13 @@ end
 
 describe MSBuild, "when building a visual studio solution for a specified configuration" do
   before :all do
-    @testdata= MSBuildTestData.new("Release")
-    @msbuild = @testdata.msbuild
-
-    @msbuild.properties :configuration => :Release, :platform => 'Any CPU'
+    @msbuild.properties :configuration => "Debug", :platform => "Any CPU"
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
   end
   
   it "should build with the specified configuration as a property" do
-    @msbuild.system_command.should include("/p:configuration=\"Release\"")
+    @msbuild.system_command.should include("/p:configuration=\"Debug\"")
   end
   
   it "should output the solution's binaries according to the specified configuration" do
@@ -164,13 +162,12 @@ describe MSBuild, "when building a solution with a specific msbuild verbosity" d
   include_context "prepping msbuild"
 
   before :all do
-    @msbuild.verbosity = "normal"
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
   end
 
   it "should call msbuild with the specified verbosity" do
-    @msbuild.system_command.should include("/verbosity:normal")
+    @msbuild.system_command.should include("/verbosity:quiet")
   end
 end
 
@@ -199,12 +196,12 @@ describe MSBuild, "when specifying multiple configuration properties" do
   end
 end
 
-describe MSBuild, "when specifying a loggermodule" do  
+describe MSBuild, "when specifying a logger_module" do  
   include_context "prepping msbuild"
   
   before :all do
     @msbuild.solution = @testdata.solution_path
-    @msbuild.loggermodule = "FileLogger,Microsoft.Build.Engine;logfile=MyLog.log"
+    @msbuild.logger_module = "FileLogger,Microsoft.Build.Engine;logfile=MyLog.log"
     @msbuild.execute
     
     @log_data = @strio.string
@@ -216,59 +213,17 @@ describe MSBuild, "when specifying a loggermodule" do
   end
 end
 
-describe MSBuild, "when specifying nologo" do
+describe MSBuild, "when specifying no_logo" do
   include_context "prepping msbuild"
 
   before :all do
-    @msbuild.nologo
+    @msbuild.no_logo
     @msbuild.solution = @testdata.solution_path
     @msbuild.execute
   end
 
-  it "should call msbuild with nologo option" do
+  it "should call msbuild with no_logo option" do
     @msbuild.system_command.should include("/nologo")
-  end
-end
-
-describe MSBuild, "when specifying max cpu count" do
-  include_context "prepping msbuild"
-
-  before :all do
-    @msbuild.max_cpu_count = 2
-    @msbuild.solution = @testdata.solution_path
-    @msbuild.execute
-  end
-
-  it "should call msbuild with maxcpucount option set" do
-    @msbuild.system_command.should include("/maxcpucount:2")
-  end
-end
-
-describe MSBuild, "when including a TrueClass switch" do
-  include_context "prepping msbuild"
-
-  before :all do
-    @msbuild.other_switches :noconsolelogger => true
-    @msbuild.solution = @testdata.solution_path
-    @msbuild.execute
-  end
-
-  it 'should call msbuild with the noconsolelogger switch' do
-    @msbuild.system_command.should include('/noconsolelogger')
-  end
-end
-
-describe MSBuild, "when including a true symbol switch" do
-  include_context "prepping msbuild"
-
-  before :all do
-    @msbuild.other_switches :noconsolelogger => :true
-    @msbuild.solution = @testdata.solution_path
-    @msbuild.execute
-  end
-
-  it 'should call msbuild with the noconsolelogger switch' do
-    @msbuild.system_command.should include('/noconsolelogger')
   end
 end
 
@@ -281,7 +236,7 @@ describe MSBuild, "when including a switch with value" do
     @msbuild.execute
   end
 
-  it 'should call msbuild with the noconsolelogger switch' do
+  it 'should call msbuild with the tools version switch' do
     @msbuild.system_command.should include("/toolsVersion:\"3.5\"")
   end
 end
