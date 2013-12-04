@@ -1,5 +1,5 @@
-require 'albacore/albacoretask'
-require 'albacore/config/ilmergeconfig'
+require "albacore/albacoretask"
+require "albacore/config/ilmergeconfig"
 
 class IlMerge 
   TaskName = [:ilmerge, :ILMerge]
@@ -7,59 +7,34 @@ class IlMerge
   include Albacore::RunCommand
   include Configuration::ILMerge
 
-  attr_accessor :output, :resolver, :target_platform
-  
-  attr_array :parameters
+  attr_accessor :output, 
+                :target_platform
+
+  attr_array    :assemblies
 
   def initialize
     super()
-    update_attributes ilmerge.to_hash
-  end
-
-  def assemblies *assys
-    raise ArgumentError, "expected at least 2 assemblies to merge" if assys.length < 2
-    @assemblies = assys
+    update_attributes(ilmerge.to_hash)
   end
 
   def build_parameters
-    params = Array.new @parameters
-    params << %Q{/out:"#{output}"}
-    params << %Q{/targetPlatform:#{target_platform}} if @target_platform
-    raise ArgumentError, "you are required to call assemblies" if @assemblies == nil
-    params += @assemblies
-    params
+    raise "ilmerge requires #output" unless @output
+    raise "ilmerge requires #assemblies" unless @assemblies
+  
+    p = []
+    p << "/out:\"#{output}\""
+    p << "/targetPlatform:#{target_platform}" if @target_platform
+    p << @assemblies if @assemblies
+    p
   end
 
   def execute
-    @command ||= @resolver.resolve
-    result = run_command "ILMerge", build_parameters
+    @command ||= default_command
+    result = run_command("ILMerge", build_parameters)
+    fail_with_message("ILMerge failed, see the build log for more details.") unless result
   end
   
-end
-
-module Albacore
-  class IlMergeResolver
-    include ::Configuration::ILMerge
-
-    attr_accessor :ilmerge_path
-  
-    def initialize ilmerge_path=nil
-      @ilmerge_path = ilmerge_path || ilmerge.ilmerge_path
-    end
-
-    def path path
-      @ilmerge_path = path
-    end
-
-    def resolve
-      @ilmerge_path.nil? ? find_default : @ilmerge_path
-    end
-    
-    def find_default
-      m = ['', ' (x86)'].map{|x| "C:\\Program Files#{x}\\Microsoft\\ILMerge\\ilmerge.exe" }.
-        keep_if{|x| File.exists? x}.
-        first
-    end
-
+  def default_command
+    [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]].map { |env| File.join(env.gsub("\\", "/"), "Microsoft/ILMerge/ilmerge.exe") if env }.find { |file| File.exists?(file) }
   end
 end
