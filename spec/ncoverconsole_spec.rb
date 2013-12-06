@@ -9,25 +9,23 @@ describe NCoverConsole, "when specifying assemblies to cover" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     
-    @ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
     
+    @ncc = NCoverConsole.new()    
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
-    @ncc.cover_assemblies "TestSolution"
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-    
-    @ncc.testrunner = nunit
+    @ncc.include_assembiles "TestSolution" 
+    @ncc.test_runner = nunit
     @ncc.execute
   end
 
   it "should provide coverage for the specified assemblies" do
-    @ncc.system_command.should include("//assemblies \"TestSolution\"")
+    @ncc.system_command.should include("//include-assemblies \"TestSolution\"")
   end
 end
 
@@ -35,26 +33,24 @@ describe NCoverConsole, "when specifying assemblies with spaces in the name" do
   before :all do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
+        
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly_with_spaces
+    nunit.parameters '/noshadow'
     
-    @ncc = NCoverConsole.new()
-    
+    @ncc = NCoverConsole.new()    
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
-    @ncc.cover_assemblies "assemblies/with spaces/TestSolution"
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly_with_spaces
-    nunit.options '/noshadow'
-    
-    @ncc.testrunner = nunit
+    @ncc.include_assembiles "assemblies/with spaces/TestSolution"
+    @ncc.test_runner = nunit
     @ncc.execute
   end
 
   it "should provide coverage for the specified assemblies" do
-    @ncc.system_command.should include("//assemblies \"assemblies/with spaces/TestSolution\"")
+    @ncc.system_command.should include("//include-assemblies \"assemblies/with spaces/TestSolution\"")
   end
   
 end
@@ -64,20 +60,18 @@ describe NCoverConsole, "when specifying assemblies to ignore" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     
-    @ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
     
+    @ncc = NCoverConsole.new()
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
     @ncc.exclude_assemblies "TestSolution.*"
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-    
-    @ncc.testrunner = nunit
+    @ncc.test_runner = nunit
     @ncc.execute
   end
 
@@ -91,20 +85,18 @@ describe NCoverConsole, "when specifying attributes to exclude" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
 
-    @ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
 
+    @ncc = NCoverConsole.new()
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
     @ncc.exclude_attributes "excludeme", "excludeme_too"
-
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-
-    @ncc.testrunner = nunit
+    @ncc.test_runner = nunit
     @ncc.execute
   end
 
@@ -117,13 +109,10 @@ describe NCoverConsole, "when running with the defaults" do
   before :all do
   	@testdata = NCoverConsoleTestData.new
     @ncc = NCoverConsole.new
-    
     @ncc.extend(SystemPatch)
     @ncc.extend(FailPatch)
-    
     @ncc.command = @testdata.ncoverpath
-    @ncc.testrunner = NUnitTestRunner.new
-    
+    @ncc.test_runner = NUnitTestRunner.new    
     @ncc.execute
   end
   
@@ -136,14 +125,11 @@ describe NCoverConsole, "when opting out of registering the ncover dll" do
   before :all do
   	@testdata = NCoverConsoleTestData.new
     @ncc = NCoverConsole.new
-    
     @ncc.extend(SystemPatch)
     @ncc.extend(FailPatch)
-    
     @ncc.command = @testdata.ncoverpath
     @ncc.no_registration
-    @ncc.testrunner = NUnitTestRunner.new
-    
+    @ncc.test_runner = NUnitTestRunner.new
     @ncc.execute
   end
   
@@ -157,20 +143,18 @@ describe NCoverConsole, "when specifying the types of coverage to analyze" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     
-    @ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
     
+    @ncc = NCoverConsole.new()
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
     @ncc.coverage :Symbol, :Branch, :MethodVisits, :CyclomaticComplexity
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-    
-    @ncc.testrunner = nunit
+    @ncc.test_runner = nunit
     @ncc.execute
   end
     
@@ -184,25 +168,23 @@ describe NCoverConsole, "when analyzing a test suite with failing tests" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     
-    ncc = NCoverConsole.new()
-    strio = StringIO.new
-    ncc.log_device = strio
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.failing_test_assembly
+    nunit.parameters '/noshadow'
     
+    strio = StringIO.new
+    
+    ncc = NCoverConsole.new()
+    ncc.log_device = strio
     ncc.extend(SystemPatch)
     ncc.extend(FailPatch)
-    
     ncc.log_level = :verbose
     ncc.command = @testdata.ncoverpath
     ncc.output :xml => @testdata.xml_coverage_output
     ncc.working_directory = @testdata.working_directory
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.failing_test_assembly
-    nunit.options '/noshadow'
-    
-    ncc.testrunner = nunit
-    
+    ncc.test_runner = nunit
     ncc.execute
+    
     @log_data = strio.string
   end
   
@@ -211,24 +193,26 @@ describe NCoverConsole, "when analyzing a test suite with failing tests" do
   end
   
   it "should log a failure message" do
-    @log_data.should include("Code Coverage Analysis Failed. See Build Log For Detail.")
+    @log_data.should include("NCover")
   end
 end
 
 describe NCoverConsole, "when running without a testrunner" do
   before :all do
   	@testdata = NCoverConsoleTestData.new
+  	
+  	strio = StringIO.new
+  	
     ncc = NCoverConsole.new()
     ncc.extend(FailPatch)
-    strio = StringIO.new
     ncc.log_device = strio
-    
     ncc.execute
+    
     @log_data = strio.string
   end
 
   it "should log a message saying the test runner is required" do
-    @log_data.should include("testrunner cannot be nil.")
+    @log_data.should include("#test_runner")
   end
   
   it "should fail the task" do
@@ -241,19 +225,17 @@ describe NCoverConsole, "when producing an xml coverage report with nunit" do
   	@testdata = NCoverConsoleTestData.new
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     
-    @ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
     
+    @ncc = NCoverConsole.new()
     @ncc.extend(SystemPatch)
     @ncc.log_level = :verbose
     @ncc.command = @testdata.ncoverpath
     @ncc.output :xml => @testdata.xml_coverage_output
     @ncc.working_directory = @testdata.working_directory
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-    
-    @ncc.testrunner = nunit
+    @ncc.test_runner = nunit
     @ncc.execute
   end
   
@@ -284,19 +266,17 @@ describe NCoverConsole, "when specifying an html report and an xml coverage repo
     File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
     File.delete(@testdata.html_coverage_output) if File.exist?(@testdata.html_coverage_output)
     
-    ncc = NCoverConsole.new()
+    nunit = NUnitTestRunner.new(@testdata.nunitpath)
+    nunit.assemblies @testdata.test_assembly
+    nunit.parameters '/noshadow'
     
+    ncc = NCoverConsole.new()
     ncc.extend(SystemPatch)
     ncc.log_level = :verbose
     ncc.command = @testdata.ncoverpath
     ncc.output :xml => @testdata.xml_coverage_output, :html => @testdata.html_coverage_output
     ncc.working_directory = @testdata.working_directory
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.options '/noshadow'
-    
-    ncc.testrunner = nunit
+    ncc.test_runner = nunit
     ncc.execute
   end
   
@@ -312,21 +292,19 @@ end
 describe NCoverConsole, "when producing a report with machine.specifications" do
   before :all do
   	@testdata = NCoverConsoleTestData.new
-    @ncc = NCoverConsole.new()
-    
-    @ncc.extend(SystemPatch)
-    @ncc.extend(FailPatch)
-    
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    
+  	
     mspec = MSpecTestRunner.new(@testdata.mspecpath)
     mspec.assemblies @testdata.mspec_test_assembly
     mspec.html_output = @testdata.mspec_html_output
     
-    @ncc.testrunner = mspec
+    @ncc = NCoverConsole.new()
+    @ncc.extend(SystemPatch)
+    @ncc.extend(FailPatch)
+    @ncc.log_level = :verbose
+    @ncc.command = @testdata.ncoverpath
+    @ncc.output :xml => @testdata.xml_coverage_output
+    @ncc.working_directory = @testdata.working_directory
+    @ncc.test_runner = mspec
     @ncc.execute
   end
 
@@ -336,18 +314,5 @@ describe NCoverConsole, "when producing a report with machine.specifications" do
 
   it "should produce the html report" do
     File.exist?(@testdata.mspec_html_output.to_s).should be_true
-  end
-end
-
-describe NCoverConsole, "when providing configuration" do
-  let :ncoverconsole do
-    Albacore.configure do |config|
-      config.ncoverconsole.command = "configured"
-    end
-    ncoverconsole = NCoverConsole.new
-  end
-
-  it "should use the configuration values" do
-    ncoverconsole.command.should == "configured"
   end
 end
