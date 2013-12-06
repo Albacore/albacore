@@ -6,6 +6,7 @@ class NChurn
   
   attr_accessor :from, 
                 :churn, 
+                :churn_percent,
                 :top, 
                 :report_as, 
                 :env_path, 
@@ -28,7 +29,8 @@ class NChurn
     p = []
     p << "-d #{quotes(@from.strftime("%d-%m-%Y"))}" if @from
     p << "-i #{quotes(@input)}" if @input
-    p << "-c #{@churn / 100.0}" if @churn
+    p << "-c #{@churn_percent / 100.0}" if @churn_percent
+    p << "-c #{@churn}" if @churn
     p << "-t #{@top}" if @top
     p << "-r #{@report_as}" if @report_as
     p << "-p #{quotes(@env_path)}" if @env_path
@@ -40,7 +42,7 @@ class NChurn
   end
   
   def churn_precent(p)
-    @churn = p
+    @churn_percent = p
   end
 
   def input(p)
