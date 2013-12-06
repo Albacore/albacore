@@ -30,7 +30,6 @@ describe NChurn, "when running nchurn" do
     @nchurn.extend SystemPatch
     @test_data = NChurnTestData.new
     @test_data.remove!
-
   end
 
   before :each do
@@ -39,7 +38,7 @@ describe NChurn, "when running nchurn" do
 
   it "should fail with no command" do
     @nchurn.execute
-    @nchurn.failure_message.should eql('Churn Analysis Failed. See Build Log For Detail.')
+    @nchurn.failure_message.should include('Churn')
   end
 
   it "should succeed and redirect to file" do
@@ -67,9 +66,7 @@ describe NChurn, "when running nchurn" do
 
     @nchurn.execute
     @nchurn.failure_message.should be_nil
-    cmd = %{"nchurn.exe" -i "file.txt" -c 0.3 -t 10 -r xml -p "c:/tools" -a git -x "exe" -n "foo" > "nchurn-test.txt"}
-    @nchurn.system_command.should eql(cmd)
+    
+    @nchurn.system_command.should eql(%{"nchurn.exe" -i "file.txt" -c 0.3 -t 10 -r xml -p "c:/tools" -a git -x "exe" -n "foo" > "nchurn-test.txt"})
   end
-
 end
-
