@@ -5,7 +5,10 @@ class NCoverReport
   include Albacore::Task
   include Albacore::RunCommand
   
-  attr_array :coverage_files, :reports, :required_coverage, :filters
+  attr_array :coverage_files, 
+             :reports, 
+             :required_coverage, 
+             :filters
   
   def initialize
     @coverage_files = []
@@ -13,28 +16,26 @@ class NCoverReport
     @required_coverage = []
     @filters = []
     super()
-    update_attributes Albacore.configuration.ncoverreport.to_hash
+    update_attributes(Albacore.configuration.ncoverreport.to_hash)
   end
   
   def execute
-    return unless check_command
+    unless @command
+      fail_with_message("ncoverreport requires #command")
+      return
+    end
     
-    command_parameters = []
-    command_parameters << build_coverage_files unless @coverage_files.empty?
-    command_parameters << build_reports unless @reports.empty?
-    command_parameters << build_required_coverage unless @required_coverage.empty?
-    command_parameters << build_filters unless @filters.empty?
-    
-    result = run_command "NCover.Reporting", command_parameters.join(" ")
-    
-    failure_msg = "Code Coverage Reporting Failed. See Build Log For Detail."
-    fail_with_message failure_msg if !result
+    result = run_command("NCover.Reporting", build_parameters)
+    fail_with_message("NCover Report failed, see the build log for more details.") unless result
   end
   
-  def check_command
-    return true if @command
-    fail_with_message "NCoverReport.command cannot be nil."
-    return false
+  def build_parameters
+    p = []
+    p << build_coverage_files if @coverage_files
+    p << build_reports if @reports
+    p << build_required_coverage if @required_coverage
+    p << build_filters if @filters
+    p
   end
   
   def build_filters
