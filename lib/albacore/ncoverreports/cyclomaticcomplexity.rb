@@ -9,14 +9,14 @@ module NCover
     def initialize(params={})
       @maximum = 100
       @item_type = :View
-      update_attributes(params) unless params.nil?
+      update_attributes(params) if params
       super()
     end
     
     def get_coverage_options
       options = "CyclomaticComplexity"
-      options << ":#{maximum}" unless maximum.nil?
-      options << ":#{item_type}" unless item_type.nil?
+      options << ":#{@maximum}" if @maximum
+      options << ":#{@item_type}" if @item_type
       options
     end
   end

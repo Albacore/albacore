@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'albacore/ncoverreport'
 require 'ncoverreporttestdata'
 
-describe NCoverReport, "when runnign without the ncover report location specified" do
+describe NCoverReport, "when running without the ncover report location specified" do
   before :all do
     @ncover = NCoverReport.new
     @ncover.extend(FailPatch)

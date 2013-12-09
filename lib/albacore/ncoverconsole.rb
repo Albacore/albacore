@@ -28,8 +28,8 @@ class NCoverConsole
       return
     end
     
-    result = run_command("NCover.Console", build_parameters)
-    fail_with_message("NCover failed, see the build log for more details.") unless result
+    result = run_command("ncoverconsole", build_parameters)
+    fail_with_message("NCover Console failed, see the build log for more details.") unless result
   end
   
   def no_registration
