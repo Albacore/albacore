@@ -10,14 +10,14 @@ module NCover
       @coverage_type = coverage_type
       @minimum = 0
       @item_type = :View
-      update_attributes(params) unless params.nil?
+      update_attributes(params) if params
       super()
     end
     
     def get_coverage_options
       options = "#{@coverage_type}"
-      options << ":#{@minimum}" unless @minimum.nil?
-      options << ":#{@item_type}" unless @item_type.nil?
+      options << ":#{@minimum}" if @minimum
+      options << ":#{@item_type}" if @item_type
       options
     end
   end
