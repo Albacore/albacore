@@ -1,13 +1,9 @@
 module NCover
-  class FullCoverageReport
-    attr_accessor :output_path
-    
-    def report_type
-      :FullCoverageReport
-    end
-    
-    def report_format
-      :Html
+  class FullCoverageReport < NCover::ReportBase
+    def initialize(params = {})
+      @report_type = :FullCoverageReport
+      @report_format = :Html
+      super(params)
     end
   end
 end

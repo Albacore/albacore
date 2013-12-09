@@ -28,17 +28,9 @@ class NCoverReport
   def build_parameters
     p = []
     p << @coverage_files.map{ |f| "\"#{f}\"" } if @coverage_files
-    p << @reports.map { |r| get_report_options(r) } if @reports
+    p << @reports.map { |r| "//or #{r.get_report_options}" } if @reports
     p << @required_coverage.map{ |c| "//mc #{c.get_coverage_options}" } if @required_coverage
     p << @filters.map{ |f| "//cf #{f.get_filter_options}" } if @filters
     p
-  end
-  
-  # move this into a report base type
-  def get_report_options(report)
-    opts = "//or #{report.report_type}"
-    opts << ":#{report.report_format}" if report.report_format
-    opts << ":\"#{report.output_path}\"" if report.output_path
-    opts
   end
 end
