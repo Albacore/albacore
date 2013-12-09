@@ -21,7 +21,7 @@ class NCoverReport
       return
     end
     
-    result = run_command("NCover.Reporting", build_parameters)
+    result = run_command("ncoverreport", build_parameters)
     fail_with_message("NCover Report failed, see the build log for more details.") unless result
   end
   
