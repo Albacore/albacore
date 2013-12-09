@@ -34,6 +34,7 @@ class NCoverReport
     p
   end
   
+  # move this into a report base type
   def get_report_options(report)
     opts = "//or #{report.report_type}"
     opts << ":#{report.report_format}" if report.report_format
