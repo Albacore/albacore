@@ -1,5 +1,5 @@
-Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), 'ncoverreports/*.rb')).each {|f| require f }
-require 'albacore/albacoretask'
+require "albacore/ncoverreports"
+require "albacore/albacoretask"
 
 class NCoverReport
   include Albacore::Task
@@ -27,13 +27,13 @@ class NCoverReport
     
     result = run_command "NCover.Reporting", command_parameters.join(" ")
     
-    failure_msg = 'Code Coverage Reporting Failed. See Build Log For Detail.'
+    failure_msg = "Code Coverage Reporting Failed. See Build Log For Detail."
     fail_with_message failure_msg if !result
   end
   
   def check_command
     return true if @command
-    fail_with_message 'NCoverReport.command cannot be nil.'
+    fail_with_message "NCoverReport.command cannot be nil."
     return false
   end
   
