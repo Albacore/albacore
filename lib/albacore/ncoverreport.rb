@@ -11,10 +11,6 @@ class NCoverReport
              :filters
   
   def initialize
-    @coverage_files = []
-    @reports = []
-    @required_coverage = []
-    @filters = []
     super()
     update_attributes(Albacore.configuration.ncoverreport.to_hash)
   end
@@ -31,33 +27,17 @@ class NCoverReport
   
   def build_parameters
     p = []
-    p << build_coverage_files if @coverage_files
-    p << build_reports if @reports
-    p << build_required_coverage if @required_coverage
-    p << build_filters if @filters
+    p << @coverage_files.map{ |f| "\"#{f}\"" } if @coverage_files
+    p << @reports.map { |r| get_report_options(r) } if @reports
+    p << @required_coverage.map{ |c| "//mc #{c.get_coverage_options}" } if @required_coverage
+    p << @filters.map{ |f| "//cf #{f.get_filter_options}" } if @filters
     p
   end
   
-  def build_filters
-    @filters.map{|f| "//cf #{f.get_filter_options}"}.join(" ")
-  end
-  
-  def build_coverage_files
-    @coverage_files.map{|f| "\"#{f}\""}.join(" ")
-  end
-  
-  def build_reports
-    @reports.map{|r|
-      report = "//or #{r.report_type}"
-      report << ":#{r.report_format}" unless r.report_format.nil?
-      report << ":\"#{r.output_path}\"" unless r.output_path.nil?
-      report
-    }.join(" ")
-  end
-
-  def build_required_coverage
-    @required_coverage.map{|c|
-      coverage = "//mc #{c.get_coverage_options}"
-    }.join(" ")
+  def get_report_options(report)
+    opts = "//or #{report.report_type}"
+    opts << ":#{report.report_format}" if report.report_format
+    opts << ":\"#{report.output_path}\"" if report.output_path
+    opts
   end
 end
