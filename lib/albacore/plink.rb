@@ -1,47 +1,44 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class PLink
   include Albacore::Task
   include Albacore::RunCommand
 
-  attr_accessor :host, :port, :user, :key, :verbose
-  attr_array :commands
+  attr_reader   :verbose
+
+  attr_accessor :host, 
+                :port, 
+                :user, 
+                :key
+
+  attr_array    :commands
 
   def initialize()
-      @require_valid_command = false
-      @port = 22
-      @verbose = false
-      @commands = []
-      super()
+    @port = 22
+    super()
   end
 
-  def run()
-    return unless check_command
+  def execute()
+    unless @command
+      fail_with_message("plink requires #command")
+      return
+    end
     
-    parameters = create_parameters
-    result = run_command "Plink", parameters.join(" ")
-    failure_message = 'Command Failed. See Build Log For Detail'
-    fail_with_message failure_message if !result
-  end
-  
-  def create_parameters
-    parameters = []
-    parameters << "#{@user}@#{@host} -P #{@port} "
-    parameters << build_parameter("i", @key) unless @key.nil?
-    parameters << "-batch"
-    parameters << "-v" if @verbose
-    parameters << @commands
-    @logger.debug "PLink Parameters" + parameters.join(" ")
-    return parameters
+    result = run_command("plink", build_parameters)
+    fail_with_message("PLink failed, see the build log for more details") unless result
   end
 
-  def build_parameter(param_name, param_value)
-    "-#{param_name} #{param_value}"
+  def verbose
+    @verbose = true
   end
-
-  def check_command
-    return true if @command
-    fail_with_message 'Plink.path_to_command cannot be nil.'
-    return false
+    
+  def build_parameters
+    p = []
+    p << "#{"#{@user}@" if @user}#{@host} -P #{port}"
+    p << "-i #{@key}" if @key
+    p << "-batch"
+    p << "-v" if @verbose
+    p << @commands if @commands
+    p
   end
 end
