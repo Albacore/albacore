@@ -1,4 +1,4 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class NDepend
   include Albacore::Task
@@ -8,26 +8,22 @@ class NDepend
 
   def initialize()
     super()
-    update_attributes Albacore.configuration.ndepend.to_hash
+    update_attributes(Albacore.configuration.ndepend.to_hash)
   end
   
   def execute
-    return unless check_command
-    result = run_command @command, create_parameters.join(" ")
-    failure_message = 'Command Failed. See Build Log For Detail'
-    fail_with_message failure_message if !result
+    unless @project_file
+      fail_with_message("ndepend requires #project_file")
+      return
+    end
+    
+    result = run_command(@command, build_parameters)
+    fail_with_message("NDepend failed, see the build log for more details.") unless result
   end
 
-  def create_parameters
-    params = []
-    params << File.expand_path(@project_file)
-    params
+  def build_parameters
+    p = []
+    p << "\"#{File.expand_path(@project_file)}\""
+    p
   end
-
-  def check_command
-    return true if @project_file
-    fail_with_message 'A ndepend project file is required'
-    false
-  end
-
 end

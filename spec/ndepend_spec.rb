@@ -10,6 +10,7 @@ describe "when executing Ndepend console" do
     @msbuild.solution = "spec/support/TestSolution/TestSolution.sln"
     @msbuild.execute
   end
+  
   before :each do
     @ndepend = NDepend.new
     @ndepend.log_device = StringIO.new
@@ -20,12 +21,10 @@ describe "when executing Ndepend console" do
     @ndepend.log_device = @logger
     @log_data = @logger.string
     @ndepend.log_level = :verbose
-
-
   end
+  
   it "should execute NdependConsole.exe"do
     @ndepend.execute
-
     @log_data.should include("NDepend.Console.exe" )
   end
 
@@ -55,18 +54,5 @@ describe "when executing Ndepend console" do
     @ndepend.extend(FailPatch)
     @ndepend.execute
     @log_data.should =~ /.*NDepend.Console.exe.*NDependProject.xml.*Help.*/
-  end
-end
-
-describe NDepend, "when providing configuration" do
-  let :ndepend do
-    Albacore.configure do |config|
-      config.ndepend.command = "configured"
-    end
-    ndepend = NDepend.new
-  end
-
-  it "should use the configured values" do
-    ndepend.command.should == "configured"
   end
 end
