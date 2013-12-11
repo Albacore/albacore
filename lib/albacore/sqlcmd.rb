@@ -1,82 +1,69 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class SQLCmd
   include Albacore::Task
   include Albacore::RunCommand
+
+  VERSIONS  = ["110", "100", "90"]
+  PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]]
+
+  attr_reader   :trusted_connection,
+                :ignore_variables,
+                :batch_abort
   
-  attr_accessor :server, :database, :username, :password, :trusted_connection, :batch_abort, :severity
-  attr_array :scripts
-  attr_hash :variables
+  attr_accessor :server, 
+                :database, 
+                :username, 
+                :password, 
+                :severity
+
+  attr_array    :scripts
+
+  attr_hash     :variables
   
   def initialize
-    @require_valid_command = false
-    @scripts=[]
-    @variables={}
-    @trusted_connection = true
-    @batch_abort = true
-    @severity = nil
+    @command = VERSIONS.product(PLATFORMS).
+      map  { |ver, env| File.join(env, "Microsoft SQL Server", ver, "tools", "binn", "sqlcmd.exe") if env }.
+      find { |path| File.exist?(path) }.
+      gsub("\\", "/")
+    
     super()
-    update_attributes Albacore.configuration.sqlcmd.to_hash
+    update_attributes(Albacore.configuration.sqlcmd.to_hash)
   end
   
   def execute
-    return unless check_command
-    
-    cmd_params=[]
-    serverParam = @server.nil? ? build_parameter("S", ".") : build_parameter("S", @server)
-    cmd_params << serverParam
-    cmd_params << build_parameter("d", @database) unless @database.nil?
-    cmd_params << get_authentication_params
-    cmd_params << build_variable_list if @variables.length > 0
-    cmd_params << get_batch_abort_param
-    cmd_params << build_script_list if @scripts.length > 0
-    cmd_params << build_parameter("V", @severity) unless @severity.nil?
-    
-    result = run_command "SQLCmd", cmd_params.join(" ")
-    
-    failure_msg = 'SQLCmd Failed. See Build Log For Detail.'
-    fail_with_message failure_msg if !result
-  end
-
-  def get_batch_abort_param
-    "-b" if (@scripts.length > 1 && @batch_abort)
-  end
-
-  def get_authentication_params
-    integratedParam = "-E" if @trusted_connection
-    if ((!(@username.nil?)) and (!(@password.nil?)))
-      integratedParam = build_parameter("U", @username) + " " + build_parameter("P", @password)
+    unless @command
+      fail_with_message("sqlcmd requires #command")
+      return
     end
-    integratedParam
+    
+    result = run_command("sqlcmd", build_parameters)
+    fail_with_message("SQLCMD failed, see the build log for more details.") unless result
+  end
+  
+  def build_parameters
+    p = []
+    p << "-S \"#{@server}\"" if @server
+    p << "-d \"#{@database}\"" if @database
+    p << "-E" if @trusted_connection
+    p << "-U \"#{@username}\" -P \"#{@password}\"" if (@username && @password)
+    p << @variables.map { |k,v| "-v #{k}=\"#{v}\"" } if @variables
+    p << "-b" if @batch_abort
+    p << @scripts.map{ |s| "-i \"#{s}\"" } if @scripts
+    p << "-V #{@severity}" if @severity
+    p << "-x" if @ignore_variables
+    p
   end
 
-  def check_command
-    sql2012cmdPath = File.join(ENV['SystemDrive'],'program files','microsoft sql server','110','tools','binn', 'sqlcmd.exe')
-    sql2008cmdPath = File.join(ENV['SystemDrive'],'program files','microsoft sql server','100','tools','binn', 'sqlcmd.exe')
-    sql2005cmdPath = File.join(ENV['SystemDrive'],'program files','microsoft sql server','90','tools','binn', 'sqlcmd.exe')
-    sql2012cmdPathx86 = File.join(ENV['SystemDrive'],'program files (x86)','microsoft sql server','110','tools','binn', 'sqlcmd.exe')
-    sql2008cmdPathx86 = File.join(ENV['SystemDrive'],'program files (x86)','microsoft sql server','100','tools','binn', 'sqlcmd.exe')
-    sql2005cmdPathx86 = File.join(ENV['SystemDrive'],'program files (x86)','microsoft sql server','90','tools','binn', 'sqlcmd.exe')
-    @command = [sql2012cmdPath, sql2008cmdPath, sql2005cmdPath, sql2012cmdPathx86, sql2008cmdPathx86, sql2005cmdPathx86].select { |p| File.exist?(p) }.first
-    return true if @command != nil
-    fail_with_message 'SQLCmd.command cannot be nil.'
-    return false
-  end
-
-  def build_script_list
-    @scripts.map{|s| "-i \"#{s.strip}\""}.join(" ")
+  def trusted_connection
+    @trusted_connection = true
   end
   
-  def build_parameter(param_name, param_value)
-    "-#{param_name} \"#{param_value}\""
+  def ignore_variables
+    @ignore_variables = true
   end
   
-  def build_variable_list
-    vars = []
-    @variables.each do |k,v| 
-      vars << "-v #{k}=#{v}"
-    end
-    vars.join(" ")
+  def batch_abort
+    @batch_abort = true
   end
-  
 end
