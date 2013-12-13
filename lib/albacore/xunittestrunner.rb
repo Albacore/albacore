@@ -1,56 +1,52 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 
 class XUnitTestRunner
   TaskName = :xunit
   include Albacore::Task
   include Albacore::RunCommand
 
-  attr_accessor :html_output, :skip_test_fail
-  attr_array :options,:assembly,:assemblies
+  attr_reader   :continue_on_error
 
-  def initialize(command=nil)
-    @options=[]
+  attr_hash     :output_path
+                
+  attr_array    :assemblies
+
+  def initialize()
     super()
-    update_attributes Albacore.configuration.xunit.to_hash
-    @command = command unless command.nil?
-  end
-
-  def skip_test_failures
-    @skip_test_fail = true
-  end
-
-  def get_command_line
-    command_params = []
-    command_params << @command
-    command_params << get_command_parameters
-    commandline = command_params.join(" ")
-    @logger.debug "Build XUnit Test Runner Command Line: " + commandline
-    commandline
-  end
-  
-  def get_command_parameters
-    command_params = []	
-    command_params << @options.join(" ") unless @options.nil?
-    command_params << build_html_output unless @html_output.nil?
-    command_params
+    update_attributes(Albacore.configuration.xunit.to_hash)
   end
 
   def execute()    		
-    @assemblies = [] if @assemblies.nil?
-    @assemblies << @assembly unless @assembly.nil?
-    fail_with_message 'At least one assembly is required for assemblies attr' if @assemblies.length==0	
-    failure_message = 'XUnit Failed. See Build Log For Detail'		
+    unless @assemblies
+      fail_with_message("xunit requires #assemblies")
+      return
+    end
     
-    @assemblies.each do |assm|
-      command_params = get_command_parameters.collect{ |p| p % File.basename(assm) }
-      command_params.insert(0,assm)	
-      result = run_command "XUnit", command_params.join(" ")
-      fail_with_message failure_message if !result && (!@skip_test_fail || $?.exitstatus > 1)
+    # xunit supports only one test-assembly at a time
+    @assemblies.each_with_index do |asm, index|
+      result = run_command("xunit", build_parameters(asm, index, @assemblies.count > 1))
+      fail_with_message("XUnit failed, see build log for details.") unless (result || @continue_on_error)
     end       
   end
+  
+  def continue_on_error
+    @continue_on_error = true
+  end
+  
+  def build_parameters(assembly, index, multiple = false)
+    p = []	
+    p << "\"#{assembly}\""
+    p << build_output_path(index, multiple) if @output_path
+    p
+  end
+  
+  def build_output_path(index, multiple = false)
+    type, path = @output_path.first
+    
+    dir = File.dirname(path)
+    ext = File.extname(path)
+    base = File.basename(path, ext)
 
-  def build_html_output			
-    fail_with_message 'Directory is required for html_output' if !File.directory?(File.expand_path(@html_output))
-    "/html \"#{File.join(File.expand_path(@html_output),"%s.html")}\""
+    multiple ? "/#{type} \"#{File.join(dir, "#{base}_#{index + 1}#{ext}")}\"" : "/#{type} \"#{path}\"" 
   end
 end
