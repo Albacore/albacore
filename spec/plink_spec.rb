@@ -6,7 +6,7 @@ describe PLink, 'when executing a command over plink' do
     @cmd = PLink.new
     @cmd.extend(SystemPatch)
     @cmd.extend(FailPatch)
-    @cmd.command ="C:\\plink.exe"
+    @cmd.command = "C:\\plink.exe"
     @cmd.host = "testhost"
   end
 
