@@ -14,11 +14,5 @@ module Configuration
       yield(config) if block_given?
       config
     end
-
-    def self.included(obj)
-      specflowreportconfig.command = 'specflow.exe'
-      specflowreportconfig.report = 'nunitexecutionreport'
-    end
   end
 end
-
