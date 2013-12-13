@@ -37,7 +37,7 @@ require "albacore"
 
 Albacore has been tested against the following versions of Ruby for Windows and Linux. Use unsupported versions at your own risk!
 
-* MRI: `1.9.3`, `2.0.0`
+* MRI: `1.9.3`, `2.0.0` (x86 only, Nokogiri does not support x64 yet)
 * JRuby: `HEAD`
 
 
