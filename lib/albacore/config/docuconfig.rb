@@ -14,10 +14,6 @@ module Configuration
       yield(config) if block_given?
       config
     end
-
-    def self.included(obj)
-      docuconfig.command = "Docu.exe"
-    end
   end
 end
 
