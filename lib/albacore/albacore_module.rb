@@ -55,7 +55,7 @@ module Albacore
     # Gets whether we're running under Windows.
     #
     def windows?
-      ::Rake::Win32.windows?
+      !!::Rake::Win32.windows?
     end
 
     Albacore.log_level = Logger::DEBUG if ENV["DEBUG"]
