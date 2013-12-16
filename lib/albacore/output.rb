@@ -12,39 +12,41 @@ class OutputBuilder
   end
   
   def dir(d)
-    dir(d,d)
+    dir(d, d)
   end
 
   def dir(dir, dir_to)
-    FileUtils.cp_r "#{@dir_from}/#{dir}", "#{@dir_to}/#{dir_to}"
+    FileUtils.cp_r("#{@dir_from}/#{dir}", "#{@dir_to}/#{dir_to}")
   end
 
   def file(f)
-    file(f,f)
+    file(f, f)
   end
     
   def file(f, ft)
     #todo find more elegant way to create base dir if missing for file.
     initialize_to_path(ft)
-    FileUtils.cp "#{@dir_from}/#{f}", "#{@dir_to}/#{ft}"
+    FileUtils.cp("#{@dir_from}/#{f}", "#{@dir_to}/#{ft}")
   end
   
   def erb(f, ft, locals)
     initialize_to_path(ft)
     erb = ERB.new(File.read("#{@dir_from}/#{f}"))
-    File.open("#{@dir_to}/#{ft}", 'w') {|f| f.write erb.result(ErbBinding.new(locals).get_binding)}
+    File.open("#{@dir_to}/#{ft}", 'w') do |f| 
+      f.write(erb.result(ErbBinding.new(locals).get_binding))
+    end
   end
   
   def self.output_to(dir_to, dir_from, keep_to)
-    FileUtils.rmtree dir_to unless keep_to
-    FileUtils.mkdir_p dir_to unless Dir.exists? dir_to
+    FileUtils.rmtree(dir_to) unless keep_to
+    FileUtils.mkdir_p(dir_to) unless Dir.exists?(dir_to)
     yield OutputBuilder.new(dir_to, dir_from)
   end
   
-private
+  private
   def initialize_to_path(ft)
     topath = File.dirname("#{@dir_to}/#{ft}")
-    FileUtils.mkdir_p topath unless File.exist? topath
+    FileUtils.mkdir_p(topath) unless File.exist?(topath)
     topath
   end
 end
@@ -54,10 +56,11 @@ class ErbBinding < OpenStruct
     return binding()
   end
 end
-  
 
 class Output
   include Albacore::Task
+
+  attr_reader :keep_to
 
   def initialize
     super()
@@ -65,36 +68,38 @@ class Output
     @files = []
     @erbs = []
     @directories = []
-    @keep_to = false
   end
 
   def execute()
-    fail_with_message 'No base dir' if @from_dir.nil?
-    fail_with_message 'No output dir' if @to_dir.nil?
+    unless (@from_dir && @to_dir)
+      fail_with_message("output requires #to and #from")
+      return
+    end
 
-    OutputBuilder.output_to(@to_dir, @from_dir, @keep_to)  do |o|
+    OutputBuilder.output_to(@to_dir, @from_dir, @keep_to) do |o|
       @directories.each { |d| o.dir *d }
       @files.each { |f| o.file *f }
       @erbs.each { |f| o.erb *f }
     end
   end
-  
-  def file(f, opts={})
-    f_to = opts[:as] || f
-    @files << [f,f_to]
-  end
 
   def keep_to
    @keep_to = true
   end
-  def erb(f, opts={})
+    
+  def file(f, opts = {})
     f_to = opts[:as] || f
-    @erbs << [f,f_to,opts[:locals]||{}]
+    @files << [f,f_to]
+  end
+
+  def erb(f, opts = {})
+    f_to = opts[:as] || f
+    @erbs << [f, f_to, opts[:locals] || {}]
   end
   
-  def dir(d, opts={})
+  def dir(d, opts = {})
     d_to = opts[:as]
-    @directories << [d,d_to]
+    @directories << [d, d_to]
   end
   
   def from(from_dir)
@@ -103,6 +108,5 @@ class Output
 
   def to(to_dir)
     @to_dir = to_dir
-  end
-  
+  end  
 end
