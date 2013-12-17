@@ -80,6 +80,9 @@ nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
     m.authors = 'Henrik'
     m.version = ENV['NUGET_VERSION']
   end
+  p.with_package do |p|
+    p.add_file 'file/relative/to/proj', 'lib/net40'
+  end
 end
 
 task :default => :create_nugets

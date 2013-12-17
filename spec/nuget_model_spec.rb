@@ -201,12 +201,13 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
     p.add_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
   end 
   let :p2 do
-    Albacore::NugetModel::Package.new.with_metadata do |m|
+    p = Albacore::NugetModel::Package.new.with_metadata do |m|
       m.id = 'A.B.C'
       m.add_dependency 'NLog', '2.3'
       m.add_dependency 'Castle.Core', '3.0.0'
       m.owners = 'Henrik Feldt'
     end
+    p.add_file 'CodeFolder/p2.fs', 'lib/CodeFolder/p2.fs'
   end
   subject do
     p1.merge_with p2
@@ -223,6 +224,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
     has_dep 'Castle.Core', '3.0.0'
 
     has_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
+    has_file 'CodeFolder/p2.fs', 'lib/CodeFolder/p2.fs'
     has_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
   end
 end

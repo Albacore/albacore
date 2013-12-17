@@ -268,9 +268,17 @@ end})
       # data from passed instance
       def merge_with other
         m_next = @metadata.merge_with other.metadata
-        files_other = {}
-        other.files.each { |f| files_other[f.src] = f }
-        f_next = @files.collect { |f| files_other.fetch f.src, f }
+        files_res = {}
+
+        # my files
+        @files.each { |f| files_res[f.src] = f }
+
+        # overrides
+        other.files.each { |f| files_res[f.src] = f }
+
+        # result
+        f_next = files_res.collect { |k, v| v }
+
         Package.new m_next, f_next
       end
 
