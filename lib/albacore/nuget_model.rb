@@ -91,6 +91,11 @@ end})
       # gets the framework assemblies for this package
       nuspec_field :framework_assemblies
 
+      # (v2.5 or above) Specifies the minimum version of the NuGet client that
+      # can install this package. This requirement is enforced by both the
+      # NuGet Visual Studio extension and nuget.exe program.
+      nuspec_field :min_client_version
+
       # gets the field symbols that have been set
       attr_reader :set_fields
 
