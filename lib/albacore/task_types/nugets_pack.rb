@@ -127,6 +127,7 @@ module Albacore
         @target  = 'net40'
         @symbols = false
         @project_dependencies = true
+        @leave_nuspec = false
         fill_required
       end
 
@@ -143,6 +144,12 @@ module Albacore
       # enable generation
       def gen_symbols
         @symbols = true
+      end
+
+      # leave the nuspec behind, don't delete it after generating it
+      #
+      def leave_nuspec
+        @leave_nuspec = true
       end
 
       # call this if you want to cancel 'smart' scanning of the *proj
@@ -168,7 +175,8 @@ module Albacore
           :files         => @files,
           :configuration => @configuration,
           :project_dependencies => @project_dependencies,
-          :original_path => FileUtils.pwd
+          :original_path => FileUtils.pwd,
+          :leave_nuspec  => @leave_nuspec
         })
       end
 
@@ -331,6 +339,7 @@ module Albacore
 
       def cleanup_nuspec nuspec
         return if nuspec.nil? or not File.exists? nuspec
+        return if @opts.get :leave_nuspec, false
         File.delete nuspec
       end
 
