@@ -1,4 +1,4 @@
-require 'semver'
+require 'xsemver'
 require 'albacore/logging'
 
 module Albacore
@@ -21,9 +21,9 @@ module Albacore
       # code if you want something of your own.
       #
       def self.new *sym
-        ver = SemVer.find
+        ver = XSemVer::SemVer.find
         revision = (ENV['BUILD_NUMBER'] || ver.patch).to_i
-        ver = SemVer.new(ver.major, ver.minor, revision, ver.special)
+        ver = XSemVer::SemVer.new(ver.major, ver.minor, revision, ver.special)
         
         # extensible number w/ git hash
         ENV['BUILD_VERSION'] = ver.format("%M.%m.%p%s") + ".#{commit_data()[0]}"
@@ -32,7 +32,7 @@ module Albacore
         ENV['NUGET_VERSION'] = ver.format("%M.%m.%p%s")
         
         # purely M.m.p format
-        ENV['FORMAL_VERSION'] = "#{ SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
+        ENV['FORMAL_VERSION'] = "#{ XSemVer::SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
         
         body = proc {
           Albacore.publish :build_version, OpenStruct.new(
