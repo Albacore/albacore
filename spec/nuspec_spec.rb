@@ -9,19 +9,19 @@ describe Nuspec do
     FileUtils.mkdir(wd) unless File.exist?(wd)
     wd
   end
+  let(:output_file) { File.join(working_dir, "nuspec_test.nuspec") }
   let(:nuspec_output) { File.join(working_dir, 'nuspec_test.nuspec') }
   let(:schema_file) { File.expand_path(File.join(working_dir, '../', 'nuspec.xsd')) }
 
   describe 'when creating a file with minimum requirements' do
     let(:nuspec) do
       nuspec = Nuspec.new
-      nuspec.id="nuspec_test"
-      nuspec.output_file = "nuspec_test.nuspec"
+      nuspec.id = "nuspec_test"
+      nuspec.output_file = output_file
       nuspec.version = "1.2.3"
-      nuspec.authors = "Author Name"
+      nuspec.authors = ["Author Name"]
       nuspec.description = "test_xml_document"
       nuspec.copyright = "copyright 2011"
-      nuspec.working_directory = working_dir
       nuspec
     end
 
@@ -44,14 +44,13 @@ describe Nuspec do
 
     let(:nuspec) do
       nuspec = Nuspec.new
-      nuspec.id="nuspec_test"
-      nuspec.output_file = "nuspec_test.nuspec"
+      nuspec.id = "nuspec_test"
+      nuspec.output_file = output_file
       nuspec.title = "Title"
       nuspec.version = "1.2.3"
-      nuspec.authors = "Author Name"
+      nuspec.authors = ["Author Name"]
       nuspec.description = "test_xml_document"
       nuspec.copyright = "copyright 2011"
-      nuspec.working_directory = working_dir
       nuspec.file(dll, "lib")
       nuspec.file(dll, "lib\\net40", "*.xml")
       nuspec
@@ -83,14 +82,13 @@ describe Nuspec do
 
     let(:nuspec) do
       nuspec = Nuspec.new
-      nuspec.id="nuspec_test"
-      nuspec.output_file = "nuspec_test.nuspec"
+      nuspec.id = "nuspec_test"
+      nuspec.output_file = output_file
       nuspec.title = "Title"
       nuspec.version = "1.2.3"
-      nuspec.authors = "Author Name"
+      nuspec.authors = ["Author Name"]
       nuspec.description = "test_xml_document"
       nuspec.copyright = "copyright 2011"
-      nuspec.working_directory = working_dir
       nuspec.reference("testFile1")
       nuspec.reference("testFile2")
       nuspec
