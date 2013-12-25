@@ -1,6 +1,6 @@
-require 'albacore/albacoretask'
-require 'albacore/config/nugetpushconfig'
-require 'albacore/support/supportlinux'
+require "albacore/albacoretask"
+require "albacore/config/nugetpushconfig"
+require "albacore/support/supportlinux"
 
 class NuGetPush
   include Albacore::Task
@@ -8,39 +8,32 @@ class NuGetPush
   include Configuration::NuGetPush
   include SupportsLinuxEnvironment
   
-  attr_accessor  :package,
-                 :apikey,
-                 :create_only,
-                 :source,
-                 :command
+  attr_accessor :package,
+                :apikey,
+                :source
 
-  def initialize(command = "NuGet.exe") # users might have put the NuGet.exe in path
+  def initialize()
     super()
-    @create_only = false
-    update_attributes nugetpush.to_hash
-    @command = command
+    update_attributes(nugetpush.to_hash)
+    @command = "nuget"
   end
 
   def execute
-  
-    fail_with_message 'package must be specified.' if @package.nil?
-    # don't validate @apikey as required, coz it might have been set in the config file using 'SetApiKey'
-    
-    params = []
-    params << "push"
-    params << "\"#{@package}\""
-    params << "#{@apikey}" if @apikey
-    params << "-CreateOnly" if @create_only
-    params << "-Source #{source}" unless @source.nil?
-    
-    merged_params = params.join(' ')
-    
-    @logger.debug "Build NuGet push Command Line: #{merged_params}"
+    unless @package
+      fail_with_message("nugetinstall requires #package")
+      return
+    end
 
-    result = run_command "NuGet", merged_params
-    
-    failure_message = 'NuGet push Failed. See Build Log For Details'
-    fail_with_message failure_message if !result
+    result = run_command("nugetpush", build_parameters)
+    fail_with_message("NuGet Push failed, see the build log for more details.") unless result
   end
   
+  def build_parameters
+    p = []
+    p << "push"
+    p << "\"#{@package}\""
+    p << "#{@apikey}" if @apikey
+    p << "-Source #{source}" if @source
+    p
+  end
 end
