@@ -2,6 +2,7 @@ require "albacore/albacoretask"
 
 class MSTestTestRunner
   TaskName = :mstest
+  
   include Albacore::Task
   include Albacore::RunCommand
   

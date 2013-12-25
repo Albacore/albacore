@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class NCoverConsole
+  TaskName = :ncoverconsole
+
   include Albacore::Task
   include Albacore::RunCommand
 

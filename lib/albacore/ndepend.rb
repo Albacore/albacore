@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class NDepend
+  TaskName = :ndepend
+
   include Albacore::Task
   include Albacore::RunCommand
 

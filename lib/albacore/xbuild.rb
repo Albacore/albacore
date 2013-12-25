@@ -1,7 +1,8 @@
 require "albacore/albacoretask"
 
 class XBuild
-  TaskName = [:xbuild, :mono]
+  TaskName = :xbuild
+
   include Albacore::Task
   include Albacore::RunCommand
   

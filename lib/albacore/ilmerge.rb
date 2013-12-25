@@ -2,7 +2,8 @@ require "albacore/albacoretask"
 require "albacore/config/ilmergeconfig"
 
 class IlMerge 
-  TaskName = [:ilmerge, :ILMerge]
+  TaskName = :ilmerge
+  
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::ILMerge

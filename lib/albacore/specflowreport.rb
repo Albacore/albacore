@@ -2,6 +2,8 @@ require "albacore/albacoretask"
 require "albacore/config/specflowreportconfig"
 
 class SpecFlowReport
+  TaskName = :specflow
+  
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::SpecFlowReport
