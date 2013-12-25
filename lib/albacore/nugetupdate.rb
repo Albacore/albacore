@@ -1,6 +1,6 @@
-require 'albacore/albacoretask'
-require 'albacore/config/nugetupdateconfig'
-require 'albacore/support/supportlinux'
+require "albacore/albacoretask"
+require "albacore/config/nugetupdateconfig"
+require "albacore/support/supportlinux"
 
 class NuGetUpdate
   include Albacore::Task
@@ -8,44 +8,42 @@ class NuGetUpdate
   include Configuration::NuGetUpdate
   include SupportsLinuxEnvironment
   
+  attr_reader   :safe
+  
   attr_accessor :input_file,
-                :repository_path,
-                :safe
+                :repository_path
   
   attr_array    :source,
                 :id
 
-  def initialize(command = "NuGet.exe") # users might have put the NuGet.exe in path
+  def initialize()
     super()
-    update_attributes nugetupdate.to_hash
-    @command = command
+    update_attributes(nugetupdate.to_hash)
+    @command = "nuget"
   end
 
   def execute
-    params = get_command_parameters
+    unless @input_file
+      fail_with_message("nugetupdate requires #input_file")
+      return
+    end
     
-    @logger.debug "Build NuGet Update Command Line: #{params}"
-    result = run_command "NuGet", params
-    
-    fail_with_message 'NuGet Update Failed. See Build Log For Detail' unless result
+    result = run_command("nugetupdate", build_parameters)
+    fail_with_message("NuGet Update failed, see the build log for more details.") unless result
   end
   
-  def get_command_parameters
-    fail_with_message 'An input file must be specified (packages.config|solution).' if self.input_file.nil?
-    
-    params = []
-    params << "update"
-    params << "#{self.input_file}"
-    params << "-Source #{get_array_parameter(self.source)}" unless self.source.nil?
-    params << "-Id #{get_array_parameter(self.id)}" unless self.id.nil?
-    params << "-RepositoryPath #{self.repository_path}" unless self.repository_path.nil?
-    params << "-Safe" if self.safe
-    
-    merged_params = params.join(' ')
+  def safe
+    @safe = true
   end
   
-  def get_array_parameter(arr)
-    "\"#{arr.join(';')}\""
+  def build_parameters
+    p = []
+    p << "update"
+    p << "\"#{@input_file}\""
+    p << "-Source \"#{@source.join(";")}\"" if @source
+    p << "-Id \"#{@id.join(";")}\"" if @id
+    p << "-RepositoryPath #{@repository_path}" if @repository_path
+    p << "-Safe" if @safe
+    p
   end
-  
 end

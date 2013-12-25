@@ -1,42 +1,45 @@
-require 'spec_helper'
-require 'albacore/nugetupdate'
-require 'albacore/config/nugetupdateconfig'
+require "spec_helper"
+require "albacore/nugetupdate"
 
 describe NuGetUpdate do  
   before :each do
-    @nugetupdate = NuGetUpdate.new
-    @strio = StringIO.new
-    @nugetupdate.log_device = @strio
-    @nugetupdate.log_level = :diagnostic
-  end
-  
-  context "when no path to NuGet is specified" do
-    it "assumes NuGet is in the path" do
-      @nugetupdate.command.should == "NuGet.exe"
-    end
+    @cmd = NuGetUpdate.new()
+    @cmd.extend(SystemPatch)
+    @cmd.extend(FailPatch)
+    @cmd.command = "nuget"
+    @cmd.input_file = "TestSolution.sln"
+    @cmd.source = ["source1", "source2"]
+    @cmd.id = ["id1", "id2"]
+    @cmd.repository_path = "repopath"
+    @cmd.safe
+    @cmd.execute
   end
 
-  it "generates the correct command-line parameters" do
-    @nugetupdate.input_file = "../support/TestSolution/TestSolution.sln"
-    @nugetupdate.source = "source1", "source2"
-    @nugetupdate.id = "id1", "id2"
-    @nugetupdate.repository_path = "repopath"
-    
-    params = @nugetupdate.get_command_parameters
-    params.should include(@nugetupdate.input_file)
-    params.should include("-Source \"source1;source2\"")
-    params.should include("-Id \"id1;id2\"")
-    params.should include("-RepositoryPath repopath")
-    params.should_not include("-Self")
-    
-    @nugetupdate.safe = true
-    params = @nugetupdate.get_command_parameters
-    params.should include("-Safe")
+  it "should use the command" do
+    @cmd.system_command.should include("nuget")
   end
   
-  it "fails if no input file is supplied" do
-    @nugetupdate.extend(FailPatch)
-    @nugetupdate.get_command_parameters
-    @strio.string.should include("An input file must be specified")
+  it "should use the subcommand" do
+    @cmd.system_command.should include("update")
+  end
+  
+  it "should use the input file" do
+    @cmd.system_command.should include("\"TestSolution.sln\"")
+  end
+  
+  it "should use the sources" do
+    @cmd.system_command.should include("\"source1;source2\"")
+  end
+  
+  it "should use the ids" do
+    @cmd.system_command.should include("\"id1;id2\"")
+  end
+  
+  it "should use the repo path" do
+    @cmd.system_command.should include("repopath")
+  end
+  
+  it "should be safe" do
+    @cmd.system_command.should include("-Safe")
   end
 end
