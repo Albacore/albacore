@@ -1,57 +1,58 @@
-require 'albacore/albacoretask'
-require 'albacore/support/supportlinux'
+require "albacore/albacoretask"
+require "albacore/support/supportlinux"
 
 class NuGetInstall
 	include Albacore::Task
  	include Albacore::RunCommand
  	include SupportsLinuxEnvironment
 
- 	attr_accessor	:command,
-                :package,
-                :output_directory,
-                :version,
-                :exclude_version,
+  attr_reader   :no_cache,
                 :prerelease,
-                :no_cache
+                :exclude_version
 
-	attr_array :sources
+ 	attr_accessor	:package,
+                :output_directory,
+                :version
 
-	def initialize(command='NuGet.exe')
+	attr_array    :sources
+
+	def initialize()
 		super()
-		@sources = []
-		@command = command
-		@no_cache = false
-		@prerelease = false
-		@exclude_version = false
+		@command = "nuget"
 	end
 
 	def execute
-		params = generate_params
-
-		@logger.debug "Build NuGet Install Command Line: #{params}"
-		result = run_command "NuGet", params
-
-		failure_message = "Nuget Install for package #{@package} failed. See Build log for details."
-		fail_with_message failure_message unless result
+    unless @package
+      fail_with_message("nugetinstall requires #package")
+      return
+    end
+    
+		result = run_command("nugetinstall", build_parameters)
+		fail_with_message("NuGet Install failed, see the build log for more details.") unless result
 	end
 
-	def generate_params
-		fail_with_message 'A NuGet package must be specified.' unless @package
+  def no_cache
+    @no_cache = true
+  end
 
-		params = []
-		params << 'install'
-		params << package
-		params << "-Version #{version}" if @version
-		params << "-OutputDirectory #{output_directory}" if @output_directory
-		params << "-ExcludeVersion" if @exclude_version
-		params << "-NoCache" if @no_cache
-		params << "-Prerelease" if @prerelease
-		params << "-Source #{build_package_sources}" if @sources unless @sources.empty?
+  def prerelease
+    @prerelease = true
+  end
+  
+  def exclude_version
+    @exclude_version = true
+  end
 
-		merged_params = params.join(' ')
-	end
-
-	def build_package_sources
-		"\"#{@sources.join(';')}\""
+	def build_parameters
+		p = []
+		p << "install"
+		p << @package
+		p << "-Version #{@version}" if @version
+		p << "-OutputDirectory #{@output_directory}" if @output_directory
+		p << "-ExcludeVersion" if @exclude_version
+		p << "-NoCache" if @no_cache
+		p << "-Prerelease" if @prerelease
+		p << "-Source \"#{@sources.join(";")}\"" if @sources
+		p
 	end
 end

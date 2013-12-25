@@ -3,45 +3,53 @@ require 'albacore/nugetinstall'
 
 describe NuGetInstall do  
   before :each do
-    @nugetinstall = NuGetInstall.new
-    @strio = StringIO.new
-    @nugetinstall.log_device = @strio
-    @nugetinstall.log_level = :diagnostic
+    @cmd = NuGetInstall.new()
+    @cmd.extend(SystemPatch)
+    @cmd.extend(FailPatch)
+    @cmd.command = "nuget"
+    @cmd.package = "Hircine"
+    @cmd.sources = ["source1", "source2"]
+    @cmd.version = "0.1.1-pre"
+    @cmd.output_directory = "customdir"
+    @cmd.no_cache
+    @cmd.prerelease
+    @cmd.exclude_version
+    @cmd.execute
   end
 
-  context "when no path to NuGet is specified" do
-    it "assumes NuGet is in the path" do
-      @nugetinstall.command.should == "NuGet.exe"
-    end
+  it "should use the command" do
+    @cmd.system_command.should include("nuget")
   end
 
-  it "generates the correct command-line parameters" do
-    @nugetinstall.package = "Hircine"
-    @nugetinstall.sources = "source1", "source2"
-    @nugetinstall.version = "0.1.1-pre"
-    @nugetinstall.no_cache = false
-    @nugetinstall.prerelease = true
-    @nugetinstall.exclude_version = true
-    @nugetinstall.output_directory = "customdir"
+  it "should use the subcommand" do
+    @cmd.system_command.should include("install")
+  end
+
+  it "should use the package" do
+    @cmd.system_command.should include("Hircine")
+  end
+
+  it "should set the version" do
+    @cmd.system_command.should include("0.1.1-pre")
+  end
     
-    params = @nugetinstall.generate_params
-    params.should include("install")
-    params.should include(@nugetinstall.package)
-    params.should include("-Version 0.1.1-pre")
-    params.should include("-Source \"source1;source2\"")
-    params.should include("-OutputDirectory customdir")
-    params.should include("-ExcludeVersion")
-    params.should include("-Prerelease")
-    params.should_not include("-NoCache")
-    
-    @nugetinstall.no_cache = true
-    params = @nugetinstall.generate_params
-    params.should include("-NoCache")
+  it "should use the sources" do
+    @cmd.system_command.should include("\"source1;source2\"")
   end
 
-  it "fails if no package is specified" do
-  	@nugetinstall.extend(FailPatch)
-  	@nugetinstall.generate_params
-  	@strio.string.should include('A NuGet package must be specified.')
+  it "should use the output directory" do
+    @cmd.system_command.should include("customdir")
+  end
+
+  it "should exclude the version" do
+    @cmd.system_command.should include("-ExcludeVersion")
+  end
+
+  it "should be a pre release" do
+    @cmd.system_command.should include("-Prerelease")
+  end
+
+  it "should not cache" do
+    @cmd.system_command.should include("-NoCache")
   end
 end

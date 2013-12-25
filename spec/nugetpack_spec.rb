@@ -18,6 +18,10 @@ describe NuGetPack do
   it "should set the command" do 
     @cmd.system_command.should include("nuget")
   end
+
+  it "should set the subcommand" do 
+    @cmd.system_command.should include("pack")
+  end
   
   it "should set the nuspec" do
     @cmd.system_command.should include("\"nuspec\"")
