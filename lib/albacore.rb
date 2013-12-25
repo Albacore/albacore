@@ -1,11 +1,21 @@
-albacore_root = File.expand_path(File.dirname(__FILE__))
-$: << albacore_root
-$: << File.join(albacore_root, "albacore")
-$: << File.join(albacore_root, "albacore", 'support')
-$: << File.join(albacore_root, "albacore", 'config')
-
+# infrastructure
 require "albacore/version"
 require "albacore/albacoretask"
+
+require "albacore/config/config"
+require "albacore/config/netversion"
+
+require "albacore/support/attrmethods"
+require "albacore/support/createtask"
+require "albacore/support/failure"
+require "albacore/support/logging"
+require "albacore/support/openstruct"
+require "albacore/support/runcommand"
+require "albacore/support/supportlinux"
+require "albacore/support/updateattributes"
+require "albacore/support/yamlconfig"
+
+# tasks
 require "albacore/aspnetcompiler"
 require "albacore/assemblyinfo"
 require "albacore/csc"

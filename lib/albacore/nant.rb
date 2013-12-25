@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/nantconfig"
 
 class NAnt 
   TaskName = :nant

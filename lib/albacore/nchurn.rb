@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/nchurnconfig"
 
 class NChurn
   TaskName = :nchurn

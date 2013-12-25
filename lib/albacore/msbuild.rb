@@ -1,5 +1,5 @@
 require "albacore/albacoretask"
-require "albacore/config/msbuildconfig.rb"
+require "albacore/config/msbuildconfig"
 
 class MSBuild
   TaskName = :msbuild

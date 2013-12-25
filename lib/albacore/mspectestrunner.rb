@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/mspectestrunnerconfig"
 
 class MSpecTestRunner
   TaskName = :mspec

@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/nunittestrunnerconfig"
 
 class NUnitTestRunner
   TaskName = :nunit

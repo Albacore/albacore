@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/fluentmigratorrunnerconfig"
 
 class FluentMigratorRunner
   TaskName = :fluentmigrator

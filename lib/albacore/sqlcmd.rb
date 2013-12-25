@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/sqlcmdconfig"
 
 class SQLCmd
   TaskName = :sqlcmd

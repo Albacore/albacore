@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/ncoverconsoleconfig"
 
 class NCoverConsole
   TaskName = :ncoverconsole

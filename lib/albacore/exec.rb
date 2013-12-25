@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/execconfig"
 
 class Exec
   TaskName = :exec

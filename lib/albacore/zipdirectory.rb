@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/zipdirectoryconfig"
 require "zip"
 require "zip/filesystem"
 

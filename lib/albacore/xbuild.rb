@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/xbuildconfig"
 
 class XBuild
   TaskName = :xbuild

@@ -1,5 +1,6 @@
-require "albacore/ncoverreports"
 require "albacore/albacoretask"
+require "albacore/ncoverreports"
+require "albacore/config/ncoverreportconfig"
 
 class NCoverReport
   TaskName = :ncoverreport

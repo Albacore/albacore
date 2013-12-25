@@ -1,6 +1,8 @@
 require 'albacore/albacoretask'
+require "albacore/config/unzipconfig"
 require 'zip'
 require 'zip/filesystem'
+
 include Zip
 
 class Unzip
