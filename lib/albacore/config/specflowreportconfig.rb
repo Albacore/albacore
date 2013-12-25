@@ -5,14 +5,10 @@ module Configuration
   module SpecFlowReport
     include Albacore::Configuration
 
-    def self.specflowreportconfig
-      @specflowreportconfig ||= OpenStruct.new.extend(OpenStructToHash)
-    end
-
     def specflowreport
-      config = SpecFlowReport.specflowreportconfig
-      yield(config) if block_given?
-      config
+      @specflowreportconfig ||= OpenStruct.new.extend(OpenStructToHash)
+      yield(@specflowreportconfig) if block_given?
+      @specflowreportconfig
     end
   end
 end
