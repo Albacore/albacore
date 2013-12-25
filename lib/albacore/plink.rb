@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class PLink
+  TaskName = :plink
+  
   include Albacore::Task
   include Albacore::RunCommand
 

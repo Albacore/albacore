@@ -3,12 +3,13 @@ require "albacore/config/aspnetcompilerconfig"
 require "albacore/support/supportlinux"
 
 class AspNetCompiler
+  TaskName = :aspnetcompiler
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::AspNetCompiler
   include SupportsLinuxEnvironment
 
-  # http://msdn.microsoft.com/en-us/library/ms164291.aspx
   attr_accessor :physical_path, 
                 :target_path, 
                 :virtual_path

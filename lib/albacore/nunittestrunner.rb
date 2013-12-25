@@ -2,6 +2,7 @@ require "albacore/albacoretask"
 
 class NUnitTestRunner
   TaskName = :nunit
+  
   include Albacore::Task
   include Albacore::RunCommand
   

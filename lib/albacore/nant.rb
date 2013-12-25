@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class NAnt 
+  TaskName = :nant
+
   include Albacore::Task
   include Albacore::RunCommand
 

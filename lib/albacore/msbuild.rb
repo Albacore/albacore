@@ -2,6 +2,8 @@ require "albacore/albacoretask"
 require "albacore/config/msbuildconfig.rb"
 
 class MSBuild
+  TaskName = :msbuild
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::MSBuild

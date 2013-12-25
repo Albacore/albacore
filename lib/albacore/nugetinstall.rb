@@ -2,6 +2,8 @@ require "albacore/albacoretask"
 require "albacore/support/supportlinux"
 
 class NuGetInstall
+  TaskName = :nugetinstall
+
 	include Albacore::Task
  	include Albacore::RunCommand
  	include SupportsLinuxEnvironment

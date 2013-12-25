@@ -2,6 +2,8 @@ require "albacore/albacoretask"
 require "albacore/config/docuconfig"
 
 class Docu
+  TaskName = :docu
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::Docu

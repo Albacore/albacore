@@ -3,6 +3,8 @@ require "albacore/config/nugetpackconfig"
 require "albacore/support/supportlinux"
 
 class NuGetPack
+  TaskName = :nugetpack
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetPack

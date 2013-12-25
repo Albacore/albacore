@@ -2,6 +2,8 @@ require "albacore/ncoverreports"
 require "albacore/albacoretask"
 
 class NCoverReport
+  TaskName = :ncoverreport
+
   include Albacore::Task
   include Albacore::RunCommand
   

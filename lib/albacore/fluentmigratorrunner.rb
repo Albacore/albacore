@@ -2,6 +2,7 @@ require "albacore/albacoretask"
 
 class FluentMigratorRunner
   TaskName = :fluentmigrator
+  
   include Albacore::Task
   include Albacore::RunCommand
 

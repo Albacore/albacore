@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class Exec
+  TaskName = :exec
+
   include Albacore::Task
   include Albacore::RunCommand
 

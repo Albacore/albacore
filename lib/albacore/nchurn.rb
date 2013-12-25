@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class NChurn
+  TaskName = :nchurn
+
   include Albacore::Task
   include Albacore::RunCommand
   

@@ -3,6 +3,8 @@ require "albacore/config/cscconfig"
 require "albacore/support/supportlinux"
 
 class CSC
+  TaskName = :csc
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::CSC

@@ -3,6 +3,8 @@ require "albacore/config/nugetupdateconfig"
 require "albacore/support/supportlinux"
 
 class NuGetUpdate
+  TaskName = :nugetupdate
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetUpdate

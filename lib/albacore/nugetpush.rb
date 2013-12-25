@@ -3,6 +3,8 @@ require "albacore/config/nugetpushconfig"
 require "albacore/support/supportlinux"
 
 class NuGetPush
+  TaskName = :nugetpush
+
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetPush

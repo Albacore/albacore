@@ -1,6 +1,8 @@
 require "albacore/albacoretask"
 
 class SQLCmd
+  TaskName = :sqlcmd
+
   include Albacore::Task
   include Albacore::RunCommand
 
