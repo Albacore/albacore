@@ -1,6 +1,6 @@
-require 'albacore/albacoretask'
-require 'albacore/config/nugetpackconfig'
-require 'albacore/support/supportlinux'
+require "albacore/albacoretask"
+require "albacore/config/nugetpackconfig"
+require "albacore/support/supportlinux"
 
 class NuGetPack
   include Albacore::Task
@@ -8,47 +8,42 @@ class NuGetPack
   include Configuration::NuGetPack
   include SupportsLinuxEnvironment
   
-  attr_accessor  :nuspec,
-                 :output,
-                 :base_folder,
-                 :command,
-                 :symbols
+  attr_reader   :symbols
+  
+  attr_accessor :nuspec,
+                :output,
+                :base_folder
 
-  attr_hash :properties
+  attr_hash     :properties
 
-  def initialize(command = "NuGet.exe") # users might have put the NuGet.exe in path
+  def initialize()
     super()
-    update_attributes nugetpack.to_hash
-    @command = command
+    update_attributes(nugetpack.to_hash)
+    @command = "nuget"
   end
 
-  def execute
-  
-    fail_with_message 'nuspec must be specified.' if @nuspec.nil?
-    
-    params = []
-    params << "pack"
-    params << "-Symbols" if @symbols
-    params << "#{nuspec}"
-    params << "-BasePath #{base_folder}" unless @base_folder.nil?
-    params << "-OutputDirectory #{output}" unless @output.nil?
-    params << build_properties unless @properties.nil? || @properties.empty?
-
-    merged_params = params.join(' ')
-    
-    @logger.debug "Build NuGet pack Command Line: #{merged_params}"
-    result = run_command "NuGet", merged_params
-    
-    failure_message = 'NuGet Failed. See Build Log For Detail'
-    fail_with_message failure_message if !result
-  end
-  
-  def build_properties
-    option_text = []
-    @properties.each do |key, value|
-      option_text << "#{key}=\"#{value}\""
+  def execute  
+    unless @nuspec
+      fail_with_message("nugetpack requires #nuspec" )
+      return
     end
-    '-Properties ' + option_text.join(";")
+    
+    result = run_command("nugetpack", build_parameters)
+    fail_with_message("NuGet Pack failed, see the build log for more details.") unless result
+  end
+
+  def symbols
+    @symbols = true
   end
   
+  def build_parameters
+    p = []
+    p << "pack"
+    p << "-Symbols" if @symbols
+    p << "\"#{@nuspec}\""
+    p << "-BasePath \"#{@base_folder}\"" if @base_folder
+    p << "-OutputDirectory \"#{@output}\"" if @output
+    p << "-Properties #{@properties.map { |k, v| "#{k}=\"#{v}\"" }.join(";")}" if @properties
+    p
+  end
 end
