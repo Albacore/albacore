@@ -1,5 +1,5 @@
 require "albacore/albacoretask"
-require "albacore/config/nugetinstall"
+require "albacore/config/nugetinstallconfig"
 require "albacore/support/supportlinux"
 
 class NuGetInstall
