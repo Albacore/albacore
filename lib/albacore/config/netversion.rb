@@ -2,8 +2,12 @@ module Configuration
   module NetVersion
     include Failure
   
+    # systemroot is the newest environment variable and windir is some legacy 
+    # thing. There's no reason one of those wouldn't exist on a real Windows
+    # platform. The final, hardcoded string is to satisfy the method calls on
+    # linux (travis-ci).
     def win_dir
-      ENV["SYSTEMROOT"] || ENV["WINDIR"] || (File.join(ENV["SYSTEMDRIVE"], "Windows"))
+      ENV["SYSTEMROOT"] || ENV["WINDIR"] || "C:\\Windows"
     end
    
     def get_net_version(netversion)
