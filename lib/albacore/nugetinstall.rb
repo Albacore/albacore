@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/nugetinstall"
 require "albacore/support/supportlinux"
 
 class NuGetInstall
@@ -6,6 +7,7 @@ class NuGetInstall
 
 	include Albacore::Task
  	include Albacore::RunCommand
+ 	include Configuration::NuGetInstall
  	include SupportsLinuxEnvironment
 
   attr_reader   :no_cache,
