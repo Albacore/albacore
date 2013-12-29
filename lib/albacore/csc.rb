@@ -1,6 +1,6 @@
 require "albacore/albacoretask"
 require "albacore/config/cscconfig"
-require "albacore/support/supportlinux"
+require "albacore/support/platform"
 
 class CSC
   TaskName = :csc
@@ -8,8 +8,8 @@ class CSC
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::CSC
-  include SupportsLinuxEnvironment
-
+  include Albacore::Support
+  
   attr_reader   :debug,
                 :optimize,
                 :delay_sign
@@ -33,7 +33,7 @@ class CSC
 
   def execute
     p = []
-    p << @references.map{ |ref| "\"/reference:#{to_OS_format(ref)}\"" } if @references
+    p << @references.map{ |ref| "/reference:#{Platform.format_path(ref)}" } if @references
     p << @resources.map{ |res| "/res:#{res}" } if @resources
     p << "/main:#{@main}" if @main
     p << "\"/out:#{@output}\"" if @output
@@ -45,7 +45,7 @@ class CSC
     p << "/debug#{":#{@debug_type}" if @debug_type}" if @debug
     p << "/doc:#{@doc}" if @doc
     p << "/define:#{@define.join(";")}" if @define
-    p << @compile.map{ |f| format_path(f) } if @compile
+    p << @compile.map{ |file| Platform.format_path(file) } if @compile
 
     result = run_command("CSC", p)
     fail_with_message("CSC failed, see the build log for more details.") unless result

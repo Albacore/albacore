@@ -1,5 +1,6 @@
 require "spec_helper"
 require "albacore/aspnetcompiler"
+require "albacore/support/platform"
 
 describe AspNetCompiler do
   before :each do
@@ -28,11 +29,13 @@ describe AspNetCompiler do
     end
 
     it "should use the physical path" do
-      @cmd.system_command.should include("-p \"physical/path\"")
+      @cmd.system_command.should include("-p \"physical/path\"") if Albacore::Support::Platform.linux?
+      @cmd.system_command.should include("-p \"physical\\path\"") if !Albacore::Support::Platform.linux?
     end
 
     it "should use the target path" do
-      @cmd.system_command.should include("\"target/path\"")
+      @cmd.system_command.should include("\"target/path\"") if Albacore::Support::Platform.linux?
+      @cmd.system_command.should include("\"target\\path\"") if !Albacore::Support::Platform.linux?
     end
 
     it "should use default virtual path" do

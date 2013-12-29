@@ -1,6 +1,6 @@
 require "albacore/albacoretask"
 require "albacore/config/aspnetcompilerconfig"
-require "albacore/support/supportlinux"
+require "albacore/support/platform"
 
 class AspNetCompiler
   TaskName = :aspnetcompiler
@@ -8,8 +8,8 @@ class AspNetCompiler
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::AspNetCompiler
-  include SupportsLinuxEnvironment
-
+  include Albacore::Support
+  
   attr_reader   :clean,
                 :delay_sign,
                 :fixed_names,
@@ -35,14 +35,14 @@ class AspNetCompiler
   def build_parameters
     p = []
     p << "-v #{@virtual_path}" if @virtual_path
-    p << "-p #{format_path(@physical_path)}" if @physical_path
+    p << "-p #{Platform.format_path(@physical_path)}" if @physical_path
     p << "-c" if @clean
     p << "-delaysign" if @delay_sign
     p << "-fixednames" if @fixed_names
     p << "-d" if @debug
     p << "-u" if @updateable
     p << "-f" if @force
-    p << format_path(@target_path) if @target_path
+    p << Platform.format_path(@target_path) if @target_path
     p
   end
   

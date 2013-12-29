@@ -1,6 +1,5 @@
 require "albacore/albacoretask"
 require "albacore/config/nugetpackconfig"
-require "albacore/support/supportlinux"
 
 class NuGetPack
   TaskName = :nugetpack
@@ -8,7 +7,6 @@ class NuGetPack
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetPack
-  include SupportsLinuxEnvironment
   
   attr_reader   :symbols
   

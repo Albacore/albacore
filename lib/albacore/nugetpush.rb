@@ -1,6 +1,5 @@
 require "albacore/albacoretask"
 require "albacore/config/nugetpushconfig"
-require "albacore/support/supportlinux"
 
 class NuGetPush
   TaskName = :nugetpush
@@ -8,7 +7,6 @@ class NuGetPush
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetPush
-  include SupportsLinuxEnvironment
   
   attr_accessor :package,
                 :apikey,

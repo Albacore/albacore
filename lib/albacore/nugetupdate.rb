@@ -1,6 +1,5 @@
 require "albacore/albacoretask"
 require "albacore/config/nugetupdateconfig"
-require "albacore/support/supportlinux"
 
 class NuGetUpdate
   TaskName = :nugetupdate
@@ -8,7 +7,6 @@ class NuGetUpdate
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::NuGetUpdate
-  include SupportsLinuxEnvironment
   
   attr_reader   :safe
   

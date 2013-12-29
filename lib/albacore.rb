@@ -11,7 +11,7 @@ require "albacore/support/failure"
 require "albacore/support/logging"
 require "albacore/support/openstruct"
 require "albacore/support/runcommand"
-require "albacore/support/supportlinux"
+require "albacore/support/platform"
 require "albacore/support/updateattributes"
 require "albacore/support/yamlconfig"
 

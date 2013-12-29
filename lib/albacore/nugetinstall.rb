@@ -1,20 +1,17 @@
 require "albacore/albacoretask"
 require "albacore/config/nugetinstallconfig"
-require "albacore/support/supportlinux"
 
 class NuGetInstall
   TaskName = :nugetinstall
 
-	include Albacore::Task
- 	include Albacore::RunCommand
- 	include Configuration::NuGetInstall
- 	include SupportsLinuxEnvironment
+  include Albacore::Task
+  include Albacore::RunCommand
 
   attr_reader   :no_cache,
                 :prerelease,
                 :exclude_version
-
- 	attr_accessor	:package,
+  
+  attr_accessor	:package,
                 :output_directory,
                 :version
 

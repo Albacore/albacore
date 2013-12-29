@@ -54,7 +54,7 @@ describe CSC, "when referencing existing assemblies" do
   end
 
   it "should specify the reference on the command line" do
-    csc.system_command.should include("\"/reference:foobar.dll\"")
+    csc.system_command.should include("/reference:\"foobar.dll\"")
   end
 end
 
