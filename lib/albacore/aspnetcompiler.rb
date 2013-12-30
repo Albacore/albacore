@@ -15,7 +15,8 @@ class AspNetCompiler
                 :fixed_names,
                 :force,
                 :updateable,
-                :debug
+                :debug,
+                :no_logo
 
   attr_accessor :physical_path, 
                 :target_path, 
@@ -42,6 +43,7 @@ class AspNetCompiler
     p << "-d" if @debug
     p << "-u" if @updateable
     p << "-f" if @force
+    p << "-nologo" if @no_logo
     p << Platform.format_path(@target_path) if @target_path
     p
   end
@@ -68,5 +70,9 @@ class AspNetCompiler
   
   def fixed_names
     @fixed_names = true
+  end
+
+  def no_logo
+    @no_logo = true
   end
 end

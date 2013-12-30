@@ -16,6 +16,7 @@ describe AspNetCompiler do
     @cmd.fixed_names
     @cmd.delay_sign
     @cmd.updateable
+    @cmd.no_logo
   end
 
   describe AspNetCompiler, "when overriding all values" do
@@ -44,6 +45,10 @@ describe AspNetCompiler do
 
     it "should be clean" do 
       @cmd.system_command.should include("-c")
+    end
+
+    it "should show no logo" do
+      @cmd.system_command.should include("-nologo")
     end
 
     it "should delay sign" do 
