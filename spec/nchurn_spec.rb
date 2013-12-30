@@ -1,72 +1,76 @@
-require 'spec_helper'
-require 'albacore/nchurn'
-require 'patches/system_patch'
+require "spec_helper"
+require "albacore/nchurn"
 
-class NChurn
-  attr_accessor :failure_message
-
-  def fail_with_message(m)
-    @failure_message = m
-  end
-end
-
-class NChurnTestData
-  attr_reader :nchurn_command
-  attr_reader :output_text
-  def initialize
-    @nchurn_command = File.join(File.dirname(__FILE__), 'support', 'Tools', 'NChurn-v0.4', 'nchurn.exe')
-    @output_text = 'nchurn-test.txt'
-    
-  end
-
-  def remove!
-    FileUtils.rm @output_text if File.exist? @output_text
-  end
-end
-
-describe NChurn, "when running nchurn" do  
+describe NChurn do
   before :all do
-    @nchurn = NChurn.new
-    @nchurn.extend SystemPatch
-    @test_data = NChurnTestData.new
-    @test_data.remove!
-  end
-
-  before :each do
-    @nchurn.failure_message = nil
-  end
-
-  it "should fail with no command" do
-    @nchurn.execute
-    @nchurn.failure_message.should include('Churn')
-  end
-
-  it "should succeed and redirect to file" do
-    @nchurn.command = NChurnTestData.new.nchurn_command
-    @nchurn.output @test_data.output_text
-
-    @nchurn.execute
-    @nchurn.failure_message.should be_nil
-    File.exist?(@test_data.output_text).should be_true
-  end
-
-  it "should pass all parameters correctly" do
-    @nchurn.command = "nchurn.exe" 
-    @nchurn.disable_system = true
-    @nchurn.output @test_data.output_text
-    @nchurn.input "file.txt"
-  
-    @nchurn.churn_precent 30
-    @nchurn.top 10
-    @nchurn.report_as :xml
-    @nchurn.env_path 'c:/tools'
-    @nchurn.adapter :git
-    @nchurn.exclude "exe"
-    @nchurn.include "foo"
-
-    @nchurn.execute
-    @nchurn.failure_message.should be_nil
+    @cmd = NChurn.new()
+    @cmd.extend(SystemPatch)
+    @cmd.extend(FailPatch)
+    @cmd.command = "nchurn"
+    @cmd.input = "input"
+    @cmd.output = "output"
+    @cmd.from = DateTime.parse("01-01-2001")
     
-    @nchurn.system_command.should eql(%{"nchurn.exe" -i "file.txt" -c 0.3 -t 10 -r xml -p "c:/tools" -a git -x "exe" -n "foo" > "nchurn-test.txt"})
+    # you're only supposed ot use one of these, 
+    # but we don't enforce it and this cheating 
+    # makes testing easier ;)
+    @cmd.churn = 9
+    @cmd.churn_percent = 30
+
+    @cmd.top = 10
+    @cmd.report_as = :xml
+    @cmd.adapter = :git
+    @cmd.env_paths = ["c:/bin", "c:/tools"]
+    @cmd.include = "foo"
+    @cmd.exclude = "bar"
+    @cmd.execute
+  end
+
+  it "should use the command" do
+    @cmd.system_command.should include("nchurn")
+  end
+
+  it "should use this input" do
+    @cmd.system_command.should include("-i \"input\"")
+  end
+
+  it "should output here" do
+    @cmd.system_command.should include("> \"output\"")
+  end
+
+  it "should use this date range" do
+    @cmd.system_command.should include("-d \"01-01-2001\"")
+  end
+
+  it "should expect this churn" do
+    @cmd.system_command.should include("-c 9")
+  end
+
+  it "should expect this churn percent" do
+    @cmd.system_command.should include("-c 0.3")
+  end
+
+  it "should return the top records" do
+    @cmd.system_command.should include("-t 10")
+  end
+
+  it "should report as" do
+    @cmd.system_command.should include("-r xml")
+  end
+
+  it "should expect this repository" do
+    @cmd.system_command.should include("-a git")
+  end
+
+  it "should add this env path" do
+    @cmd.system_command.should include("-p \"c:/bin;c:/tools\"")
+  end
+
+  it "should include this" do
+    @cmd.system_command.should include("-n \"foo\"")
+  end
+
+  it "should exclude this" do
+    @cmd.system_command.should include("-x \"bar\"")
   end
 end
