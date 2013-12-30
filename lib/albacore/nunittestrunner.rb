@@ -34,4 +34,12 @@ class NUnitTestRunner
     p << "/nologo" if @no_logo
     p
   end
+
+  def build_command_line
+    c = []
+    c << @command
+    c << build_parameters
+    c << @parameters
+    c
+  end
 end

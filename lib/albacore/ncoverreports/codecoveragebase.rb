@@ -4,7 +4,9 @@ module NCover
   class CodeCoverageBase
     include UpdateAttributes
     
-    attr_accessor :coverage_type, :minimum, :item_type 
+    attr_accessor :coverage_type, 
+                  :minimum, 
+                  :item_type 
     
     def initialize(coverage_type, params={})
       @coverage_type = coverage_type
@@ -15,10 +17,10 @@ module NCover
     end
     
     def get_coverage_options
-      options = "#{@coverage_type}"
-      options << ":#{@minimum}" if @minimum
-      options << ":#{@item_type}" if @item_type
-      options
+      o = "#{@coverage_type}"
+      o << ":#{@minimum}" if @minimum
+      o << ":#{@item_type}" if @item_type
+      o
     end
   end
 end  

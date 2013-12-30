@@ -4,7 +4,10 @@ module NCover
   class ReportFilterBase
     include UpdateAttributes
     
-    attr_accessor :filter, :filter_type, :item_type, :is_regex
+    attr_accessor :filter,
+                  :filter_type,
+                  :item_type, 
+                  :is_regex
     
     def initialize(item_type, params={})
       @filter = ""
@@ -16,11 +19,11 @@ module NCover
     end
   
     def get_filter_options
-      filter = "\"#{@filter}\""
-      filter << ":#{@item_type}"
-      filter << ":#{@is_regex}"
-      filter << ":#{@filter_type == :include}"
-      filter
+      f = "\"#{@filter}\""
+      f << ":#{@item_type}"
+      f << ":#{@is_regex}"
+      f << ":#{@filter_type == :include}"
+      f
     end
   end
 end  

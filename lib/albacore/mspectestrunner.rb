@@ -16,15 +16,23 @@ class MSpecTestRunner
     update_attributes(Albacore.configuration.mspec.to_hash)
   end
   
+  def execute()
+    result = run_command("MSpec", build_parameters)
+    fail_with_message("MSpec failed, see the build log for more details.") unless result
+  end
+  
   def build_parameters
     p = []
     p << @assemblies.map { |asm| "\"#{asm}\"" } if @assemblies
     p << "--html \"#{@html_output}\"" if @html_output
     p
   end
-  
-  def execute()
-    result = run_command("MSpec", build_parameters)
-    fail_with_message("MSpec failed, see the build log for more details.") unless result
+
+  def build_command_line
+    c = []
+    c << @command
+    c << build_parameters
+    c << @parameters
+    c
   end
 end

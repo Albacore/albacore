@@ -1,318 +1,83 @@
-require 'spec_helper'
-require 'albacore/ncoverconsole'
-require 'albacore/nunittestrunner'
-require 'albacore/mspectestrunner'
-require 'ncoverconsoletestdata'
+require "spec_helper"
+require "albacore/ncoverconsole"
+require "albacore/nunittestrunner"
 
-describe NCoverConsole, "when specifying assemblies to cover" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
-    
-    @ncc = NCoverConsole.new()    
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.include_assembiles "TestSolution" 
-    @ncc.test_runner = nunit
-    @ncc.execute
+describe NCoverConsole do
+  let(:runner) do
+    runner = NUnitTestRunner.new()
+    runner.command = "nunit"
+    runner.assemblies = ["a.dll"]
+    runner.parameters = ["/nologo"]
+    runner
   end
 
-  it "should provide coverage for the specified assemblies" do
-    @ncc.system_command.should include("//include-assemblies \"TestSolution\"")
-  end
-end
-
-describe NCoverConsole, "when specifying assemblies with spaces in the name" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-        
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly_with_spaces
-    nunit.parameters '/noshadow'
-    
-    @ncc = NCoverConsole.new()    
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.include_assembiles "assemblies/with spaces/TestSolution"
-    @ncc.test_runner = nunit
-    @ncc.execute
+  subject(:task) do
+    task = NCoverConsole.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "ncover"
+    task.include_assemblies = ["a.dll", "b.dll"]
+    task.exclude_assemblies = ["c.dll"]
+    task.include_attributes = ["foo", "bar"]
+    task.exclude_attributes = ["baz"]
+    task.coverage = [:branch, :symbol]
+    task.output = {:xml => "coverage.xml"}
+    task.test_runner = runner
+    task
   end
 
-  it "should provide coverage for the specified assemblies" do
-    @ncc.system_command.should include("//include-assemblies \"assemblies/with spaces/TestSolution\"")
-  end
-  
-end
+  let(:cmd) { task.system_command }
 
-describe NCoverConsole, "when specifying assemblies to ignore" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
-    
-    @ncc = NCoverConsole.new()
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.exclude_assemblies "TestSolution.*"
-    @ncc.test_runner = nunit
-    @ncc.execute
-  end
+  context "when using defaults" do
+    before :each do
+      task.execute
+    end
 
-  it "should provide coverage for the specified assemblies" do
-    @ncc.system_command.should include("//exclude-assemblies \"TestSolution.*\"")
-  end
-end
+    it "should use the command" do
+      cmd.should include("ncover")
+    end
 
-describe NCoverConsole, "when specifying attributes to exclude" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
+    it "should include these assemblies" do
+      cmd.should include("//include-assemblies \"a.dll;b.dll\"")
+    end
 
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
+    it "should exclude these assemblies" do
+      cmd.should include("//exclude-assemblies \"c.dll\"")
+    end
 
-    @ncc = NCoverConsole.new()
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.exclude_attributes "excludeme", "excludeme_too"
-    @ncc.test_runner = nunit
-    @ncc.execute
+    it "should include these attributes" do
+      cmd.should include("//include-attributes \"foo;bar\"")
+    end
+
+    it "should exclude these attributes" do
+      cmd.should include("//exclude-attributes \"baz\"")
+    end
+
+    it "should cover like this" do
+      cmd.should include("//coverage-type \"branch, symbol\"")
+    end
+
+    it "should output to this file" do
+      cmd.should include("//xml \"coverage.xml\"")
+    end
+
+    it "should register" do
+      cmd.should include("//reg")
+    end
+
+    it "should have the entire test runner command line" do
+      cmd.should include("nunit \"a.dll\" /nologo")
+    end
   end
 
-  it "should not provide coverage for the excluded attributes" do
-    @ncc.system_command.should include("//exclude-attributes \"excludeme\";\"excludeme_too\"")
-  end
-end
+  context "when overriding registration" do
+    before :each do
+      task.no_registration
+      task.execute
+    end
 
-describe NCoverConsole, "when running with the defaults" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    @ncc = NCoverConsole.new
-    @ncc.extend(SystemPatch)
-    @ncc.extend(FailPatch)
-    @ncc.command = @testdata.ncoverpath
-    @ncc.test_runner = NUnitTestRunner.new    
-    @ncc.execute
-  end
-  
-  it "should include the register flag in the command" do
-    @ncc.system_command.should include("//reg")
-  end
-end
-
-describe NCoverConsole, "when opting out of registering the ncover dll" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    @ncc = NCoverConsole.new
-    @ncc.extend(SystemPatch)
-    @ncc.extend(FailPatch)
-    @ncc.command = @testdata.ncoverpath
-    @ncc.no_registration
-    @ncc.test_runner = NUnitTestRunner.new
-    @ncc.execute
-  end
-  
-  it "should not include the register flag in the command" do
-    @ncc.system_command.should_not include("//reg")
-  end
-end
-
-describe NCoverConsole, "when specifying the types of coverage to analyze" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
-    
-    @ncc = NCoverConsole.new()
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.coverage :Symbol, :Branch, :MethodVisits, :CyclomaticComplexity
-    @ncc.test_runner = nunit
-    @ncc.execute
-  end
-    
-  it "should only run coverage for those metrics" do
-    @ncc.system_command.should include("//coverage-type \"Symbol, Branch, MethodVisits, CyclomaticComplexity\"")
-  end
-end
-
-describe NCoverConsole, "when analyzing a test suite with failing tests" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.failing_test_assembly
-    nunit.parameters '/noshadow'
-    
-    strio = StringIO.new
-    
-    ncc = NCoverConsole.new()
-    ncc.log_device = strio
-    ncc.extend(SystemPatch)
-    ncc.extend(FailPatch)
-    ncc.log_level = :verbose
-    ncc.command = @testdata.ncoverpath
-    ncc.output :xml => @testdata.xml_coverage_output
-    ncc.working_directory = @testdata.working_directory
-    ncc.test_runner = nunit
-    ncc.execute
-    
-    @log_data = strio.string
-  end
-  
-  it "should return a failure code" do
-    $task_failed.should == true
-  end
-  
-  it "should log a failure message" do
-    @log_data.should include("NCover")
-  end
-end
-
-describe NCoverConsole, "when running without a testrunner" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-  	
-  	strio = StringIO.new
-  	
-    ncc = NCoverConsole.new()
-    ncc.extend(FailPatch)
-    ncc.log_device = strio
-    ncc.execute
-    
-    @log_data = strio.string
-  end
-
-  it "should log a message saying the test runner is required" do
-    @log_data.should include("#test_runner")
-  end
-  
-  it "should fail the task" do
-    $task_failed.should be_true
-  end
-end
-
-describe NCoverConsole, "when producing an xml coverage report with nunit" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
-    
-    @ncc = NCoverConsole.new()
-    @ncc.extend(SystemPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.test_runner = nunit
-    @ncc.execute
-  end
-  
-  it "should execute ncover.console from the specified path" do
-    @ncc.system_command.should include(File.expand_path(@testdata.ncoverpath))
-  end
-  
-  it "should execute the test runner from the specified path" do
-    @ncc.system_command.downcase.should include(@testdata.nunitpath.downcase)
-  end
-  
-  it "should pass the specified assembly to the test runner" do
-    @ncc.system_command.should include("TestSolution.Tests.dll")
-  end
-  
-  it "should tell nunit to use the noshadow option" do
-  	@ncc.system_command.should include("/noshadow")
-  end
-    
-  it "should write the coverage data to the specified file" do
-    File.exist?(@testdata.xml_coverage_output).should == true
-  end
-end
-
-describe NCoverConsole, "when specifying an html report and an xml coverage report with nunit" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-    File.delete(@testdata.xml_coverage_output) if File.exist?(@testdata.xml_coverage_output)
-    File.delete(@testdata.html_coverage_output) if File.exist?(@testdata.html_coverage_output)
-    
-    nunit = NUnitTestRunner.new(@testdata.nunitpath)
-    nunit.assemblies @testdata.test_assembly
-    nunit.parameters '/noshadow'
-    
-    ncc = NCoverConsole.new()
-    ncc.extend(SystemPatch)
-    ncc.log_level = :verbose
-    ncc.command = @testdata.ncoverpath
-    ncc.output :xml => @testdata.xml_coverage_output, :html => @testdata.html_coverage_output
-    ncc.working_directory = @testdata.working_directory
-    ncc.test_runner = nunit
-    ncc.execute
-  end
-  
-  it "should produce the xml report" do
-    File.exist?(@testdata.xml_coverage_output).should == true
-  end
-  
-  it "should produce the html report" do
-    File.exist?(@testdata.html_coverage_output).should == true
-  end
-end
-
-describe NCoverConsole, "when producing a report with machine.specifications" do
-  before :all do
-  	@testdata = NCoverConsoleTestData.new
-  	
-    mspec = MSpecTestRunner.new(@testdata.mspecpath)
-    mspec.assemblies @testdata.mspec_test_assembly
-    mspec.html_output = @testdata.mspec_html_output
-    
-    @ncc = NCoverConsole.new()
-    @ncc.extend(SystemPatch)
-    @ncc.extend(FailPatch)
-    @ncc.log_level = :verbose
-    @ncc.command = @testdata.ncoverpath
-    @ncc.output :xml => @testdata.xml_coverage_output
-    @ncc.working_directory = @testdata.working_directory
-    @ncc.test_runner = mspec
-    @ncc.execute
-  end
-
-  it "should not fail" do
-    $task_failed.should be_false
-  end
-
-  it "should produce the html report" do
-    File.exist?(@testdata.mspec_html_output.to_s).should be_true
+    it "should not register" do
+      cmd.should_not include("//reg")
+    end
   end
 end

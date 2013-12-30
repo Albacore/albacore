@@ -3,6 +3,7 @@ require "albacore/config/xunittestrunnerconfig"
 
 class XUnitTestRunner
   TaskName = :xunit
+
   include Albacore::Task
   include Albacore::RunCommand
 

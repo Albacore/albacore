@@ -13,7 +13,7 @@ class Docu
   attr_array    :assemblies, 
                 :xml_files
   
-  def initialize(command=nil)
+  def initialize()
     super()
     update_attributes(docu.to_hash)
   end

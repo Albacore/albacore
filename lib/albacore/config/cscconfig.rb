@@ -1,6 +1,6 @@
-require 'ostruct'
-require 'albacore/config/netversion'
-require 'albacore/support/openstruct'
+require "ostruct"
+require "albacore/config/netversion"
+require "albacore/support/openstruct"
 
 module Configuration
   module CSC

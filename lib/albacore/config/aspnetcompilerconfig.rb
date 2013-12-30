@@ -1,6 +1,6 @@
-require 'ostruct'
-require 'albacore/config/netversion'
-require 'albacore/support/openstruct'
+require "ostruct"
+require "albacore/config/netversion"
+require "albacore/support/openstruct"
 
 module Configuration
   module AspNetCompiler
@@ -22,7 +22,8 @@ module Configuration
     end
 
     def use(netversion)
-      netversion = :net20 if netversion == :net35 # since .net 3.5 doesn't have aspnet_compiler use .net 2.0
+      # net35 doesn't have an asp.net compiler
+      netversion = :net20 if netversion == :net35
       self.command = File.join(get_net_version(netversion), "aspnet_compiler.exe")
     end
   end

@@ -2,20 +2,26 @@ require "spec_helper"
 require "albacore/exec"
 
 describe Exec do
-  before :all do
-    @cmd = Exec.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "whatever"
-    @cmd.parameters = ["foo", "bar"]
-    @cmd.execute
+  subject(:task) do
+    task = Exec.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "whatever"
+    task.parameters = ["foo", "bar"]
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
+  before :each do
+    task.execute
   end
 
   it "should run the command" do
-    @cmd.system_command.should include("whatever")
+    cmd.should include("whatever")
   end
 
   it "should use both parameters" do
-    @cmd.system_command.should include("foo bar")
+    cmd.should include("foo bar")
   end
 end

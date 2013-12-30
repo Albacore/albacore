@@ -30,6 +30,14 @@ class MSTestTestRunner
     p
   end
   
+  def build_command_line
+    c = []
+    c << @command
+    c << build_parameters
+    c << @parameters
+    c
+  end
+
   def no_logo
     @no_logo = true
   end

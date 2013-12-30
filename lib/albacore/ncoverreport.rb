@@ -7,6 +7,7 @@ class NCoverReport
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::NCoverReport
   
   attr_array :coverage_files, 
              :reports, 
@@ -15,7 +16,7 @@ class NCoverReport
   
   def initialize
     super()
-    update_attributes(Albacore.configuration.ncoverreport.to_hash)
+    update_attributes(ncoverreport.to_hash)
   end
   
   def execute
@@ -30,10 +31,10 @@ class NCoverReport
   
   def build_parameters
     p = []
-    p << @coverage_files.map{ |f| "\"#{f}\"" } if @coverage_files
-    p << @reports.map { |r| "//or #{r.get_report_options}" } if @reports
-    p << @required_coverage.map{ |c| "//mc #{c.get_coverage_options}" } if @required_coverage
-    p << @filters.map{ |f| "//cf #{f.get_filter_options}" } if @filters
+    p << @coverage_files.map { |file| "\"#{file}\"" } if @coverage_files
+    p << @reports.map { |report| "//or #{report.get_report_options}" } if @reports
+    p << @required_coverage.map { |coverage| "//mc #{coverage.get_coverage_options}" } if @required_coverage
+    p << @filters.map { |filter| "//cf #{filter.get_filter_options}" } if @filters
     p
   end
 end

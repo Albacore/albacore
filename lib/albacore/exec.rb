@@ -6,10 +6,11 @@ class Exec
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::Exec
 
   def initialize
     super()
-    update_attributes(Albacore.configuration.exec.to_hash)
+    update_attributes(exec.to_hash)
   end
     
   def execute

@@ -2,79 +2,87 @@ require "spec_helper"
 require "albacore/csc"
 
 describe CSC do
-  before :all do
-    @cmd = CSC.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "csc"
-    @cmd.compile = ["File1.cs", "File2.cs"]
-    @cmd.references = ["foo.dll"]
-    @cmd.resources = ["foo.resx"]
-    @cmd.define = [:symbol1, :symbol2]
-    @cmd.target = :library
-    @cmd.output = "output.dll"
-    @cmd.doc = "docfile.xml"
-    @cmd.main = "Program"
-    @cmd.key_file = "keyfile"
-    @cmd.key_container = "keycontainer"
-    @cmd.optimize
-    @cmd.debug :full 
-    @cmd.delay_sign
-    @cmd.no_logo
-    @cmd.execute
+  subject(:task) do
+    task = CSC.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "csc"
+    task.compile = ["File1.cs", "File2.cs"]
+    task.references = ["foo.dll"]
+    task.resources = ["foo.resx"]
+    task.define = [:symbol1, :symbol2]
+    task.target = :library
+    task.output = "output.dll"
+    task.doc = "docfile.xml"
+    task.main = "Program"
+    task.key_file = "keyfile"
+    task.key_container = "keycontainer"
+    task.optimize
+    task.debug :full 
+    task.delay_sign
+    task.no_logo
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
+  before :each do
+    task.execute
   end
 
   it "should use the command" do
-    @cmd.system_command.should include("csc")
+    cmd.should include("csc")
   end
 
   it "should compile two files" do
-    @cmd.system_command.should include("\"File1.cs\"")
-    @cmd.system_command.should include("\"File2.cs\"")
+    cmd.should include("\"File1.cs\" \"File2.cs\"")
   end
 
   it "should output the library" do
-    @cmd.system_command.should include("/out:\"output.dll\"")
+    cmd.should include("/out:\"output.dll\"")
   end
 
   it "should reference the library" do
-    @cmd.system_command.should include("/reference:\"foo.dll\"")
+    cmd.should include("/reference:\"foo.dll\"")
   end
 
   it "should include the resource" do
-    @cmd.system_command.should include("/resource:\"foo.resx\"")
+    cmd.should include("/resource:\"foo.resx\"")
   end
 
   it "should optimize" do
-    @cmd.system_command.should include("/optimize")
+    cmd.should include("/optimize")
   end
 
   it "should delay sign" do
-    @cmd.system_command.should include("/delaysign+")
+    cmd.should include("/delaysign+")
   end
 
   it "should not display a logo" do
-    @cmd.system_command.should include("/nologo")
+    cmd.should include("/nologo")
   end
 
   it "should debug at the full level" do
-    @cmd.system_command.should include("/debug:full")
+    cmd.should include("/debug:full")
   end
 
   it "should write documentation" do
-    @cmd.system_command.should include("/doc:\"docfile.xml\"")
+    cmd.should include("/doc:\"docfile.xml\"")
   end
 
   it "should define the symbols" do
-    @cmd.system_command.should include("/define:symbol1;symbol2")
+    cmd.should include("/define:symbol1;symbol2")
   end
 
 	it "should have a main entry" do
-		@cmd.system_command.should include("/main:Program")
+		cmd.should include("/main:Program")
 	end
 
-  it "should have a key file and container" do
-    @cmd.system_command.should include("/keyfile:\"keyfile\"")
-    @cmd.system_command.should include("/keycontainer:keycontainer")
+  it "should have a key file" do
+    cmd.should include("/keyfile:\"keyfile\"")
+  end
+
+  it "should have a key container" do
+    cmd.should include("/keycontainer:keycontainer")
   end
 end

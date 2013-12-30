@@ -1,619 +1,141 @@
-require 'spec_helper'
-require 'albacore/ncoverreport'
-require 'ncoverreporttestdata'
+require "spec_helper"
+require "albacore/ncoverreport"
 
-describe NCoverReport, "when running without the ncover report location specified" do
-  before :all do
-    @ncover = NCoverReport.new
-    @ncover.extend(FailPatch)
-    @ncover.execute
+describe NCoverReport do
+  subject(:task) do
+    task = NCoverReport.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "ncover"
+    task.coverage_files = ["a.xml", "b.xml"]
+    task.filters = [NCover::AssemblyFilter.new(:filter => "filter")]
+    task.reports = [NCover::FullCoverageReport.new(:output_path => "output")]
+    task.required_coverage = [NCover::BranchCoverage.new()]
+    task
   end
-  
-  it "should fail execution" do
-    $task_failed.should be_true
+
+  let(:cmd) { task.system_command }
+
+  before :each do
+    task.execute
+  end
+
+  it "should use the command" do
+    cmd.should include("ncover")
+  end
+
+  it "should cover the files" do 
+    cmd.should include("\"a.xml\" \"b.xml\"")
+  end
+
+  it "should create a filter" do
+    cmd.should include("//cf \"filter\":Assembly:false:false")
+  end
+
+  it "should create a report" do
+    cmd.should include("//or FullCoverageReport:Html:\"output\"")
+  end
+
+  it "should create a coverage requirement" do
+    cmd.should include("//mc BranchCoverage:0:View")
   end
 end
 
-describe NCoverReport, "when running a full coverage report with a specified output folder" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new()
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    @ncover.execute
-  end
+describe NCover::FullCoverageReport do
+  subject(:report) { NCover::FullCoverageReport.new(:output_path => "output") }
+  let(:opts) { report.get_report_options() }
 
-  it "should execute ncover.reporting" do
-    @ncover.system_command.should include(NCoverReportTestData.command)
-  end
-  
-  it "should tell ncover.reporting to produce a full coverage html report in the specified folder" do
-    @ncover.system_command.downcase.should include("//or FullCoverageReport:Html:\"#{NCoverReportTestData.output_folder}\"".downcase)
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-end
-
-describe NCoverReport, "when running a summary report with a specified output folder" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    summaryreport = NCover::SummaryReport.new()
-    summaryreport.output_path = NCoverReportTestData.summary_output_file
-    @ncover.reports summaryreport
-    
-    @ncover.execute
-  end
-
-  it "should execute ncover.reporting" do
-    @ncover.system_command.should include(NCoverReportTestData.command)
-  end
-  
-  it "should tell ncover.reporting to produce a summary html report in the specified folder" do
-    @ncover.system_command.downcase.should include("//or Summary:Html:\"#{NCoverReportTestData.summary_output_file}\"".downcase)
-  end
-  
-  it "should produce the report" do
-    File.exist?(NCoverReportTestData.summary_output_file).should be_true
-  end    
-end
-
-describe NCoverReport, "when running multiple ncover reports - a summary and a full coverage report" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    summaryreport = NCover::SummaryReport.new()
-    summaryreport.output_path = NCoverReportTestData.summary_output_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new()
-    @fullcoverage_output_folder = File.join(NCoverReportTestData.output_folder, "fullcoverage")
-    fullcoveragereport.output_path = @fullcoverage_output_folder
-    @ncover.reports summaryreport, fullcoveragereport
-
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to produce a full coverage html report in the specified folder" do
-    @ncover.system_command.downcase.should include("//or FullCoverageReport:Html:\"#{@fullcoverage_output_folder}\"".downcase)
-  end
-  
-  it "should tell ncover.reporting to produce a summary html report in the specified folder" do
-    @ncover.system_command.downcase.should include("//or Summary:Html:\"#{NCoverReportTestData.summary_output_file}\"".downcase)
+  it "should be a full coverage html report" do
+    opts.should include("FullCoverageReport:Html:\"output\"")
   end
 end
 
-describe NCoverReport, "when running a report with a specified minimum symbol coverage lower than actual coverage" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    symbolcoverage = NCover::SymbolCoverage.new
-    symbolcoverage.minimum = 10
-    @ncover.required_coverage symbolcoverage
-    
-    @ncover.execute
-  end
+describe NCover::SummaryReport do
+  subject(:report) { NCover::SummaryReport.new(:output_path => "output") }
+  let(:opts) { report.get_report_options() }
 
-  it "should tell ncover.reporting to check for the specified minimum coverage" do
-    @ncover.system_command.should include("//mc SymbolCoverage:10:View")
+  it "should be a summary html report" do
+    opts.should include("Summary:Html:\"output\"")
   end
-  
-  it "should not fail the execution" do
-    $task_failed.should be_false
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-end
+end  
 
-describe NCoverReport, "when running a report with a specified minimum symbol coverage higher than actual coverage" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    symbolcoverage = NCover::SymbolCoverage.new
-    symbolcoverage.minimum = 100
-    @ncover.required_coverage symbolcoverage
-    
-    @ncover.execute
-  end
+describe NCover::BranchCoverage do
+  subject(:cover) { NCover::BranchCoverage.new() }
+  let(:opts) { cover.get_coverage_options() }
 
-  it "should tell ncover.reporting to check for the specified minimum coverage" do
-    @ncover.system_command.should include("//mc SymbolCoverage:10")
-  end
-  
-  it "should fail the execution" do
-    $task_failed.should be_true
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-end
-
-describe NCoverReport, "when specifying the coverage item type to check" do
-    before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    report = NCover::SummaryReport.new
-    report.output_path = NCoverReportTestData.summary_output_file
-    @ncover.reports report
-    
-    symbolcoverage = NCover::SymbolCoverage.new
-    symbolcoverage.minimum = 10
-    symbolcoverage.item_type = :Class
-    @ncover.required_coverage symbolcoverage
-    
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to check for the specified item type" do
-    @ncover.system_command.should include("//mc SymbolCoverage:10:Class")
-  end
-  
-  it "should produce the report" do
-    File.exist?(NCoverReportTestData.summary_output_file).should be_true
-  end  
-end
-
-describe NCoverReport, "when checking more than one type of coverage and all fail" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    @ncover.required_coverage(
-    	NCover::SymbolCoverage.new(:minimum => 100, :item_type => :View),
-    	NCover::BranchCoverage.new(:minimum => 10, :item_type => :Class),
-    	NCover::MethodCoverage.new(:minimum => 100, :item_type => :Class)
-    )
-
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to check for the symbol coverage" do
-    @ncover.system_command.should include("//mc SymbolCoverage:100:View")
-  end
-  
-  it "should tell ncover.reporting to check for the branch coverage" do
-    @ncover.system_command.should include("//mc BranchCoverage:10:Class")
-  end
-  
-  it "should tell ncover.reporting to check for the branch coverage" do
-    @ncover.system_command.should include("//mc MethodCoverage:100:Class")
-  end
-
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-  
-  it "should fail the execution" do
-    $task_failed.should be_true
+  it "should be branch coverage" do
+    opts.should include("BranchCoverage:0:View")
   end
 end
 
-describe NCoverReport, "when checking more than one type of coverage and all pass" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    @ncover.required_coverage(
-    	NCover::SymbolCoverage.new(:minimum => 0, :item_type => :View),
-    	NCover::BranchCoverage.new(:minimum => 0, :item_type => :Class),
-    	NCover::MethodCoverage.new(:minimum => 0, :item_type => :Class)
-    )
+describe NCover::MethodCoverage do
+  subject(:cover) { NCover::MethodCoverage.new() }
+  let(:opts) { cover.get_coverage_options() }
 
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to check for the symbol coverage" do
-    @ncover.system_command.should include("//mc SymbolCoverage:0:View")
-  end
-  
-  it "should tell ncover.reporting to check for the branch coverage" do
-    @ncover.system_command.should include("//mc BranchCoverage:0:Class")
-  end
-  
-  it "should tell ncover.reporting to check for the method coverage" do
-    @ncover.system_command.should include("//mc MethodCoverage:0:Class")
-  end
-
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-  
-  it "should not fail the execution" do
-    $task_failed.should be_false
+  it "should be method coverage" do
+    opts.should include("MethodCoverage:0:View")
   end
 end
 
-describe NCoverReport, "when checking more than one type of coverage and one fails" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    @ncover.required_coverage(
-    	NCover::SymbolCoverage.new(:minimum => 100, :item_type => :View),
-    	NCover::BranchCoverage.new(:minimum => 0, :item_type => :Class)
-    )
+describe NCover::SymbolCoverage do 
+  subject(:cover) { NCover::SymbolCoverage.new() }
+  let(:opts) { cover.get_coverage_options() }
 
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to check for the symbol coverage" do
-    @ncover.system_command.should include("//mc SymbolCoverage:100:View")
-  end
-  
-  it "should tell ncover.reporting to check for the branch coverage" do
-    @ncover.system_command.should include("//mc BranchCoverage:0:Class")
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-  
-  it "should fail the execution" do
-    $task_failed.should be_true
+  it "should be symbol coverage" do
+    opts.should include("SymbolCoverage:0:View")
   end
 end
 
-describe NCoverReport, "when running a report with a cyclomatic complexity higher than allowed" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    coverage = NCover::CyclomaticComplexity.new(:maximum => 1, :item_type => :Class)
-    @ncover.required_coverage coverage
-    
-    @ncover.execute
-  end
+describe NCover::CyclomaticComplexity do
+  subject(:cover) { NCover::CyclomaticComplexity.new() }
+  let(:opts) { cover.get_coverage_options() }
 
-  it "should tell ncover.reporting to check for the maximum cyclomatic complexity" do
-    @ncover.system_command.should include("//mc CyclomaticComplexity:1:Class")
-  end
-  
-  it "should fail the execution" do
-    $task_failed.should be_true
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-end
-
-describe NCoverReport, "when running a report with a cyclomatic complexity under the limit" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport
-    
-    coverage = NCover::CyclomaticComplexity.new(:maximum => 1000)
-    @ncover.required_coverage coverage
-    
-    @ncover.execute
-  end
-
-  it "should tell ncover.reporting to check for the maximum cyclomatic complexity" do
-    @ncover.system_command.should include("//mc CyclomaticComplexity:1000:View")
-  end
-  
-  it "should not fail the execution" do
-    $task_failed.should be_false
-  end
-  
-  it "should produce the report" do
-    File.exist?(File.join(NCoverReportTestData.output_folder, "fullcoveragereport.html")).should be_true
-  end  
-end
-
-describe NCoverReport, "when filtering on Assembly coverage data" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport    
-    @ncover.required_coverage NCover::SymbolCoverage.new(:minimum => 0)
-    
-    @ncover.filters(
-    	NCover::AssemblyFilter.new(:filter_type => :exclude, :filter => "nunit.*"),
-    	NCover::AssemblyFilter.new(:filter_type => :include, :filter => "TestSolution.*")
-    )
-    
-    @ncover.execute
-  end
-  
-  it "should exclude the specified assemblies data" do
-    @ncover.system_command.should include("//cf \"nunit.*\":Assembly:false:false")
-  end
-
-  it "should include the specified assemblies data" do
-    @ncover.system_command.should include("//cf \"TestSolution.*\":Assembly:false:true")
-  end
-  
-  it "should not fail" do
-    $task_failed.should be_false
+  it "should be cyclomatic complexity" do
+    opts.should include("CyclomaticComplexity:100:View")
   end
 end
 
-describe NCoverReport, "when filtering on Namespace coverage data" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport    
-    @ncover.required_coverage NCover::SymbolCoverage.new(:minimum => 0)
-    
-    @ncover.filters(
-    	NCover::NamespaceFilter.new(:filter_type => :exclude, :filter => "nunit.*"),
-    	NCover::NamespaceFilter.new(:filter_type => :include, :filter => "TestSolution.*")
-    )
-    
-    @ncover.execute
-  end
-  
-  it "should exclude the specified data" do
-    @ncover.system_command.should include("//cf \"nunit.*\":Namespace:false:false")
-  end
+describe NCover::AssemblyFilter do
+  subject(:filter) { NCover::AssemblyFilter.new(:filter => "filter") }
+  let(:opts) { filter.get_filter_options() }
 
-  it "should include the specified data" do
-    @ncover.system_command.should include("//cf \"TestSolution.*\":Namespace:false:true")
-  end
-  
-  it "should not fail" do
-    $task_failed.should be_false
+  it "should be an assembly filter" do
+    opts.should include("\"filter\":Assembly:false:false")
   end
 end
 
-describe NCoverReport, "when filtering on Class coverage data" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport    
-    @ncover.required_coverage NCover::SymbolCoverage.new(:minimum => 0)
-    
-    @ncover.filters(
-    	NCover::ClassFilter.new(:filter_type => :exclude, :filter => "Foo"),
-    	NCover::ClassFilter.new(:filter_type => :include, :filter => "Bar")
-    )
-    
-    @ncover.execute
-  end
-  
-  it "should exclude the specified data" do
-    @ncover.system_command.should include("//cf \"Foo\":Class:false:false")
-  end
+describe NCover::ClassFilter do
+  subject(:filter) { NCover::ClassFilter.new(:filter => "filter") }
+  let(:opts) { filter.get_filter_options() }
 
-  it "should include the specified data" do
-    @ncover.system_command.should include("//cf \"Bar\":Class:false:true")
-  end
-  
-  it "should not fail" do
-    $task_failed.should be_false
+  it "should be a class filter" do
+    opts.should include("\"filter\":Class:false:false")
   end
 end
 
-describe NCoverReport, "when filtering on Method coverage data" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport    
-    @ncover.required_coverage NCover::SymbolCoverage.new(:minimum => 0)
-    
-    @ncover.filters(
-    	NCover::MethodFilter.new(:filter_type => :exclude, :filter => "Foo"),
-    	NCover::MethodFilter.new(:filter_type => :include, :filter => "Bar")
-    )
-    
-    @ncover.execute
-  end
-  
-  it "should exclude the specified data" do
-    @ncover.system_command.should include("//cf \"Foo\":Method:false:false")
-  end
+describe NCover::DocumentFilter do
+  subject(:filter) { NCover::DocumentFilter.new(:filter => "filter") }
+  let(:opts) { filter.get_filter_options() }
 
-  it "should include the specified data" do
-    @ncover.system_command.should include("//cf \"Bar\":Method:false:true")
-  end
-  
-  it "should not fail" do
-    $task_failed.should be_false
+  it "should be a document filter" do
+    opts.should include("\"filter\":Document:false:false")
   end
 end
 
-describe NCoverReport, "when filtering on Document coverage data" do
-  before :all do
-    NCoverReportTestData.clean_output_folder
-    
-    @ncover = NCoverReport.new
-    @ncover.extend(SystemPatch)
-    @ncover.extend(FailPatch)
-    @ncover.log_level = :verbose
-    
-    @ncover.command = NCoverReportTestData.command
-    @ncover.coverage_files NCoverReportTestData.coverage_file
-    
-    fullcoveragereport = NCover::FullCoverageReport.new
-    fullcoveragereport.output_path = NCoverReportTestData.output_folder
-    @ncover.reports fullcoveragereport    
-    @ncover.required_coverage NCover::SymbolCoverage.new(:minimum => 0)
-    
-    @ncover.filters(
-    	NCover::DocumentFilter.new(:filter_type => :exclude, :filter => "Foo"),
-    	NCover::DocumentFilter.new(:filter_type => :include, :filter => "Bar")
-    )
-    
-    @ncover.execute
-  end
-  
-  it "should exclude the specified data" do
-    @ncover.system_command.should include("//cf \"Foo\":Document:false:false")
-  end
+describe NCover::MethodFilter do
+  subject(:filter) { NCover::MethodFilter.new(:filter => "filter") }
+  let(:opts) { filter.get_filter_options() }
 
-  it "should include the specified data" do
-    @ncover.system_command.should include("//cf \"Bar\":Document:false:true")
-  end
-  
-  it "should not fail" do
-    $task_failed.should be_false
+  it "should be a method filter" do
+    opts.should include("\"filter\":Method:false:false")
   end
 end
 
-describe NCoverReport, "when providing configuration values" do
-  let :ncoverreport do
-    Albacore.configure do |config|
-      config.ncoverreport.command = "configured"
-    end
-    ncoverreport = NCoverReport.new
-  end
+describe NCover::NamespaceFilter do
+  subject(:filter) { NCover::NamespaceFilter.new(:filter => "filter") }
+  let(:opts) { filter.get_filter_options() }
 
-  it "should use the configured values" do
-    ncoverreport.command.should == "configured"
+  it "should be a namespace filter" do
+    opts.should include("\"filter\":Namespace:false:false")
   end
 end
