@@ -12,7 +12,8 @@ class CSC
   
   attr_reader   :debug,
                 :optimize,
-                :delay_sign
+                :delay_sign,
+                :no_logo
 
   attr_accessor :output, 
                 :target, 
@@ -32,23 +33,27 @@ class CSC
   end
 
   def execute
+    result = run_command("CSC", build_parameters)
+    fail_with_message("CSC failed, see the build log for more details.") unless result
+  end
+
+  def build_parameters
     p = []
-    p << @references.map{ |ref| "/reference:#{Platform.format_path(ref)}" } if @references
-    p << @resources.map{ |res| "/res:#{res}" } if @resources
+    p << @references.map { |ref| "/reference:#{Platform.format_path(ref)}" } if @references
+    p << @resources.map { |res| "/resource:#{Platform.format_path(res)}" } if @resources
     p << "/main:#{@main}" if @main
-    p << "\"/out:#{@output}\"" if @output
+    p << "/out:#{Platform.format_path(@output)}" if @output
     p << "/target:#{@target}" if @target
     p << "/optimize+" if @optimize
-    p << "\"/keyfile:#{@key_file}\"" if @key_file
-    p << "\"/keycontainer:#{@key_container}\"" if @key_container
+    p << "/keyfile:#{Platform.format_path(@key_file)}" if @key_file
+    p << "/keycontainer:#{@key_container}" if @key_container
     p << "/delaysign+" if @delay_sign
     p << "/debug#{":#{@debug_type}" if @debug_type}" if @debug
-    p << "/doc:#{@doc}" if @doc
+    p << "/doc:#{Platform.format_path(@doc)}" if @doc
     p << "/define:#{@define.join(";")}" if @define
-    p << @compile.map{ |file| Platform.format_path(file) } if @compile
-
-    result = run_command("CSC", p)
-    fail_with_message("CSC failed, see the build log for more details.") unless result
+    p << "/nologo" if @no_logo
+    p << @compile.map { |file| Platform.format_path(file) } if @compile
+    p
   end
 
   def debug(type = nil)
@@ -62,5 +67,9 @@ class CSC
   
   def delay_sign
     @delay_sign = true
+  end
+
+  def no_logo
+    @no_logo = true
   end
 end
