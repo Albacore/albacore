@@ -12,8 +12,7 @@ class MSBuild
   
   attr_accessor :solution, 
                 :verbosity, 
-                # can't rename to 'logger' because it collides with the message 
-                # logger in the inheritance chain
+                # 'logger' property already exists in parent
                 :logger_module 
   
   attr_array    :targets
@@ -35,10 +34,6 @@ class MSBuild
     result = run_command("MSBuild", build_parameters)
     fail_with_message("MSBuild failed, see the build log for more details.") unless result
   end
-
-  def no_logo
-    @no_logo = true
-  end
   
   def build_parameters()
     p = []
@@ -50,5 +45,9 @@ class MSBuild
     p << @other_switches.map { |key, value| "/#{key}:\"#{value}\"" } if @other_switches
     p << "/target:\"#{@targets.join(";")}\"" if @targets
     p
+  end
+
+  def no_logo
+    @no_logo = true
   end
 end
