@@ -19,7 +19,7 @@ describe AspNetCompiler do
     @cmd.no_logo
   end
 
-  describe AspNetCompiler, "when overriding all values" do
+  context "when overriding all values" do
     before :each do
       @cmd.virtual_path = "virtual/path"
       @cmd.execute
@@ -72,7 +72,7 @@ describe AspNetCompiler do
     end
   end
 
-  describe AspNetCompiler, "when relying on defaults" do
+  context "when relying on defaults" do
     before :each do
       @cmd.execute
     end

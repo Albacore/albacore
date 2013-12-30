@@ -1,8 +1,8 @@
-require 'spec_helper'
-require 'albacore/csc'
+require "spec_helper"
+require "albacore/csc"
 
 describe CSC do
-  before :each do
+  before :all do
     @cmd = CSC.new()
     @cmd.extend(SystemPatch)
     @cmd.extend(FailPatch)

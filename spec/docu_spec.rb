@@ -2,7 +2,7 @@ require "spec_helper"
 require "albacore/docu"
 
 describe Docu, "when defining a basic docu task" do  
-  before :each do
+  before :all do
     @cmd = Docu.new
     @cmd.extend(SystemPatch)
     @cmd.extend(FailPatch)

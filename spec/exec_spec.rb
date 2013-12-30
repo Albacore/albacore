@@ -1,8 +1,8 @@
-require 'spec_helper'
-require 'albacore/exec'
+require "spec_helper"
+require "albacore/exec"
 
 describe Exec do
-  before :each do
+  before :all do
     @cmd = Exec.new()
     @cmd.extend(SystemPatch)
     @cmd.extend(FailPatch)

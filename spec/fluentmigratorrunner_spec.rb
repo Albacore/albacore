@@ -2,7 +2,7 @@ require "spec_helper"
 require "albacore/fluentmigratorrunner"
 
 describe FluentMigratorRunner do
-  before :each do
+  before :all do
     @cmd = FluentMigratorRunner.new()
     @cmd.extend(SystemPatch)
     @cmd.extend(FailPatch)

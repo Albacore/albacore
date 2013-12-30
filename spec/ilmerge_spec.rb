@@ -1,46 +1,31 @@
-require 'spec_helper'
-require 'albacore/ilmerge'
+require "spec_helper"
+require "albacore/ilmerge"
 
 describe IlMerge do
-  before :each do
-    @me = IlMerge.new
-    @me.output = 'output.dll'
+  before :all do
+    @cmd = IlMerge.new()
+    @cmd.extend(SystemPatch)
+    @cmd.extend(FailPatch)
+    @cmd.command = "ilmerge"
+    @cmd.output = "output.dll"
+    @cmd.target_platform = "net40"
+    @cmd.assemblies = ["a.dll", "b.dll"]
+    @cmd.execute
   end
 
-  context 'when #command is not set but is installed' do 
-    before :each do
-      @expected_path = "C:/Program Files (x86)/Microsoft/ILMerge/ilmerge.exe"
-      File.should_receive(:exists?).with(@expected_path).and_return(true)
-    end
-    
-    it "finds the installed program path" do
-      @me.default_command.should == @expected_path
-    end
-  end
-  
-  context 'when #command is set manually' do
-    before :each do
-      @me.command = "ilmerge"
-    end
-    
-    it "uses the manual value" do
-      @me.command.should == "ilmerge"
-    end
+  it "should use the command" do
+    @cmd.system_command.should include("ilmerge")
   end
 
-  context 'when #assemblies is never set' do
-    it "raises an ArgumentError" do
-      expect { @me.build_parameters }.to raise_error(RuntimeError)
-    end
+  it "should output to the assembly" do
+    @cmd.system_command.should include("/out:\"output.dll\"")
   end
 
-  context 'when setting #assemblies' do
-    before :each do 
-      @me.assemblies = ['assy_1.dll', 'assy_2.dll']
-    end
-  
-    it "has parameters that contains all assemblies listed" do
-      @me.build_parameters.flatten.should == %w{/out:"output.dll" assy_1.dll assy_2.dll}
-    end
+  it "should target the correct platform" do
+    @cmd.system_command.should include("/targetPlatform:net40")
+  end
+
+  it "should use the input assemblies" do
+    @cmd.system_command.should include("\"a.dll\" \"b.dll\"")
   end
 end
