@@ -1,155 +1,84 @@
-require 'spec_helper'
-require 'albacore/fluentmigratorrunner'
+require "spec_helper"
+require "albacore/fluentmigratorrunner"
 
-shared_context "fluentmigrator paths" do
-  before :all do
-    @command = File.join(File.dirname(__FILE__), 'support', 'Tools', 'FluentMigrator-0.9', 'Migrate.exe')
-    @assembly = File.join(File.expand_path(File.dirname(__FILE__)), 'support', 'CodeCoverage', 'fluentmigrator', 'assemblies', 'TestSolution.FluentMigrator.dll')
-  end
-end
-
-describe FluentMigratorRunner, "the command parameters for an migrator runner" do
-  include_context "fluentmigrator paths"
- 
-  context "Required params" do
-    before :all do
-      migrator = FluentMigratorRunner.new()
-      migrator.command = @command
-      @command_parameters = migrator.get_command_parameters.join(" ")
-    end
-
-    it "doesn't include command" do
-      @command_parameters.should_not include(@command)
-    end
-
-    it "includes target" do
-      @command_parameters.should include("/target")
-    end
-
-    it "includes provider" do
-      @command_parameters.should include("/provider")
-    end
-
-    it "includes connection" do
-      @command_parameters.should include("/connection")
-    end  
-	end
-
-  context "Optional options" do
-    before :all do
-      migrator = FluentMigratorRunner.new()
-      migrator.command = @command
-      migrator.namespace = 'namespace'
-      migrator.output_filename = "output.txt"
-      migrator.steps = 1
-      migrator.task = 'migrate:up'
-      migrator.version = '001'
-      migrator.script_directory = 'c:\scripts'
-      migrator.profile = 'MyProfile'
-      migrator.timeout = 90
-      migrator.tag = 'MyTag'
-      
-      @command_parameters = migrator.get_command_parameters.join(" ")
-    end
-
-    it "includes ns" do
-      @command_parameters.should include('/ns')
-    end
-
-    it "includes outfile" do
-      @command_parameters.should include('/outfile')
-    end 
-
-    it "includes steps" do
-      @command_parameters.should include('/steps')
-    end
-
-    it "includes task" do
-      @command_parameters.should include('/task')
-    end
-
-    it "includes version" do
-      @command_parameters.should include('/version')
-    end
-
-    it "includes wd" do
-      @command_parameters.should include('/wd')
-    end
-
-    it "includes profile" do
-      @command_parameters.should include('/profile')
-    end
-
-    it "includes timeout" do
-      @command_parameters.should include('/timeout')
-    end
-    
-    it "includes tag" do
-      @command_parameters.should include('/tag')
-    end
+describe FluentMigratorRunner do
+  before :each do
+    @cmd = FluentMigratorRunner.new()
+    @cmd.extend(SystemPatch)
+    @cmd.extend(FailPatch)
+    @cmd.command = "fluentm"
+    @cmd.namespace = "namespace"
+    @cmd.provider = "provider"
+    @cmd.target = "target"
+    @cmd.connection = "connection"
+    @cmd.output
+    @cmd.output_filename = "output.txt"
+    @cmd.steps = 1
+    @cmd.task = "migrate:up"
+    @cmd.version = "001"
+    @cmd.script_directory = "scripts"
+    @cmd.profile = "profile"
+    @cmd.timeout = 90
+    @cmd.tag = "tag"
+    @cmd.verbose
+    @cmd.preview
+    @cmd.execute
   end
 
-  context "True boolean options" do
-    before :all do
-      migrator = FluentMigratorRunner.new()
-      migrator.command = @command
-      migrator.preview
-      migrator.output
-      migrator.verbose
-      
-      @command_parameters = migrator.get_command_parameters.join(" ")
-    end
-    
-    it "includes /out when output is true" do
-      @command_parameters.should include "/out"
-    end
-        
-    it "includes /preview when preview is true" do
-      @command_parameters.should include "/preview"
-    end
-    
-    it "includes /verbose when verbose is true" do
-      @command_parameters.should include "/verbose=true"
-    end
+  it "should run target" do
+    @cmd.system_command.should include("/target=\"target\"")
   end
 
-  context "False boolean options" do
-    before :all do
-      migrator = FluentMigratorRunner.new()
-      migrator.command = @command
-      @command_parameters = migrator.get_command_parameters.join(" ")
-    end
-    
-    it "excludes /out when output not true" do
-      @command_parameters.should_not include "/out"
-    end
-
-    it "excludes /preview when preview is not true" do
-      @command_parameters.should_not include "/preview"
-    end
-
-    it "excludes /verbose when verbose is not true" do
-      @command_parameters.should_not include "/verbose="
-    end
+  it "should use provider" do
+    @cmd.system_command.should include("/provider=provider")
   end
-end
 
-describe FluentMigratorRunner, "the command line string for an fluentmigrator runner" do
-  include_context "fluentmigrator paths"
+  it "should use connection" do
+    @cmd.system_command.should include("/connection=\"connection\"")
+  end  
 
-  before :all do
-    migrator = FluentMigratorRunner.new()
-    migrator.command = @command
-    migrator.target = @assembly    
-    @command_line = migrator.get_command_line.join(" ")
-    @command_parameters = migrator.get_command_parameters.join(" ")
+  it "should include the namespace" do
+    @cmd.system_command.should include("/ns=namespace")
   end
-    
-  it "starts with the path to the command" do
-    @command_line.should =~ /^#{@command}.*$/
+
+  it "should output to the specified file" do
+    @cmd.system_command.should include("/out")
+    @cmd.system_command.should include("/outfile=\"output.txt\"")
+  end 
+
+  it "should step once" do
+    @cmd.system_command.should include("/steps=1")
+  end
+
+  it "should run the task" do
+    @cmd.system_command.should include("/task=migrate:up")
+  end
+
+  it "should run to version one" do
+    @cmd.system_command.should include("/version=001")
+  end
+
+  it "should use the working directory" do
+    @cmd.system_command.should include("/wd=\"scripts\"")
+  end
+
+  it "should use profile" do
+    @cmd.system_command.should include("/profile=profile")
+  end
+
+  it "should timeout" do
+    @cmd.system_command.should include("/timeout=90")
   end
   
-  it "includes the command parameters" do
-    @command_line.downcase.should include(@command_parameters.downcase)
+  it "should include tag" do
+    @cmd.system_command.should include("/tag=tag")
+  end
+
+  it "should preview" do
+    @cmd.system_command.should include("/preview")
+  end
+  
+  it "should be verbose" do
+    @cmd.system_command.should include("/verbose=true")
   end
 end

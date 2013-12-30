@@ -34,18 +34,6 @@ class FluentMigratorRunner
     fail_with_message("Fluent Migrator failed, see the build log for more details.") unless result
   end
 
-  def verbose
-    @verbose = true
-  end
-  
-  def preview
-    @preview = true
-  end
-  
-  def output
-    @output = true
-  end
-
   def get_command_parameters
     p = []
     p << "/target=\"#{@target}\""
@@ -66,10 +54,15 @@ class FluentMigratorRunner
     p
   end
 
-  def get_command_line
-    c = []
-    c << "#{@command}"
-    c << get_command_parameters
-    c
+  def verbose
+    @verbose = true
+  end
+  
+  def preview
+    @preview = true
+  end
+  
+  def output
+    @output = true
   end
 end
