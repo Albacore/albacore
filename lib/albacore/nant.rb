@@ -25,16 +25,16 @@ class NAnt
     fail_with_message("NAnt failed, see the build log for more details.") unless result
   end
   
-  def no_logo
-    @no_logo = true
-  end
-  
   def build_parameters
     p = []
-    p << "-buildfile:#{@build_file}" if @build_file
-    p << @properties.map { |key, value| "-D:#{key}=#{value}" } if @properties
-    p << targets if @targets
+    p << "-buildfile:\"#{@build_file}\"" if @build_file
+    p << @properties.map { |key, value| "-D:#{key}=\"#{value}\"" } if @properties
+    p << @targets if @targets
     p << "-nologo" if @no_logo
     p
+  end
+  
+  def no_logo
+    @no_logo = true
   end
 end
