@@ -18,7 +18,7 @@ class MSpecTestRunner
   
   def build_parameters
     p = []
-    p << @assemblies.map{ |asm| "\"#{asm}\"" } if @assemblies
+    p << @assemblies.map { |asm| "\"#{asm}\"" } if @assemblies
     p << "--html \"#{@html_output}\"" if @html_output
     p
   end
