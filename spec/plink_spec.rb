@@ -1,61 +1,58 @@
-require 'spec_helper'
-require 'albacore/plink'
+require "spec_helper"
+require "albacore/plink"
 
-describe PLink, 'when executing a command over plink' do
+describe PLink do
+  subject(:task) do
+    task = PLink.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "plink"
+    task.host = "host"
+    task.port = 443
+    task.user = "username"
+    task.key = "key"
+    task.verbose
+    task.commands = ["foo", "bar"]
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @cmd = PLink.new
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "C:\\plink.exe"
-    @cmd.host = "testhost"
+    task.execute
   end
 
-  it "should attempt to execute plink.exe" do
-    @cmd.execute
-    @cmd.system_command.should include("plink.exe")
+  it "should use the command" do
+    cmd.should include("plink")
   end
 
-  it "should attempt to connect to the test host on the default port (22)"  do
-    @cmd.execute
-    @cmd.system_command.should include("testhost")
-    @cmd.system_command.should include("-P 22")
+  it "should use the correct connection" do
+    cmd.should include("username@host -P 443")
   end
 
-  it "should connect to the test host on a non default port 2200" do
-    @cmd.port = 2200
-    @cmd.execute
-    @cmd.system_command.should include("-P 2200")
+  it "should use the key" do
+    cmd.should include("-i key")
   end
 
-  it "should connect to the host with a username" do
-    expected_user = "dummyuser"
-    @cmd.user = expected_user
-    @cmd.execute
-    @cmd.system_command.should include("#{expected_user}@")
+  it "should batch the commands" do
+    cmd.should include("-batch")
   end
 
-  it "should run remote commands in batch mode" do
-    @cmd.execute
-    @cmd.system_command.should include("-batch")
+  it "should be verbose" do
+    cmd.should include("-v")
   end
 
-  it "should run commands in verbose mode" do
-    @cmd.verbose
-    @cmd.execute
-    @cmd.system_command.should include("-v")
+  it "should send the remote commands" do
+    cmd.should include("foo bar")
   end
 
-  it "should include the remote command" do
-    expected_remote_exe = "C:\ThisIsTheRemoteExe.exe"
-    @cmd.commands expected_remote_exe
-    @cmd.execute
-    @cmd.system_command.should include(expected_remote_exe)
-  end
+  context "when plinking without a user" do
+    before :each do
+      task.user = nil
+    end
 
-  it "should include the remote command with parameters" do
-    expected_remote_exe = "C:\\ThisIsTheRemoteExe.exe --help -o -p"
-    @cmd.commands expected_remote_exe
-    @cmd.execute
-    @cmd.system_command.should include(expected_remote_exe)
+    it "should use the correct connection" do
+      cmd.should include("host -P 443")
+    end
   end
 end
