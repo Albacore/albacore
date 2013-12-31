@@ -6,6 +6,7 @@ class NChurn
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::NChurn
   
   attr_accessor :from, 
                 :churn, 
@@ -22,7 +23,7 @@ class NChurn
     
   def initialize
     super()
-    update_attributes(Albacore.configuration.nchurn.to_hash)
+    update_attributes(nchurn.to_hash)
   end
   
   def execute
