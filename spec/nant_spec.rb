@@ -2,35 +2,41 @@ require "spec_helper"
 require "albacore/nant"
 
 describe NAnt do
-  before :all do
-    @cmd = NAnt.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "nant"
-    @cmd.targets = [:clean, :build]
-    @cmd.build_file = "buildfile"
-    @cmd.properties = {:foo => "foo", :bar => "bar"}
-    @cmd.no_logo
-    @cmd.execute
+  subject(:task) do
+    task = NAnt.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "nant"
+    task.targets = [:clean, :build]
+    task.build_file = "buildfile"
+    task.properties = {:foo => "foo", :bar => "bar"}
+    task.no_logo
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
+  before :each do
+    task.execute
   end
 
   it "should use the command" do
-    @cmd.system_command.should include("nant") 
+    cmd.should include("nant") 
   end
 
   it "should run the targets" do
-    @cmd.system_command.should include("clean build")
+    cmd.should include("clean build")
   end
 
   it "should use the build file" do
-    @cmd.system_command.should include("-buildfile:\"buildfile\"")
+    cmd.should include("-buildfile:\"buildfile\"")
   end
 
   it "should hide the startup banner" do
-    @cmd.system_command.should include("-nologo")
+    cmd.should include("-nologo")
   end
 
   it "should set the properties" do
-    @cmd.system_command.should include("-D:foo=\"foo\" -D:bar=\"bar\"")
+    cmd.should include("-D:foo=\"foo\" -D:bar=\"bar\"")
   end
 end

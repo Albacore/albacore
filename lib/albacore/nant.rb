@@ -6,6 +6,7 @@ class NAnt
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::NAnt
 
   attr_reader   :no_logo
   
@@ -17,7 +18,7 @@ class NAnt
   
   def initialize
     super()
-    update_attributes(Albacore.configuration.nant.to_hash)
+    update_attributes(nant.to_hash)
   end
   
   def execute
