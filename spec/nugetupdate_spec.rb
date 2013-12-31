@@ -2,44 +2,50 @@ require "spec_helper"
 require "albacore/nugetupdate"
 
 describe NuGetUpdate do  
+  subject(:task) do
+    task = NuGetUpdate.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "nuget"
+    task.input_file = "TestSolution.sln"
+    task.source = ["source1", "source2"]
+    task.id = ["id1", "id2"]
+    task.repository_path = "repopath"
+    task.safe
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @cmd = NuGetUpdate.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "nuget"
-    @cmd.input_file = "TestSolution.sln"
-    @cmd.source = ["source1", "source2"]
-    @cmd.id = ["id1", "id2"]
-    @cmd.repository_path = "repopath"
-    @cmd.safe
-    @cmd.execute
+    task.execute
   end
 
   it "should use the command" do
-    @cmd.system_command.should include("nuget")
+    cmd.should include("nuget")
   end
   
   it "should use the subcommand" do
-    @cmd.system_command.should include("update")
+    cmd.should include("update")
   end
   
   it "should use the input file" do
-    @cmd.system_command.should include("\"TestSolution.sln\"")
+    cmd.should include("\"TestSolution.sln\"")
   end
   
   it "should use the sources" do
-    @cmd.system_command.should include("\"source1;source2\"")
+    cmd.should include("-Source \"source1;source2\"")
   end
   
   it "should use the ids" do
-    @cmd.system_command.should include("\"id1;id2\"")
+    cmd.should include("-Id \"id1;id2\"")
   end
   
   it "should use the repo path" do
-    @cmd.system_command.should include("repopath")
+    cmd.should include("-RepositoryPath repopath")
   end
   
   it "should be safe" do
-    @cmd.system_command.should include("-Safe")
+    cmd.should include("-Safe")
   end
 end

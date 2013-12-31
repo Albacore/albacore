@@ -2,34 +2,40 @@ require "spec_helper"
 require "albacore/nugetpush"
 
 describe NuGetPack do
+  subject(:task) do
+    task = NuGetPush.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "nuget"
+    task.package = "package"
+    task.apikey = "apikey"
+    task.source = "source"
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @cmd = NuGetPush.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "nuget"
-    @cmd.package = "package"
-    @cmd.apikey = "apikey"
-    @cmd.source = "source"
-    @cmd.execute
+    task.execute
   end
   
   it "should set the command" do 
-    @cmd.system_command.should include("nuget")
+    cmd.should include("nuget")
   end
 
   it "should set the subcommand" do 
-    @cmd.system_command.should include("push")
+    cmd.should include("push")
   end 
   
   it "should set the package" do 
-    @cmd.system_command.should include("\"package\"")
+    cmd.should include("\"package\"")
   end 
 
   it "should set the apikey" do 
-    @cmd.system_command.should include("apikey")
+    cmd.should include("apikey")
   end 
   
   it "should set the source" do 
-    @cmd.system_command.should include("source")
+    cmd.should include("-Source source")
   end 
 end

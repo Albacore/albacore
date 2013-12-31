@@ -1,55 +1,61 @@
-require 'spec_helper'
-require 'albacore/nugetinstall'
+require "spec_helper"
+require "albacore/nugetinstall"
 
 describe NuGetInstall do  
+  subject(:task) do
+    task = NuGetInstall.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "nuget"
+    task.package = "Hircine"
+    task.sources = ["source1", "source2"]
+    task.version = "0.1.1-pre"
+    task.output_directory = "customdir"
+    task.no_cache
+    task.prerelease
+    task.exclude_version
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @cmd = NuGetInstall.new()
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "nuget"
-    @cmd.package = "Hircine"
-    @cmd.sources = ["source1", "source2"]
-    @cmd.version = "0.1.1-pre"
-    @cmd.output_directory = "customdir"
-    @cmd.no_cache
-    @cmd.prerelease
-    @cmd.exclude_version
-    @cmd.execute
+    task.execute
   end
 
   it "should use the command" do
-    @cmd.system_command.should include("nuget")
+    cmd.should include("nuget")
   end
 
   it "should use the subcommand" do
-    @cmd.system_command.should include("install")
+    cmd.should include("install")
   end
 
   it "should use the package" do
-    @cmd.system_command.should include("Hircine")
+    cmd.should include("Hircine")
   end
 
   it "should set the version" do
-    @cmd.system_command.should include("0.1.1-pre")
+    cmd.should include("-Version 0.1.1-pre")
   end
     
   it "should use the sources" do
-    @cmd.system_command.should include("\"source1;source2\"")
+    cmd.should include("-Source \"source1;source2\"")
   end
 
   it "should use the output directory" do
-    @cmd.system_command.should include("customdir")
+    cmd.should include("-OutputDirectory \"customdir\"")
   end
 
   it "should exclude the version" do
-    @cmd.system_command.should include("-ExcludeVersion")
+    cmd.should include("-ExcludeVersion")
   end
 
   it "should be a pre release" do
-    @cmd.system_command.should include("-Prerelease")
+    cmd.should include("-Prerelease")
   end
 
   it "should not cache" do
-    @cmd.system_command.should include("-NoCache")
+    cmd.should include("-NoCache")
   end
 end

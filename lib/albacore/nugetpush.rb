@@ -13,9 +13,10 @@ class NuGetPush
                 :source
 
   def initialize()
+    @command = "nuget"
+    
     super()
     update_attributes(nugetpush.to_hash)
-    @command = "nuget"
   end
 
   def execute

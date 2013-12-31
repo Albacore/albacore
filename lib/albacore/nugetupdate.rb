@@ -17,9 +17,10 @@ class NuGetUpdate
                 :id
 
   def initialize()
+    @command = "nuget"
+    
     super()
     update_attributes(nugetupdate.to_hash)
-    @command = "nuget"
   end
 
   def execute
@@ -32,10 +33,6 @@ class NuGetUpdate
     fail_with_message("NuGet Update failed, see the build log for more details.") unless result
   end
   
-  def safe
-    @safe = true
-  end
-  
   def build_parameters
     p = []
     p << "update"
@@ -45,5 +42,9 @@ class NuGetUpdate
     p << "-RepositoryPath #{@repository_path}" if @repository_path
     p << "-Safe" if @safe
     p
+  end
+  
+  def safe
+    @safe = true
   end
 end

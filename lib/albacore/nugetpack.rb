@@ -17,9 +17,10 @@ class NuGetPack
   attr_hash     :properties
 
   def initialize()
+    @command = "nuget"
+
     super()
     update_attributes(nugetpack.to_hash)
-    @command = "nuget"
   end
 
   def execute  
@@ -32,10 +33,6 @@ class NuGetPack
     fail_with_message("NuGet Pack failed, see the build log for more details.") unless result
   end
 
-  def symbols
-    @symbols = true
-  end
-  
   def build_parameters
     p = []
     p << "pack"
@@ -43,7 +40,11 @@ class NuGetPack
     p << "\"#{@nuspec}\""
     p << "-BasePath \"#{@base_folder}\"" if @base_folder
     p << "-OutputDirectory \"#{@output}\"" if @output
-    p << "-Properties #{@properties.map { |k, v| "#{k}=\"#{v}\"" }.join(";")}" if @properties
+    p << "-Properties #{@properties.map { |key, value| "#{key}=\"#{value}\"" }.join(";")}" if @properties
     p
+  end
+  
+  def symbols
+    @symbols = true
   end
 end
