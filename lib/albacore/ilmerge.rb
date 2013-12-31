@@ -1,7 +1,7 @@
 require "albacore/albacoretask"
 require "albacore/config/ilmergeconfig"
 
-class IlMerge
+class ILMerge
   TaskName = :ilmerge
 
   PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]]
