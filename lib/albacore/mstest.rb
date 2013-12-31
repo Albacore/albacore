@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
-require "albacore/config/mstesttestrunnerconfig"
+require "albacore/config/mstestconfig"
 
-class MSTestTestRunner
+class MSTest
   TaskName = :mstest
   
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::MSTest
   
   attr_reader :no_logo
   
@@ -14,7 +15,7 @@ class MSTestTestRunner
   
   def initialize()
     super()
-    update_attributes(Albacore.configuration.mstest.to_hash)
+    update_attributes(mstest.to_hash)
   end
   
   def execute()
