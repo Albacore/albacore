@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
-require "albacore/config/fluentmigratorrunnerconfig"
+require "albacore/config/fluentmigratorconfig"
 
-class FluentMigratorRunner
+class FluentMigrator
   TaskName = :fluentmigrator
   
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::FluentMigrator
 
   attr_reader   :output,
                 :verbose,
@@ -26,7 +27,7 @@ class FluentMigratorRunner
 
   def initialize()
     super()
-    update_attributes(Albacore.configuration.fluentmigrator.to_hash)
+    update_attributes(fluentmigrator.to_hash)
   end
 
   def execute()
