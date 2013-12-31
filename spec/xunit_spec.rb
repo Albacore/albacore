@@ -1,55 +1,58 @@
-require 'spec_helper'
-require 'albacore/xunittestrunner'
+require "spec_helper"
+require "albacore/xunittestrunner"
 
-describe XUnitTestRunner, "when using basic definitions" do
-  before :each do
-    @cmd = XUnitTestRunner.new
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "xunit"
-    @cmd.output_path = {:html => "output.html"}
+describe XUnit do
+  subject(:task) do
+    task = XUnit.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "xunit"
+    task.output_path = {:html => "output.html"}
+    task
   end
 
-  describe XUnitTestRunner, "when testing a single assembly" do
-    before :each do
-      @cmd.assemblies = ["a.dll"]
-      @cmd.execute
-    end
-    
-    it "should output to the unedited path" do
-      @cmd.system_command.should include("/html \"output.html\"")
-    end
-    
-    it "should use the only assembly" do
-      @cmd.system_command.should include("\"a.dll\"")
-    end
-    
-    it "should use the given command" do
-      @cmd.system_command.should include("xunit")
-    end
-  end
+  let(:cmd) { task.system_command }
 
-  describe XUnitTestRunner, "when testing multiple assemblies" do
+  context "when testing a single assembly" do
     before :each do
-      @cmd.assemblies = ["a.dll", "b.dll"]
-      @cmd.execute
+      task.assemblies = ["a.dll"]
+      task.execute
     end
-    
-    it "should send both assembly commands" do
-      @cmd.system_command.should include("\"b.dll\"")
+
+    it "should use the command" do
+      cmd.should include("xunit")
     end
-    
-    it "should append an index to the output path" do
-      @cmd.system_command.should include("\"./output_2.html\"")
+
+    it "should test one assembly" do
+      cmd.should include("\"a.dll\"")
+    end
+
+    it "should output to an unedited path" do
+      cmd.should include("/html \"output.html\"")
     end
   end
 
-  describe XUnitTestRunner, "when continuing on error" do
+  context "when testing multiple assemblies" do
     before :each do
-      @cmd.continue_on_error
-      @cmd.disable_system = true
-      @cmd.assemblies = ["a.dll"]
-      @cmd.execute
+      task.assemblies = ["a.dll", "b.dll"]
+      task.execute
+    end
+    
+    it "should test both assemblies" do
+      cmd.should include("\"b.dll\"")
+    end
+    
+    it "should output to the indexed path" do
+      cmd.should include("\"./output_2.html\"")
+    end
+  end
+
+  context "when continuing on error" do
+    before :each do
+      task.assemblies = ["a.dll"]
+      task.continue_on_error
+      task.disable_system = true
+      task.execute
     end
 
     it "should not fail" do

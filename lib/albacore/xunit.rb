@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
 require "albacore/config/xunittestrunnerconfig"
 
-class XUnitTestRunner
+class XUnit
   TaskName = :xunit
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::XUnit
 
   attr_reader   :continue_on_error
 
@@ -15,7 +16,7 @@ class XUnitTestRunner
 
   def initialize()
     super()
-    update_attributes(Albacore.configuration.xunit.to_hash)
+    update_attributes(xunit.to_hash)
   end
 
   def execute()    		
@@ -31,15 +32,15 @@ class XUnitTestRunner
     end       
   end
   
-  def continue_on_error
-    @continue_on_error = true
-  end
-  
   def build_parameters(assembly, index, multiple = false)
-    p = []	
+    p = []  
     p << "\"#{assembly}\""
     p << build_output_path(index, multiple) if @output_path
     p
+  end
+  
+  def continue_on_error
+    @continue_on_error = true
   end
   
   def build_output_path(index, multiple = false)
@@ -49,6 +50,8 @@ class XUnitTestRunner
     ext = File.extname(path)
     base = File.basename(path, ext)
 
-    multiple ? "/#{type} \"#{File.join(dir, "#{base}_#{index + 1}#{ext}")}\"" : "/#{type} \"#{path}\"" 
+    multiple ? 
+      "/#{type} \"#{File.join(dir, "#{base}_#{index + 1}#{ext}")}\"" : 
+      "/#{type} \"#{path}\"" 
   end
 end
