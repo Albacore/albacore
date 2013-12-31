@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
-require "albacore/config/mspectestrunnerconfig"
+require "albacore/config/mspecconfig"
 
-class MSpecTestRunner
+class MSpec
   TaskName = :mspec
   
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::MSpec
   
   attr_accessor :html_output
 
@@ -13,7 +14,7 @@ class MSpecTestRunner
   
   def initialize()
     super()
-    update_attributes(Albacore.configuration.mspec.to_hash)
+    update_attributes(mspec.to_hash)
   end
   
   def execute()
