@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
-require "albacore/config/nunittestrunnerconfig"
+require "albacore/config/nunitconfig"
 
-class NUnitTestRunner
+class NUnit
   TaskName = :nunit
   
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::NUnit
   
   attr_reader   :no_logo
   
@@ -15,16 +16,12 @@ class NUnitTestRunner
   
   def initialize()
     super()
-    update_attributes(Albacore.configuration.nunit.to_hash)
+    update_attributes(nunit.to_hash)
   end
   
   def execute()
     result = run_command("nunit", build_parameters)
     fail_with_message("NUnit failed, see the build log for more details.") unless result
-  end
-    
-  def no_logo
-    @no_logo = true
   end
     
   def build_parameters
@@ -33,6 +30,10 @@ class NUnitTestRunner
     p << "/xml=\"#{@results_path}\"" if @results_path
     p << "/nologo" if @no_logo
     p
+  end
+    
+  def no_logo
+    @no_logo = true
   end
 
   def build_command_line
