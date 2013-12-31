@@ -1,7 +1,7 @@
 require "spec_helper"
 require "albacore/mspec"
 
-describe MSpecTestRunner do
+describe MSpec do
   subject(:task) do
     task = MSpec.new()
     task.extend(SystemPatch)

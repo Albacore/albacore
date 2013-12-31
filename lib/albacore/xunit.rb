@@ -1,5 +1,5 @@
 require "albacore/albacoretask"
-require "albacore/config/xunittestrunnerconfig"
+require "albacore/config/xunitconfig"
 
 class XUnit
   TaskName = :xunit

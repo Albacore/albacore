@@ -4,7 +4,7 @@ require "albacore/nunittestrunner"
 
 describe NCoverConsole do
   let(:runner) do
-    runner = NUnitTestRunner.new()
+    runner = NUnit.new()
     runner.command = "nunit"
     runner.assemblies = ["a.dll"]
     runner.parameters = ["/nologo"]
