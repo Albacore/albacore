@@ -35,12 +35,12 @@ class AssemblyInfo
   
   def initialize
     super()
-    update_attributes assemblyinfo.to_hash
+    update_attributes(assemblyinfo.to_hash)
   end
 
   def execute
     unless @output_file
-      fail_with_message("output_file must have a value")
+      fail_with_message("assemblyinfo requires #output_file")
       return
     end
     
@@ -160,5 +160,4 @@ class AssemblyInfo
       end
     end
   end
-    
 end

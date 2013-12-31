@@ -1,6 +1,0 @@
-// foo
-// bar
-using System.Reflection;
-using System.Runtime.InteropServices;
-[assembly: AssemblyCompany("foo")]
-[assembly: AssemblyVersion("bar")]

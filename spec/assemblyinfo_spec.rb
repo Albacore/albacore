@@ -1,478 +1,210 @@
-require 'spec_helper'
-require 'support/assemblyinfotester'
-require 'albacore/assemblyinfo'
-require 'assemblyinfo_contexts'
-# have a look in the above file to see what spec types are in this file
+require "fileutils"
+require "spec_helper"
+require "tempfile"
+require "albacore/assemblyinfo"
 
-describe AssemblyInfo, "when generating an assembly info file" do
-
-  include_context "asminfo task"
-
-  before :all do
-    @tester.build_and_read_assemblyinfo_file @asm
-  end
-
-  subject { @strio.string }
+describe AssemblyInfo do
+  let(:input_path) { File.expand_path("spec/assemblyinfo/AssemblyInfo.cs") }
+  let(:output_path) { Tempfile.new("AssemblyInfo") }
+  let(:content) { File.read(output_path) }
   
-  it "should log the name of the output file" do
-    subject.downcase.should include(@tester.assemblyinfo_file.downcase)
-  end
-end
-
-describe AssemblyInfo, "when generating an assembly info file in verbose mode" do
-
-  include_context "asminfo task"
-
-  before :all do
-    @asm.version = @tester.version
-    logwith_strio @asm, :verbose
-    @tester.build_and_read_assemblyinfo_file @asm
-  end
-
-  subject { @strio.string }
-  
-  it "should log the name of the output file" do
-    subject.downcase.should include(@tester.assemblyinfo_file.downcase)
-  end
-end
-
-describe AssemblyInfo, "when generating an assembly info file without an output file specified" do
-
-  include_context "asminfo task"
-
-  before :all do
-    @asm.extend(FailPatch)
-    @asm.execute
+  subject(:task) do
+    task = AssemblyInfo.new()
+    task.output_file = output_path
+    task.version = "1.0.0"
+    task.file_version = "1.0.0"
+    task.informational_version = "1.0.0"
+    task.title = "title"
+    task.description = "description"
+    task.copyright = "copyright"
+    task.company_name = "company"
+    task.product_name = "product"
+    task.trademark = "trademark"
+    task.com_visible
+    task.com_guid = "00000000-0000-0000-0000-000000000000"
+    task.initial_comments = ["//comment"]
+    task.namespaces = ["Foo.Bar"]
+    task.custom_data = ["whatever"]
+    task.custom_attributes = {
+      :String => "string", 
+      :Null => nil,
+      :Literal => false, 
+      :Multiple => ["string", true, 0],
+      :Named => {:one => "string", :two => true, :three => 0},
+      :Mixed => ["string", {:two => true}]
+    } 
+    task
   end
 
-  subject { @strio.string }
-  
-  it "should log an error message saying the output file is required" do
-    subject.should include("output_file")
-  end
-end
-
-{ :no => { :engine => nil,              :lang => "no",         :start_token => "[",  :end_token => "]"},
-  :cs => { :engine => CSharpEngine.new, :lang => "the C#",     :start_token => "[",  :end_token => "]" },
-  :vb => { :engine => VbNetEngine.new,  :lang => "the VB.Net", :start_token => "<",  :end_token => ">", :assignment => ":=" },
-  :fs => { :engine => FSharpEngine.new, :lang => "the F#",     :start_token => "[<", :end_token => ">]" },
-  :cpp=> { :engine => CppCliEngine.new, :lang => "the C++",    :start_token => "[",  :end_token => "]" }
-}.each do |key, settings|
-
-  s = settings[:start_token]
-  e = settings[:end_token]
-  a = settings[:assignment] || '='
-
-  describe AssemblyInfo, "when specifying a custom attribute with no data and using #{settings[:lang]} language specification" do
-
-    include_context "asminfo task"
-
-    before :all do
-      @tester.lang_engine = @asm.lang_engine = settings[:engine]
-      @asm.custom_attributes :NoArgsAttribute => nil
-    end
-
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-
-    it "should.execute the attribute with an empty argument list" do
-      subject.scan(%Q|#{s}assembly: NoArgsAttribute()#{e}|).length.should == 1
-    end
+  after :each do
+    FileUtils.rm_rf(output_path)
   end
 
-  describe AssemblyInfo, "when specifying an attribute with non-string data and using #{settings[:lang]} language specification" do
-
-    include_context "asminfo task"
-
-    before :all do
-      @tester.lang_engine = @asm.lang_engine = settings[:engine]
-      @asm.custom_attributes :NonStringAttribute => true
+  context "when using the default engine (csharp)" do
+    before :each do
+      task.execute
     end
 
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-    
-    it "should.execute the attribute data without quotes" do
-      subject.scan(%Q|#{s}assembly: NonStringAttribute(true)#{e}|).length.should == 1
-    end
-  end
-
-  describe AssemblyInfo, "when specifying an attribute with multiple parameters and using #{settings[:lang]} language specification" do
-
-    include_context "asminfo task"
-
-    before :all do
-      @tester.lang_engine = @asm.lang_engine = settings[:engine]
-      @asm.custom_attributes :MultipleParameterAttribute => [true, 1, "abc"]
+    it "should write the comments first" do
+      content.should include("//comment")
     end
 
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-    
-    it "should create the attribute correctly" do
-      subject.scan(%Q|#{s}assembly: MultipleParameterAttribute(true, 1, "abc")#{e}|).length.should == 1
-    end
-  end
-
-  describe AssemblyInfo, "when specifying an attribute with named parameters and using #{settings[:lang]} language specification" do
-
-    include_context "asminfo task"
-
-    before :all do
-      @tester.lang_engine = @asm.lang_engine = settings[:engine]
-      @asm.custom_attributes :NamedParameterAttribute => {:arg1 => "abc", :arg2 => false}
+    it "should write the custom namespaces" do
+      content.should include("using Foo.Bar;")
     end
 
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-    
-    it "should create the attribute correctly" do
-      subject.scan(%Q|#{s}assembly: NamedParameterAttribute(arg1 #{a} "abc", arg2 #{a} false)#{e}|).length.should == 1
-    end
-  end
-
-  describe AssemblyInfo, "when specifying an attribute with multiple and named parameters and using #{settings[:lang]} language specification" do
-
-    include_context "asminfo task"
-
-    before :all do
-      @tester.lang_engine = @asm.lang_engine = settings[:engine]
-      @asm.custom_attributes :UberParameterAttribute => [true, 1, "abc", {:arg1 => "abc", :arg2 => false}]
+    it "should write the required namespaces" do
+      content.should include("using System.Reflection;")
+      content.should include("using System.Runtime.InteropServices;")
     end
 
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-    
-    it "should create the attribute correctly" do
-      subject.scan(%Q|#{s}assembly: UberParameterAttribute(true, 1, "abc", arg1 #{a} "abc", arg2 #{a} false)#{e}|).length.should == 1
+    it "should write the title" do
+      content.should include("[assembly: AssemblyTitle(\"title\")]")
+    end
+
+    it "should write the description" do
+      content.should include("[assembly: AssemblyDescription(\"description\")]")
+    end
+
+    it "should write the company" do
+      content.should include("[assembly: AssemblyCompany(\"company\")]")
+    end
+
+    it "should write the product" do
+      content.should include("[assembly: AssemblyProduct(\"product\")]")
+    end
+
+    it "should write the copyright" do
+      content.should include("[assembly: AssemblyCopyright(\"copyright\")]")
+    end
+
+    it "should write the trademark" do
+      content.should include("[assembly: AssemblyTrademark(\"trademark\")]")
+    end
+
+    it "should be COM visible" do
+      content.should include("[assembly: ComVisible(true)]")
+    end
+
+    it "should write the COM guid" do
+      content.should include("[assembly: Guid(\"00000000-0000-0000-0000-000000000000\")]")
+    end
+
+    it "should write the version" do
+      content.should include("[assembly: AssemblyVersion(\"1.0.0\")]")
+    end
+
+    it "should write the file version" do
+      content.should include("[assembly: AssemblyFileVersion(\"1.0.0\")]")
+    end
+
+    it "should write the informational version" do
+      content.should include("[assembly: AssemblyInformationalVersion(\"1.0.0\")]")
+    end
+
+    it "should write the custom string attribute" do
+      content.should include("[assembly: String(\"string\")]")
+    end
+
+    it "should write the custom null attribute" do
+      content.should include("[assembly: Null()]")
+    end
+
+    it "should write the custom literal attribute" do
+      content.should include("[assembly: Literal(false)]")
+    end
+
+    it "should write the custom multi-value attribute" do
+      content.should include("[assembly: Multiple(\"string\", true, 0)]")
+    end
+
+    it "should write the custom multi-value-named attribute" do
+      content.should include("[assembly: Named(one = \"string\", two = true, three = 0)]")
+    end
+
+    it "should write the custom mixed-multi-value attribute" do
+      content.should include("[assembly: Mixed(\"string\", two = true)]")
+    end
+
+    it "should write the custom data" do
+      content.should include("whatever")
     end
   end
 
-end
-
-describe FSharpEngine, "when generating assembly info" do
-
-  include_context "language engines"
-
-  before :all do
-    using_engine FSharpEngine.new
-  end
-
-  subject { @tester.build_and_read_assemblyinfo_file @asm }
-
-  it "should output a module definition" do
-    subject.scan('module AssemblyInfo').length.should == 1
-  end
-
-  it "should output '()' at the bottom" do
-    subject.scan('()').length.should == 1
-  end
-
-end
-
-describe FSharpEngine, "when setting language attribute" do
-
-  include_context "language engines"
-
-  before :all do
-    @tester.language = @asm.language = "F#"
-  end
-
-  subject { @tester.build_and_read_assemblyinfo_file @asm }
-
-  it "should use the system.reflection namespace" do
-    subject.scan(%Q|open System.Reflection|).length.should == 1
-  end
-
-  it "should not contain the assembly title" do
-    subject.scan(%Q|[assembly: AssemblyTitle("#{@tester.title}")]|).should be_empty
-  end
-
-  it "should output a module definition" do
-    subject.scan('module AssemblyInfo').length.should == 1
-  end
-
-  it "should output '()' at the bottom" do
-    subject.scan('()').length.should == 1
-  end
-
-end
-
-{ :no => { :engine => nil,              :lang => "no", :start_token => "[", :end_token => "]",     :using => "using " },
-  :cs => { :engine => CSharpEngine.new, :lang => "the C#", :start_token => "[", :end_token => "]",     :using => "using " },
-  :vb => { :engine => VbNetEngine.new,  :lang => "the VB.Net", :start_token => "<", :end_token => ">", :using => "Imports ", :statement_terminator => "" },
-  :fs => { :engine => FSharpEngine.new, :lang => "the F#", :start_token => "[<", :end_token => ">]",   :using => "open ", :statement_terminator => "" },
-  :cpp=> { :engine => CppCliEngine.new, :lang => "the C++", :start_token => "[", :end_token => "]",    :using => "using namespace ", :nsdelim => "::" }
-}.each do |key, settings|
-
-  describe AssemblyInfo, "when generating an assembly info file with the built in attributes and #{settings[:lang]} language specified" do
-
-    include_context "language engines"
-
-    before :all do
-      @asm.product_name = @tester.product_name
-      @asm.version = @tester.version
-      @asm.title = @tester.title
-      @asm.description = @tester.description
-      @asm.copyright = @tester.copyright
-      @asm.com_guid = @tester.com_guid
-      @asm.file_version = @tester.file_version
-      @asm.informational_version = @tester.informational_version
-      @asm.trademark = @tester.trademark
-      @asm.company_name = @tester.company_name
-      
-      @asm.com_visible
-
-      using_engine settings[:engine] unless settings[:engine].nil?
+  context "when starting from an input file" do
+    before :each do
+      task.input_file = input_path
+      task.title = nil #=> so it isn't overwritten
+      task.execute
     end
 
-    let(:s) { settings[:start_token] }
-    let(:e) { settings[:end_token] }
-    let(:using) { settings[:using] }
-    let(:d) { settings[:nsdelim] || '.' }
-    let(:t) { settings[:statement_terminator] || ';'}
-
-    subject { @tester.build_and_read_assemblyinfo_file @asm }
-
-    it "should use the system.reflection namespace" do
-      subject.scan(%Q|#{using}System#{d}Reflection#{t}|).length.should == 1
+    it "should not lose existing comments" do
+      content.should include("// General Information about an assembly is controlled through the following")
     end
 
-    it "should use the system.runtime.interopservices namespace" do
-      subject.scan(%Q|#{using}System#{d}Runtime#{d}InteropServices#{t}|).length.should == 1
+    it "should not lose existing namespaces" do
+      content.should include("using System.Runtime.InteropServices;")
     end
 
-    it "should use custom namespaces" do
-      subject.scan(%Q|#{using}My#{d}Name#{d}Space#{t}|).length.should == 1
+    it "should not lose existing attributes" do
+      content.should include("[assembly: AssemblyTitle(\"TestSolution\")]")
     end
 
-    it "shold be using the other custom namespace, too" do
-      subject.scan(%Q|#{using}Another#{d}Namespace#{d}GoesHere#{t}|).length.should == 1
-    end
-
-    it "should contain the specified version information" do
-      subject.scan(%Q|#{s}assembly: AssemblyVersion("#{@tester.version}")#{e}|).length.should == 1
-    end
-
-    it "should contain the assembly title" do
-      subject.scan(%Q|#{s}assembly: AssemblyTitle("#{@tester.title}")#{e}|).length.should == 1
-    end
-
-    it "should contain the assembly description" do
-      subject.scan(%Q|#{s}assembly: AssemblyDescription("#{@tester.description}")#{e}|).length.should == 1
-    end
-
-    it "should contain the copyright information" do
-      subject.scan(%Q|#{s}assembly: AssemblyCopyright("#{@tester.copyright}")#{e}|).length.should == 1
-    end
-
-    it "should contain the com visible information" do
-      subject.scan(%Q|#{s}assembly: ComVisible(#{@tester.com_visible})#{e}|).length.should == 1
-      subject.scan(%Q|#{s}assembly: Guid("#{@tester.com_guid}")#{e}|).length.should == 1
-    end
-
-    it "should contain the company name information" do
-      subject.scan(%Q|#{s}assembly: AssemblyCompany("#{@tester.company_name}")#{e}|).length.should == 1
-    end
-
-    it "should contain the product information" do
-      subject.scan(%Q|#{s}assembly: AssemblyProduct("#{@tester.product_name}")#{e}|).length.should == 1
-    end
-
-    it "should contain the file version information" do
-      subject.scan(%Q|#{s}assembly: AssemblyFileVersion("#{@tester.file_version}")#{e}|).length.should == 1
-    end
-
-    it "should contain the trademark information" do
-      subject.scan(%Q|#{s}assembly: AssemblyTrademark("#{@tester.trademark}")#{e}|).length.should == 1
-    end
-
-    it "should contain the informational version information" do
-      subject.scan(%Q|#{s}assembly: AssemblyInformationalVersion("#{@tester.informational_version}")#{e}|).length.should == 1
+    it "should overwrite customized properties" do
+      content.should include("[assembly: AssemblyVersion(\"1.0.0\")]")
     end
   end
-end
 
-describe AssemblyInfo, "when generating an assembly info file with no attributes provided" do
-  include_context "asminfo task"
-
-  subject do
-    @tester.build_and_read_assemblyinfo_file @asm
-  end
-  
-  it "should not contain the specified version information" do
-    subject.scan(%Q|[assembly: AssemblyVersion("#{@tester.version}")]|).should be_empty
-  end
-  
-  it "should not contain the assembly title" do
-    subject.scan(%Q|[assembly: AssemblyTitle("#{@tester.title}")]|).should be_empty
-  end
-  
-  it "should not contain the assembly description" do
-    subject.scan(%Q|[assembly: AssemblyDescription("#{@tester.description}")]|).should be_empty
-  end
-  
-  it "should not contain the copyright information" do
-    subject.scan(%Q|[assembly: AssemblyCopyright("#{@tester.copyright}")]|).should be_empty
-  end
-  
-  it "should not contain the com visible information" do
-    subject.scan(%Q|[assembly: ComVisible(#{@tester.com_visible})]|).should be_empty
-    subject.scan(%Q|[assembly: Guid("#{@tester.com_guid}")]|).should be_empty
-  end
-
-  it "should not contain the company name information" do
-    subject.scan(%Q|[assembly: AssemblyCompany("#{@tester.company_name}")]|).should be_empty
-  end
-
-  it "should not contain the product information" do
-    subject.scan(%Q|[assembly: AssemblyProduct("#{@tester.product_name}")]|).should be_empty
-  end
-    
-  it "should not contain the file version information" do
-    subject.scan(%Q|[assembly: AssemblyFileVersion("#{@tester.file_version}")]|).should be_empty
-  end
-
-  it "should not contain the trademark information" do
-    subject.scan(%Q|[assembly: AssemblyTrademark("#{@tester.trademark}")]|).should be_empty
-  end
-
-  it "should not contain the informational version information" do
-    subject.scan(%Q|[assembly: AssemblyInformationalVersion("#{@tester.informational_version}")]|).should be_empty
-  end
-end
-
-describe AssemblyInfo, "when configuring the assembly info generator with a yaml file" do
-  before :all do
-    @asm = AssemblyInfo.new
-    @asm.configure(AssemblyInfoTester.new.yaml_file)
-  end
-  
-  it "should set the values for the provided attributes" do
-    @asm.version.should == "0.0.1"
-    @asm.company_name.should == "some company name"
-  end
-end
-
-describe AssemblyInfo, "when assembly info configuration is provided" do
-  let :asm do
-    Albacore.configure do |config|
-      config.assemblyinfo do |asm|
-        asm.company_name = "foo"
-        asm.version = "bar"
-      end
+  context "when using the fsharp engine" do
+    before :each do
+      task.lang_engine = FSharpEngine.new()
+      task.execute
     end
-    AssemblyInfo.new
-  end
-  it "should use the supplied info" do
-    asm.company_name.should == "foo"
-    asm.version.should == "bar"
-  end
-end
 
-describe AssemblyInfo, "when specifying custom data" do
+    it "should contain a module definition" do
+      content.should include("module AssemblyInfo")
+    end
 
-  include_context "asminfo task"
+    it "should contain the module definition ending" do
+      content.should include("()")
+    end
 
-  before :all do
-    @asm.custom_data "// foo", "// bar"
-  end
+    it "should use open for namespaces" do
+      content.should include("open System.Reflection")
+    end
 
-  subject{ @tester.build_and_read_assemblyinfo_file @asm }
-  
-  it "should write data unmodified to the output" do
-    subject.scan('// foo').length.should == 1
-    subject.scan('// bar').length.should == 1
-  end
-end
-
-describe AssemblyInfo, "when an input file is provided" do
-
-  include_context "asminfo task"
-
-  before :all do
-     @asm.version = @tester.version
-     @asm.file_version = @tester.file_version
-     @asm.namespaces "My.Custom.Namespace"
-     @asm.custom_attributes :CustomAttribute => nil
-     @asm.custom_data "// foo", "// baz"
-
-     # make it use existing file
-     @tester.use_input_file
+    it "should use angle brackets for attributes" do
+      content.should include("[<assembly: AssemblyTitle(\"title\")>]")
+    end
   end
 
-  subject { @tester.build_and_read_assemblyinfo_file @asm }
+  context "when using the vbnet engine" do
+    before :each do
+      task.lang_engine = VbNetEngine.new()
+      task.execute
+    end
 
-  it "should contain correct version attribute" do
-    subject.scan(%Q|[assembly: AssemblyVersion("#{@tester.version}")]|).length.should == 1
-  end
-  
-  it "shoud leave comment untouched" do
-    subject.scan(%Q|// A comment we want to see maintained|).length.should == 1
-  end
-  
-  it "should introduce a new fileversion attribute" do
-    subject.scan(%Q|[assembly: AssemblyFileVersion("#{@tester.file_version}")]|).length.should == 1
-  end
-  
-  it "should still leave custom data that's already in there intact" do
-    subject.scan(%Q|// foo|).length.should == 1
-  end
-  
-  it "should add custom data that's still missing" do
-    subject.scan(%Q|// baz|).length.should == 1
-  end
-  
-  it "should add namespaces to the top of the file" do
-    # Top of file is assumed to be before the first attribute. Comments are ignored.
-    s = subject.split($/)
-    first_attr_line = s.index { |l| l =~ /^\[/ }
-    s.index(%Q|using My.Custom.Namespace;|).should be < first_attr_line
-    s.index(%Q|using System.Reflection;|).should be < first_attr_line
-    s.index(%Q|using System.Runtime.InteropServices;|).should be < first_attr_line
-  end
-  
-  it "should not duplicate namespaces" do
-    subject.scan(%Q|using My.Custom.Namespace;|).length.should == 1
-    subject.scan(%Q|using System.Reflection;|).length.should == 1
-    subject.scan(%Q|using System.Runtime.InteropServices;|).length.should == 1
-  end
-  
-  it "should update existing custom attributes" do
-    subject.scan(%Q|[assembly: CustomAttribute()]|).length.should == 1
-    subject.scan(%Q|[assembly: CustomAttribute(12345)]|).length.should == 0
-  end
-end
+    it "should use imports for namespaces" do
+      content.should include("Imports System.Reflection")
+    end
 
-describe AssemblyInfo, "when an input file is provided with no attributes" do
-
-  include_context "asminfo task"
-
-  before :all do
-    @asm.company_name = nil
-    @asm.version = nil
-
-    # make it use existing file
-    @tester.use_input_file
+    it "should use angle brackets for attributes" do
+      content.should include("<assembly: AssemblyTitle(\"title\")>")
+    end
   end
 
-  subject { @tester.build_and_read_assemblyinfo_file @asm }
+  context "when using the cpp cli engine" do
+    before :each do
+      task.lang_engine = CppCliEngine.new()
+      task.execute
+    end
 
-  # will give a false-positive if input file has no blank lines at the bottom
-  it "should output one blank line at the bottom" do
-    subject.scan(/[^\n]\n\z/).length.should == 1
-  end
-end
+    it "should use using for namespaces" do
+      content.should include("using namespace System::Reflection;")
+    end
 
-describe AssemblyInfo, "when specifying initial comments" do
-
-  include_context "asminfo task"
-
-  before :all do
-    @asm.initial_comments "// foo", "// bar"
-  end
-
-  subject{ @tester.build_and_read_assemblyinfo_file @asm }
-  
-  it "should write the initial comments at the top of the file" do
-    # Top of file is assumed to be before the first attribute. Comments are ignored.
-    s = subject.split($/)
-    s.index(%Q|// foo|).should == 0
-    s.index(%Q|// bar|).should == 1
+    it "should use square brackets for attributes" do
+      content.should include("[assembly: AssemblyTitle(\"title\")]")
+    end
   end
 end
