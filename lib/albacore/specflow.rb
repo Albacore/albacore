@@ -1,19 +1,19 @@
 require "albacore/albacoretask"
-require "albacore/config/specflowreportconfig"
+require "albacore/config/specflowconfig"
 
-class SpecFlowReport
+class SpecFlow
   TaskName = :specflow
   
   include Albacore::Task
   include Albacore::RunCommand
-  include Configuration::SpecFlowReport
+  include Configuration::SpecFlow
   
   attr_accessor :report, 
                 :project
   
   def initialize()
     super()
-    update_attributes(specflowreport.to_hash)
+    update_attributes(specflow.to_hash)
   end
   
   def execute()
