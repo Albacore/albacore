@@ -4,11 +4,12 @@ require "albacore/config/sqlcmdconfig"
 class SQLCmd
   TaskName = :sqlcmd
 
-  include Albacore::Task
-  include Albacore::RunCommand
-
   VERSIONS  = ["110", "100", "90"]
   PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]]
+
+  include Albacore::Task
+  include Albacore::RunCommand
+  include Configuration::SQLCmd
 
   attr_reader   :trusted_connection,
                 :ignore_variables,
@@ -25,13 +26,10 @@ class SQLCmd
   attr_hash     :variables
   
   def initialize
-    @command = VERSIONS.product(PLATFORMS).
-      map  { |ver, env| File.join(env, "Microsoft SQL Server", ver, "tools", "binn", "sqlcmd.exe") if env }.
-      find { |path| File.exist?(path) }.
-      gsub("\\", "/")
+    @command = default_command
     
     super()
-    update_attributes(Albacore.configuration.sqlcmd.to_hash)
+    update_attributes(sqlcmd.to_hash)
   end
   
   def execute
@@ -50,9 +48,9 @@ class SQLCmd
     p << "-d \"#{@database}\"" if @database
     p << "-E" if @trusted_connection
     p << "-U \"#{@username}\" -P \"#{@password}\"" if (@username && @password)
-    p << @variables.map { |k,v| "-v #{k}=\"#{v}\"" } if @variables
+    p << @variables.map { |key, value| "-v #{key}=\"#{value}\"" } if @variables
     p << "-b" if @batch_abort
-    p << @scripts.map{ |s| "-i \"#{s}\"" } if @scripts
+    p << @scripts.map { |script| "-i \"#{script}\"" } if @scripts
     p << "-V #{@severity}" if @severity
     p << "-x" if @ignore_variables
     p
@@ -68,5 +66,15 @@ class SQLCmd
   
   def batch_abort
     @batch_abort = true
+  end
+
+  def default_command
+    PLATFORMS.product(VERSIONS).
+      map { |platform, version| installed_path(platform, version) if platform }.
+      find { |path| File.exist?(path) }
+  end
+
+  def installed_path(platform, version)
+    File.join(platform, "Microsoft SQL Server", version, "tools/binn/sqlcmd.exe").gsub("\\", "/")
   end
 end
