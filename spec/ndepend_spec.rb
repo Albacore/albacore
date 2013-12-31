@@ -1,58 +1,28 @@
-require 'spec_helper'
-require 'albacore/ndepend'
-require 'albacore/msbuild'
+require "spec_helper"
+require "albacore/ndepend"
 
-describe "when executing Ndepend console" do
-  before :all do
-    @msbuild = MSBuild.new
-    @msbuild.properties = {:configuration => :Debug}
-    @msbuild.targets = [:Clean, :Build]
-    @msbuild.solution = "spec/support/TestSolution/TestSolution.sln"
-    @msbuild.execute
+describe NDepend do
+  subject(:task) do
+    task = NDepend.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "ndepend"
+    task.project_file = "projectfile"
+    task
   end
-  
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @ndepend = NDepend.new
-    @ndepend.log_device = StringIO.new
-    @ndepend.project_file = "spec/support/TestSolution/NDependProject.xml"
-    @ndepend.command = "spec/support/tools/Ndepend-v2.12/NDepend.Console.exe"
-
-    @logger = StringIO.new
-    @ndepend.log_device = @logger
-    @log_data = @logger.string
-    @ndepend.log_level = :verbose
-  end
-  
-  it "should execute NdependConsole.exe"do
-    @ndepend.execute
-    @log_data.should include("NDepend.Console.exe" )
+    task.execute
   end
 
-  it "should include the Ndepend project file" do
-    @ndepend.execute
-    @log_data.should include("NDependProject.xml")
+  it "should use the command" do
+    cmd.should include("ndepend")
   end
 
-  it "should fail when the project file is not given" do
-    @ndepend.project_file = nil
-    @ndepend.extend(FailPatch)
-    @ndepend.execute
-    $task_failed.should be_true
-  end
-
-  it "should accept other parameters" do
-    expected_params = "/ViewReport /Silent /Help"
-    @ndepend.parameters expected_params
-    @ndepend.extend(FailPatch)
-    @ndepend.execute
-    @log_data.should include(expected_params)
-  end
-
-  it "should order command line properly by including ndepend project file first" do
-    expected_params = "/Help"
-    @ndepend.parameters expected_params
-    @ndepend.extend(FailPatch)
-    @ndepend.execute
-    @log_data.should =~ /.*NDepend.Console.exe.*NDependProject.xml.*Help.*/
+  # Bad! How do I stub File.expand_path? Or use the albacore.rb file?
+  it "should use the project file" do
+    cmd.should include("\"#{File.expand_path("projectfile")}\"")
   end
 end

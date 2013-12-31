@@ -6,12 +6,13 @@ class NDepend
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::NDepend
 
   attr_accessor :project_file
 
   def initialize()
     super()
-    update_attributes(Albacore.configuration.ndepend.to_hash)
+    update_attributes(ndepend.to_hash)
   end
   
   def execute
