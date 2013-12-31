@@ -1,37 +1,42 @@
-require 'spec_helper'
-require 'albacore/xbuild'
+require "spec_helper"
+require "albacore/xbuild"
 
-describe XBuild, "when executing a basic xbuild command" do
+describe XBuild do
+  subject(:task) do
+    task = XBuild.new()
+    task.extend(SystemPatch)
+    task.extend(FailPatch)
+    task.command = "xbuild"
+    task.solution = "solution"
+    task.verbosity = "minimal"
+    task.targets = [:clean, :build]
+    task.properties = {:foo => "foo", :bar => "bar"}
+    task
+  end
+
+  let(:cmd) { task.system_command }
+
   before :each do
-    @cmd = XBuild.new
-    @cmd.extend(SystemPatch)
-    @cmd.extend(FailPatch)
-    @cmd.command = "xbuild"
-    @cmd.solution = "solution"
-    @cmd.verbosity = "verbose"
-    @cmd.targets = [:clean, :build]
-    @cmd.properties = {:foo => "foo", :bar => "bar"}
-    @cmd.execute
+    task.execute
   end
   
-  it "should use the given command" do 
-    @cmd.system_command.should include("xbuild")
+  it "should use the command" do 
+    cmd.should include("xbuild")
   end
   
   it "should build the solution" do
-    @cmd.system_command.should include("\"solution\"")
+    cmd.should include("\"solution\"")
   end
   
   it "should be verbose" do 
-    @cmd.system_command.should include("/verbosity:verbose")
+    cmd.should include("/verbosity:minimal")
   end
   
-  it "should target clean and build" do 
-    @cmd.system_command.should include("/target:clean;build")
+  it "should use the targets" do 
+    cmd.should include("/target:clean;build")
   end
   
-  it "should have the foo and bar props" do
-    @cmd.system_command.should include("/p:foo=\"foo\"")
-    @cmd.system_command.should include("/p:bar=\"bar\"")
+  it "should set the properties" do
+    cmd.should include("/p:foo=\"foo\" /p:bar=\"bar\"")
   end
 end

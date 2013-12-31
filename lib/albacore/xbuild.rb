@@ -6,6 +6,7 @@ class XBuild
 
   include Albacore::Task
   include Albacore::RunCommand
+  include Configuration::XBuild
   
   attr_accessor :solution, 
                 :verbosity
@@ -15,9 +16,8 @@ class XBuild
   attr_hash     :properties
   
   def initialize
-    @command = "xbuild"
     super()
-    update_attributes(Albacore.configuration.xbuild.to_hash)
+    update_attributes(xbuild.to_hash)
   end
   
   def execute
