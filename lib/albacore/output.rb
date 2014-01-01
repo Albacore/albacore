@@ -1,53 +1,100 @@
-require 'albacore/albacoretask'
-require 'erb'
-require 'ostruct'
-require 'fileutils'
+require "albacore/albacoretask"
+require "erb"
+require "ostruct"
+require "fileutils"
 
-class OutputBuilder
-  include ::Rake::DSL if defined?(::Rake::DSL)
-  
-  def initialize(dir_to, dir_from)
-    @dir_to = dir_to
-    @dir_from = dir_from
-  end
-  
-  def dir(d)
-    dir(d, d)
-  end
+class Output
+  include Albacore::Task
 
-  def dir(dir, dir_to)
-    FileUtils.cp_r("#{@dir_from}/#{dir}", "#{@dir_to}/#{dir_to}")
+  attr_reader :preserve
+
+  def initialize
+    super()
+
+    @files = []
+    @erbs = []
+    @dirs = []
   end
 
-  def file(f)
-    file(f, f)
+  def execute()
+    unless (@from && @to)
+      fail_with_message("output requires #from and #to")
+      return
+    end
+
+    output = OutputBuilder.new(@from, @to)
+
+    FileUtils.rm_rf(@to) unless @preserve
+    FileUtils.mkdir_p(@to)    
+
+    @dirs.each { |dir| output.dir(*dir) }
+    @files.each { |file| output.file(*file) }
+    @erbs.each { |erb| output.erb(*erb) }
+  end
+
+  def from(source)
+    @from = source
+  end
+
+  def to(source)
+    @to = source
+  end
+
+  def preserve
+    @preserve = true
   end
     
-  def file(f, ft)
-    #todo find more elegant way to create base dir if missing for file.
-    initialize_to_path(ft)
-    FileUtils.cp("#{@dir_from}/#{f}", "#{@dir_to}/#{ft}")
+  def file(source, opts = {})
+    @files << [source, opts[:as] || source]
   end
   
-  def erb(f, ft, locals)
-    initialize_to_path(ft)
-    erb = ERB.new(File.read("#{@dir_from}/#{f}"))
-    File.open("#{@dir_to}/#{ft}", 'w') do |f| 
-      f.write(erb.result(ErbBinding.new(locals).get_binding))
-    end
+  def dir(source, opts = {})
+    @dirs << [source, opts[:as] || source]
   end
   
-  def self.output_to(dir_to, dir_from, keep_to)
-    FileUtils.rmtree(dir_to) unless keep_to
-    FileUtils.mkdir_p(dir_to) unless Dir.exists?(dir_to)
-    yield OutputBuilder.new(dir_to, dir_from)
+  def erb(source, opts = {})
+    @erbs << [source, opts[:as] || source, opts[:locals] || {}]
+  end
+end
+
+class OutputBuilder  
+  def initialize(from, to)
+    @from = from
+    @to = to
+  end
+
+  def dir(source, destination)
+    from = File.join(@from, source)
+    to = File.join(@to, destination)
+
+    FileUtils.cp_r(from, to)
   end
   
-  private
-  def initialize_to_path(ft)
-    topath = File.dirname("#{@dir_to}/#{ft}")
-    FileUtils.mkdir_p(topath) unless File.exist?(topath)
-    topath
+  def file(source, destination)
+    from = File.join(@from, source)
+    to = File.join(@to, destination)
+
+    FileUtils.cp_p(from, to)
+  end
+  
+  def erb(source, destination, locals)
+    from = File.join(@from, source)
+    to = File.join(@to, destination)
+
+    erb = ERB.new(File.read(from))
+    binding = ErbBinding.new(locals)
+    content = erb.result(binding.get_binding())
+    
+    FileUtils.mkdir_p(File.dirname(to))
+    File.write(to, content)
+  end
+end
+
+module FileUtils
+  # copy a file, creating the full source, if necessary
+  def self.cp_p(source, destination)
+    FileUtils.mkdir_p(File.dirname(destination))
+    FileUtils.cp(source, destination)
   end
 end
 
@@ -55,58 +102,4 @@ class ErbBinding < OpenStruct
   def get_binding
     return binding()
   end
-end
-
-class Output
-  include Albacore::Task
-
-  attr_reader :keep_to
-
-  def initialize
-    super()
-
-    @files = []
-    @erbs = []
-    @directories = []
-  end
-
-  def execute()
-    unless (@from_dir && @to_dir)
-      fail_with_message("output requires #to and #from")
-      return
-    end
-
-    OutputBuilder.output_to(@to_dir, @from_dir, @keep_to) do |o|
-      @directories.each { |d| o.dir *d }
-      @files.each { |f| o.file *f }
-      @erbs.each { |f| o.erb *f }
-    end
-  end
-
-  def keep_to
-   @keep_to = true
-  end
-    
-  def file(f, opts = {})
-    f_to = opts[:as] || f
-    @files << [f,f_to]
-  end
-
-  def erb(f, opts = {})
-    f_to = opts[:as] || f
-    @erbs << [f, f_to, opts[:locals] || {}]
-  end
-  
-  def dir(d, opts = {})
-    d_to = opts[:as]
-    @directories << [d, d_to]
-  end
-  
-  def from(from_dir)
-    @from_dir = from_dir
-  end
-
-  def to(to_dir)
-    @to_dir = to_dir
-  end  
 end

@@ -1,165 +1,86 @@
-require 'spec_helper'
-require 'outputtestdata'
-include ::Rake::DSL if defined?(::Rake::DSL)
+require "spec_helper"
+require "albacore/output"
+require "fileutils"
 
-describe Output, 'when having a from and to set' do 
+describe Output do
+  let(:from) { File.expand_path("spec/output") }
+  let(:to) { Dir.mktmpdir() }
+  let(:erb) { File.read("#{to}/erb.txt") }
 
+  subject(:task) do
+    task = Output.new()
+    task.from from
+    task.to to
+    task.dir "foo"
+    task.dir "foo", :as => "baz"
+    task.file "baz.txt"
+    task.file "bar/bar.txt"
+    task.file "bar/bar.txt", :as => "bar.txt"
+    task.erb "erb.txt", :locals => {:name => "world"}
+    task.erb "erb.txt", :as => "hello.config"
+    task
+  end
+
+  after :each do
+    FileUtils.rm_rf(to)
+  end
+
+  context "all the basic scenarios" do
     before :each do
-      FileUtils.mkdir(OutputTestData.from) unless File.exists? OutputTestData.from
-
-      @o = Output.new
-      @o.from OutputTestData.from
-      @o.to OutputTestData.to
+      File.write("#{to}/overwrite.txt", "")
+      task.execute
     end
 
-    after :each do
-      FileUtils.rm_rf OutputTestData.to if File.exists? OutputTestData.to
-      FileUtils.rm_rf OutputTestData.from if File.exists? OutputTestData.from
-    end
-
-
-    describe 'and when outputting files' do
-      before :each do
-        File.open("#{OutputTestData.from}/test.txt", "w"){|f| f.write "test" }
-      end
-      
-      it "should not output a file if not specified so" do
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/test.txt").should be_false
-      end
-      
-      it "should output a file specified" do
-        @o.file 'test.txt'
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/test.txt").should be_true
-      end
-
-      it "should not remove to directory content if keep to is set" do
-        FileUtils.mkdir(OutputTestData.to)
-        FileUtils.touch("#{OutputTestData.to}/existing.txt")
-        @o.file 'test.txt'
-        @o.keep_to
-
-        @o.execute
-
-        File.exist?("#{OutputTestData.to}/existing.txt").should be_true
-      end
-      
-      it "should remove to directory if keep to is not set" do
-        FileUtils.mkdir(OutputTestData.to)
-        FileUtils.touch("#{OutputTestData.to}/existing.txt")
-        @o.file 'test.txt'
-
-        @o.execute
-
-        File.exist?("#{OutputTestData.to}/existing.txt").should be_false
-      end
+    it "should remove the existing file" do
+      File.exist?("#{to}/overwrite.txt").should be_false
     end
     
-    
-    describe 'and when outputting directories' do
-      before :each do
-        subdir = "#{OutputTestData.from}/subdir"
-        FileUtils.mkdir(subdir) unless File.exists? subdir
-        File.open("#{OutputTestData.from}/subdir/test.txt", "w"){|f| f.write "test_sub" }
-      end
-      
-      it "should not output a directory if not specified so" do
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/subdir").should be_false
-      end
-      
-      it "should output a directory and content if specified" do
-        @o.dir 'subdir'
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/subdir").should be_true
-        File.exist?("#{OutputTestData.to}/subdir/test.txt").should be_true
-      end
+    it "should copy the folder" do
+      Dir.exist?("#{to}/foo").should be_true
     end
 
-    describe 'and when outputting directories to renamed target directory' do
-      before :each do
-        subdir = "#{OutputTestData.from}/subdir/foo"
-        FileUtils.mkdir_p(subdir) unless File.exists? subdir
-        File.open("#{OutputTestData.from}/subdir/foo/test.txt", "w"){|f| f.write "test_sub" }
-      end
-
-      it 'should rename the path, but keep the nested structure' do
-        @o.dir 'subdir', :as => 'bar'
-        @o.execute
-
-        File.exist?("#{OutputTestData.to}/bar").should be_true
-        File.exist?("#{OutputTestData.to}/bar/foo/test.txt").should be_true
-      end
+    it "should copy the subfolder" do
+      Dir.exist?("#{to}/foo/foo").should be_true
     end
-    
-    describe 'and when outputting nested directories' do
-      before :each do
-        subdir = "#{OutputTestData.from}/subdir/foo"
-        FileUtils.mkdir_p(subdir) unless File.exists? subdir
-        File.open("#{OutputTestData.from}/subdir/foo/test.txt", "w"){|f| f.write "test_sub" }
-      end
-      
-      it "should not output a directory if not specified so" do
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/subdir/foo").should be_false
-      end
-      
-      it "should output a directory and content if specified" do
-        @o.dir 'subdir'
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/subdir/foo").should be_true
-        File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
-      end
 
-      it "should create nested directory if specified in to" do
-        @o.to "#{OutputTestData.to}/subdir/"
-        @o.dir 'subdir/.'
-        @o.execute
+    it "should copy the subfolder file" do 
+      File.exist?("#{to}/foo/foo/foo.txt").should be_true
+    end
 
-        File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_true
+    it "should copy and rename the folder" do
+      Dir.exist?("#{to}/baz").should be_true
+    end
 
-      end
+    it "should copy the single file" do
+      File.exist?("#{to}/baz.txt").should be_true
     end
-    
-    
-    describe 'and when outputting files with renaming them at target' do
-      before :each do
-        subdir = "#{OutputTestData.from}/subdir/foo"
-        FileUtils.mkdir_p(subdir) unless File.exists? subdir
-        File.open("#{OutputTestData.from}/subdir/foo/test.txt", "w"){|f| f.write "test_sub" }
-      end
-      
-      it "should rename and create entire path if nested deeply" do
-        @o.file 'subdir/foo/test.txt', :as => 'subdir/foo/hello.txt'
-        @o.execute
-       
-        File.exist?("#{OutputTestData.to}/subdir/foo").should be_true
-        File.exist?("#{OutputTestData.to}/subdir/foo/hello.txt").should be_true
-        File.exist?("#{OutputTestData.to}/subdir/foo/test.txt").should be_false
-      end
+
+    it "should copy the file inside it's subfolder" do
+      File.exist?("#{to}/bar/bar.txt").should be_true
     end
-    
-    describe 'and when using erb, should have templated output' do
-      before :each do
-        subdir = "#{OutputTestData.from}/subdir/foo"
-        FileUtils.mkdir_p(subdir) unless File.exists? subdir
-        File.open("#{OutputTestData.from}/subdir/foo/web.config.erb", "w"){|f| f.write "test_sub <%= my_value %>" }
-      end
-      
-      it "should rename and create entire path if nested deeply" do
-        @o.erb 'subdir/foo/web.config.erb', :as => 'subdir/foo/web.config', :locals => { :my_value => 'hello' }
-        @o.execute
-        
-        File.exist?("#{OutputTestData.to}/subdir/foo").should be_true
-        File.exist?("#{OutputTestData.to}/subdir/foo/web.config").should be_true
-        File.read("#{OutputTestData.to}/subdir/foo/web.config").should == "test_sub hello"
-      end
+
+    it "should copy and rename the file out of the subfolder" do
+      File.exist?("#{to}/bar.txt").should be_true
     end
+
+    it "should copy and rename the erb template file" do
+      File.exist?("#{to}/hello.config").should be_true
+    end
+
+    it "should fill in the erb template" do
+      erb.should include("Hello, world!")
+    end
+  end
+
+  context "when preserving the destination" do
+    before :each do
+      File.write("#{to}/preserve.txt", "")
+      task.preserve
+      task.execute
+    end
+
+    it "should preserve the existing file" do
+      File.exist?("#{to}/preserve.txt").should be_true
+    end
+  end
 end
