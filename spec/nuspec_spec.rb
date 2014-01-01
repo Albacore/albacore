@@ -1,125 +1,75 @@
-require 'fileutils'
-require 'spec_helper.rb'
-require 'albacore/nuspec.rb'
-require 'support/nokogiri_validator'
+require "spec_helper"
+require "albacore/nuspec"
+require "fileutils"
+require "nokogiri"
+require "tempfile"
+
+class XmlValidator
+  def initialize(xml_file, schema_file)
+    @doc    = Nokogiri::XML::Document.parse(File.read(xml_file))
+    @schema = Nokogiri::XML::Schema(File.read(schema_file))
+  end
+
+  def validate()
+    validation = @schema.validate(@doc)
+    validation.each { |error| raise error.message }
+    return validation.length == 0
+  end
+end
 
 describe Nuspec do
-  let(:working_dir) do
-    wd = File.expand_path(File.join(File.dirname(__FILE__), 'support/nuspec/output')) 
-    FileUtils.mkdir(wd) unless File.exist?(wd)
-    wd
-  end
-  let(:output_file) { File.join(working_dir, "nuspec_test.nuspec") }
-  let(:nuspec_output) { File.join(working_dir, 'nuspec_test.nuspec') }
-  let(:schema_file) { File.expand_path(File.join(working_dir, '../', 'nuspec.xsd')) }
+  let(:output_path) { Tempfile.new("nuspec") }
+  let(:content) { File.read(output_path) }
+  let(:schema_path) { File.expand_path("spec/nuspec/nuspec.xsd") }
+  let(:validator) { XmlValidator.new(output_path, schema_path) }
 
-  describe 'when creating a file with minimum requirements' do
-    let(:nuspec) do
-      nuspec = Nuspec.new
-      nuspec.id = "nuspec_test"
-      nuspec.output_file = output_file
-      nuspec.version = "1.2.3"
-      nuspec.authors = ["Author Name"]
-      nuspec.description = "test_xml_document"
-      nuspec.copyright = "copyright 2011"
-      nuspec
-    end
-
-    before do
-      nuspec.execute
-    end
-
-    it "should produce the nuspec xml" do
-      File.exist?(nuspec_output).should be_true
-    end
-
-    it "should produce a valid xml file" do
-      is_valid = XmlValidator.validate(nuspec_output, schema_file)
-      is_valid.should be_true
-    end
+  subject(:task) do
+    task = Nuspec.new()
+    task.output_file = output_path
+    task.id = "id"
+    task.version = "1.0.0"
+    task.authors = ["author1", "author2"]
+    task.owners = ["owner1", "owner2"]
+    task.tags = ["tag1", "tag2"]
+    task.title = "title"
+    task.description = "description"
+    task.summary = "summary"
+    task.copyright = "copyright"
+    task.release_notes = "notes"
+    task.language = "en-US"
+    task.license_url = "licenseurl"
+    task.project_url = "projecturl"
+    task.icon_url = "iconurl"
+    task.dependency("depend1", "1.0.0")
+    task.file("file1", "lib", "*.xml")
+    task.reference("reference1")
+    task.framework_assembly("assembly1", "net40")
+    task.require_license_acceptance
+    task.pretty_formatting
+    task
   end
 
-  describe "file targets" do
-    let(:dll) { File.expand_path(File.join(working_dir, '../', 'somedll.dll')) }
-
-    let(:nuspec) do
-      nuspec = Nuspec.new
-      nuspec.id = "nuspec_test"
-      nuspec.output_file = output_file
-      nuspec.title = "Title"
-      nuspec.version = "1.2.3"
-      nuspec.authors = ["Author Name"]
-      nuspec.description = "test_xml_document"
-      nuspec.copyright = "copyright 2011"
-      nuspec.file(dll, "lib")
-      nuspec.file(dll, "lib\\net40", "*.xml")
-      nuspec
-    end
-
-    before do
-      nuspec.execute
-      File.open(nuspec_output, "r") do |f|
-        @filedata = f.read
-      end
-    end
-
-    it "should produce a valid nuspec file" do
-      is_valid = XmlValidator.validate(nuspec_output, schema_file)
-      is_valid.should be_true
-    end
-
-    it "should contain the file and it's target" do
-      @filedata.downcase.should include("<file src='#{dll}' target='lib'/>".downcase)
-    end
-
-    it "should contain the file and it's target and an exclude" do
-      @filedata.should include("<file exclude='*.xml' src='#{dll}' target='lib\\net40'/>")
-    end
+  before :each do
+    task.execute
   end
-  
-  describe "references" do
-    let(:dll) { File.expand_path(File.join(working_dir, '../', 'somedll.dll')) }
 
-    let(:nuspec) do
-      nuspec = Nuspec.new
-      nuspec.id = "nuspec_test"
-      nuspec.output_file = output_file
-      nuspec.title = "Title"
-      nuspec.version = "1.2.3"
-      nuspec.authors = ["Author Name"]
-      nuspec.description = "test_xml_document"
-      nuspec.copyright = "copyright 2011"
-      nuspec.reference("testFile1")
-      nuspec.reference("testFile2")
-      nuspec
-    end
+  after :each do
+    FileUtils.rm_rf(output_path)
+  end
 
-    before do
-      nuspec.execute
-      File.open(nuspec_output, "r") do |f|
-        @filedata = f.read
-      end
-    end
+  it "should produce a valid XML file" do
+    validator.validate.should be_true
+  end
 
-    it "should produce a valid nuspec file" do
-      is_valid = XmlValidator.validate(nuspec_output, schema_file)
-      is_valid.should be_true
-    end
+  it "should comma-separate the authors" do
+    content.should include("author1, author2")
+  end
 
-    it "should contain references tag" do
-	  @filedata.downcase.should include("<references>".downcase)
-	end
-	
-    it "should contain references closing tag" do
-	  @filedata.downcase.should include("</references>".downcase)
-	end
-	
-    it "should contain the test file 1" do
-      @filedata.downcase.should include("<reference file='testFile1'/>".downcase)
-    end
+  it "should comma-separate the owners" do
+    content.should include("owner1, owner2")
+  end
 
-    it "should contain the 2nd test file" do
-      @filedata.downcase.should include("<reference file='testFile2'/>".downcase)
-    end
+  it "should space-separate the tags" do
+    content.should include("tag1 tag2")
   end
 end

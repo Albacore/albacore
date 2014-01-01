@@ -2,15 +2,15 @@ require "ostruct"
 require "albacore/support/openstruct"
 
 module Configuration
-  module AssemblyInfo
+  module Nuspec
     include Albacore::Configuration
     
-    def self.asmconfig
-      @config ||= OpenStruct.new.extend(OpenStructToHash).extend(AssemblyInfo)
+    def self.nuspecconfig
+      @config ||= OpenStruct.new.extend(OpenStructToHash).extend(Nuspec)
     end
     
-    def assemblyinfo
-      config ||= AssemblyInfo.asmconfig
+    def nuspec
+      config ||= Nuspec.nuspecconfig
       yield(config) if block_given?
       config
     end

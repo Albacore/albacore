@@ -1,4 +1,5 @@
 require "albacore/albacoretask"
+require "albacore/config/nuspecconfig"
 require "rexml/document"
 
 class NuspecFile
@@ -55,6 +56,7 @@ end
 
 class Nuspec
   include Albacore::Task
+  include Configuration::Nuspec
   
   attr_reader   :pretty_formatting,
                 :require_license_acceptance
@@ -81,7 +83,9 @@ class Nuspec
     @files = []
     @frameworkAssemblies = []
     @references = []
+    
     super()
+    update_attributes(nuspec.to_hash)
   end
 
   def pretty_formatting
@@ -146,7 +150,7 @@ class Nuspec
     metadata.add_element("owners").add_text(@owners.join(", ")) if @owners
     metadata.add_element("summary").add_text(@summary) if @summary
     metadata.add_element("iconUrl").add_text(@icon_url) if @icon_url
-    metadata.add_element("requireLicenseAcceptance").add_text(@require_license_acceptance) if @require_license_acceptance
+    metadata.add_element("requireLicenseAcceptance").add_text("true") if @require_license_acceptance
     metadata.add_element("tags").add_text(@tags.join(" ")) if @tags
 
     if @dependencies.length > 0
