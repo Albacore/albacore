@@ -1,205 +1,93 @@
 require "spec_helper"
+require "fileutils"
 require "albacore/zipdirectory"
 require "albacore/unzip"
-require "ziptestdata"
 
-describe ZipDirectory, "when zipping a directory of files" do
-  before :each do
-    zip = ZipDirectory.new()
-    zip.dirs = [ZipTestData.folder]
-    zip.output_path = "spec/support/zip/test.zip"
-    zip.execute()
-  end
-  
-  it "should produce a zip file" do
-    File.exist?("spec/support/zip/test.zip").should be_true
-  end
-end
+describe ZipDirectory do
+  let(:output_path) { File.join(Dir.mktmpdir(), "test.zip") }
+  let(:unzip_path)  { Dir.mktmpdir() }
 
-describe ZipDirectory, "when zipping a directory with string exclusions" do
-  before :each do
-    zip = ZipDirectory.new()
-    zip.flatten
-    zip.dirs ZipTestData.folder
-    zip.output_path = "spec/support/zip/test.zip"
-    zip.exclusions File.join(ZipTestData.folder, "files", "testfile.txt")
-    zip.execute()
-    
+  let(:unzip) do
     unzip = Unzip.new()
-    unzip.file = File.join(ZipTestData.folder, "test.zip")
-    unzip.destination = ZipTestData.output_folder
-    unzip.execute()
-  end
-  
-  after :each do
-    FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-  end
-  
-  it "should not zip files with the same name as any exclusions" do
-    File.exist?(File.join(ZipTestData.output_folder, "files", "testfile.txt")).should be_false
-  end
-end
+    unzip.file = output_path
+    unzip.destination = unzip_path
+    unzip
+  end    
 
-describe ZipDirectory, "when zipping a directory of files with regexp exclusions" do
-  before :each do
-    zip = ZipDirectory.new()
-    zip.flatten
-    zip.dirs ZipTestData.folder
-    zip.output_path = "spec/support/zip/test.zip"
-    zip.exclusions /testfile/
-    zip.execute()
-    
-    unzip = Unzip.new()
-    unzip.file = File.join(ZipTestData.folder, "test.zip")
-    unzip.destination = ZipTestData.output_folder
-    unzip.execute()
-  end
-  
-  after :each do
-    FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-  end
-  
-  it "should not zip files that match any of the exclusions regexps" do
-    File.exist?(File.join(ZipTestData.output_folder, "files", "testfile.txt")).should be_false
-  end
-end
-
-describe ZipDirectory, "when zipping a directory of files with glob string exclusions" do
-  before :each do
-    zip = ZipDirectory.new()
-    zip.flatten
-    zip.dirs ZipTestData.folder
-    zip.output_path = "spec/support/zip/test.zip"
-    zip.exclusions "**/subfolder/*"
-    zip.execute()
-
-    unzip = Unzip.new()
-    unzip.file = File.join(ZipTestData.folder, "test.zip")
-    unzip.destination = ZipTestData.output_folder
-    unzip.execute()
+  subject(:task) do
+    task = ZipDirectory.new()
+    task.flatten
+    task.dirs = ["spec/zip/foo"]
+    task.files = ["spec/zip/baz.txt"]
+    task.output_path = output_path
+    task
   end
 
   after :each do
-    FileUtils.rm_rf ZipTestData.output_folder if File.exists? ZipTestData.output_folder
+    FileUtils.rm_rf(output_path)
+    FileUtils.rm_rf(unzip_path)
   end
 
-  it "should not zip files that match the expanded globs" do
-    File.exist?(File.join(ZipTestData.output_folder, "files", "subfolder", "sub file.txt")).should be_false
-  end
-
-  it "should zip the files that don\"t match the globs" do
-    File.exist?(File.join(ZipTestData.output_folder, "files", "subfolder")).should be_true
-    File.exist?(File.join(ZipTestData.output_folder, "files", "testfile.txt")).should be_true
-  end
-end
-
-describe ZipDirectory, "when zipping a directory of files with additional files" do
-  describe "and additional file is given as an array" do
+  context "when zipping" do
     before :each do
-      zip = ZipDirectory.new()
-      zip.flatten
-      zip.dirs ZipTestData.folder
-      zip.output_path = "spec/support/zip/test.zip"
-      zip.exclusions "**/subfolder/*"
-      zip.files = [File.join(File.dirname(__FILE__), "support", "test.yml")]
-      zip.execute()
+      task.execute()
+      unzip.execute()
+    end
+    
+    it "should make a zip" do
+      File.exist?(output_path).should be_true
+    end
+
+    it "should zip the additional file" do
+      File.exist?(File.join(unzip_path, "baz.txt")).should be_true
+    end
+
+    it "should zip the root file" do
+      File.exist?(File.join(unzip_path, "foo.txt")).should be_true
+    end
+
+    it "should zip the subfolder" do
+      File.exist?(File.join(unzip_path, "bar")).should be_true
+    end
+
+    it "should zip the subfolder file" do
+      File.exist?(File.join(unzip_path, "bar/bar.txt")).should be_true
+    end
+  end
+
+  context "when zipping with string exclusions" do
+    before :each do
+      task.exclusions = ["spec/zip/foo/bar/bar.txt"]
+      task.execute()
+      unzip.execute()
+    end
+
+    it "should skip matching files" do
+      File.exist?(File.join(unzip_path, "bar/bar.txt")).should be_false
+    end
+  end
+
+  context "when zipping with regex exclusions" do
+    before :each do
+      task.exclusions = [/bar/]
+      task.execute()
+      unzip.execute()
+    end
       
-      unzip = Unzip.new()
-      unzip.file = File.join(ZipTestData.folder, "test.zip")
-      unzip.destination = ZipTestData.output_folder
-      unzip.execute()
-    end
-
-    after :each do
-      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-    end
-
-    it "should add additional file" do
-      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "files", "subfolder")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "files", "testfile.txt")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "test.yml")).should be_true
+    it "should skip matching files" do
+      File.exist?(File.join(unzip_path, "bar/bar.txt")).should be_false
     end
   end
-  
-  describe "and additional file is given as a string" do
+
+  context "when zipping with glob exclusions" do
     before :each do
-      zip = ZipDirectory.new()
-      zip.flatten
-      zip.dirs ZipTestData.folder
-      zip.output_path = "spec/support/zip/test.zip"
-      zip.exclusions "**/subfolder/*"
-      zip.files = [File.join(File.dirname(__FILE__), "support", "test.yml")]
-      zip.execute()
-      
-      unzip = Unzip.new()
-      unzip.file = File.join(ZipTestData.folder, "test.zip")
-      unzip.destination = ZipTestData.output_folder
+      task.exclusions = ["**/bar/*"]
+      task.execute()
       unzip.execute()
     end
 
-    after :each do
-      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-    end
-    
-    it "should add additional file" do
-      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "files", "subfolder")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "files", "testfile.txt")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "test.yml")).should be_true
+    it "should skip matching files" do
+      File.exist?(File.join(unzip_path, "bar/bar.txt")).should be_false
     end
   end
-end
-
-describe ZipDirectory, "without flatten set" do
-    before :each do
-      zip = ZipDirectory.new()
-      zip.dirs File.join("spec", "support", "yamlconfig")
-      zip.output_path = "spec/support/zip/test.zip"
-      zip.files = [File.join("spec", "support", "test.yml"), File.join("spec", "support", "AssemblyInfo", "assemblyinfo.yml")]
-      zip.execute()
-
-      unzip = Unzip.new()
-      unzip.file = File.join(ZipTestData.folder, "test.zip")
-      unzip.destination = ZipTestData.output_folder
-      unzip.execute()
-    end
-
-    after :each do
-      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-    end
-
-    it "should add additional file" do
-      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
-      Dir.exist?(File.join(ZipTestData.output_folder, "spec", "support", "yamlconfig")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "spec", "support", "yamlconfig", "msbuild.yml")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "spec", "support", "test.yml")).should be_true
-    end
-end
-
-describe ZipDirectory, "with flatten set" do
-    before :each do
-      zip = ZipDirectory.new()
-      zip.flatten
-      zip.dirs File.join("spec", "support", "yamlconfig")
-      zip.output_path = "spec/support/zip/test.zip"
-      zip.files = [File.join("spec", "support", "test.yml"), File.join("spec", "support", "AssemblyInfo", "assemblyinfo.yml")]
-      zip.execute()
-
-      unzip = Unzip.new()
-      unzip.file = File.join(ZipTestData.folder, "test.zip")
-      unzip.destination = ZipTestData.output_folder
-      unzip.execute()
-    end
-
-    after :each do
-      FileUtils.rm_rf ZipTestData.output_folder if File.exist? ZipTestData.output_folder
-    end
-
-    it "should add additional file" do
-      File.exist?(File.join(ZipTestData.folder, "test.zip")).should be_true
-      Dir.exist?(File.join(ZipTestData.output_folder, "spec", "support", "yamlconfig")).should be_false
-      File.exist?(File.join(ZipTestData.output_folder, "msbuild.yml")).should be_true
-      File.exist?(File.join(ZipTestData.output_folder, "test.yml")).should be_true
-    end
 end

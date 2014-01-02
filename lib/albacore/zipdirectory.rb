@@ -1,11 +1,12 @@
 require "albacore/albacoretask"
 require "albacore/config/zipdirectoryconfig"
 require "zip"
-require "zip/filesystem"
 
 class ZipDirectory
   TaskName = :zip
+
   include Albacore::Task
+  include Configuration::Zip
   
   attr_reader   :flatten
     
@@ -16,8 +17,12 @@ class ZipDirectory
                 :exclusions
 
   def initialize
+    @dirs = []
+    @files = []
+    @exclusions = []
+
     super()
-    update_attributes(Albacore.configuration.zip.to_hash)
+    update_attributes(zip.to_hash)
   end
     
   def execute()
@@ -25,74 +30,77 @@ class ZipDirectory
       fail_with_message("zip requires #output_path")
       return
     end
-    
-    clean_dirs if @dirs
-    
+
     FileUtils.rm_rf(@output_path)
-    Zip::File.open(@output_path, "w")  do |zip|
-      add_directories(zip)
-      add_files(zip)
-    end
+
+    exclusions = Exclusions.new(@dirs)
+    @exclusions.each { |ex| exclusions.expand!(ex) }
+    
+    archive = Archive.new(output_path, exclusions, flatten)
+    @dirs.each { |path| archive.dir(path) }
+    @files.each { |path| archive.file(path) }
+    archive.close()
   end
   
   def flatten
     @flatten = true
   end
-  
-  # clean what, how, & why? -- explanation needed
-  def clean_dirs
-    @dirs.each { |dir| dir.sub!(%r[/$], "") }
-  end
-      
-  def add_directories(zip)
-    return unless @dirs
+end
 
-    @dirs.flatten.each do |dir|
-      Dir["#{dir}/**/**"].reject{ |file| reject(file) }.each do |path|
-        name = @flatten ? path.sub(dir + "/", "") : path
-        zip.add(name, path)
-      end
-    end
+class Archive
+  def initialize(archive_path, exclusions, flatten)
+    @archive = Zip::File.open(archive_path, Zip::File::CREATE)
+    @exclusions = exclusions
+    @flatten = flatten
   end
-  
-  def add_files(zip)
-    return unless @files
 
-    @files.flatten.reject{ |file| reject(file) }.each do |path|
-      name = @flatten ? path.split("/").last : path
-      zip.add(name, path)
+  def dir(dir)
+    pattern = File.join(dir, "**/*")
+    Dir[pattern].each do |file|
+      next if @exclusions.exclude?(file)
+
+      name = @flatten ? file.sub(File.join(dir, "/"), "") : file
+      @archive.add(name, file)
     end
   end
 
-  # I suspect the first comparison is unnecessary
-  def reject(file)
-    (file == @output_path) || excluded?(file)
+  def file(file)
+    return if @exclusions.exclude?(file)
+
+    name = @flatten ? file.split("/").last : file
+    @archive.add(name, file)
   end
-  
-  def excluded?(file)
-    expanded_exclusions().any? do |ex|
-      return file =~ ex if ex.respond_to?("~")
-      return file == ex
+
+  def close()
+    @archive.close()
+  end
+end
+
+class Exclusions
+  def initialize(dirs)
+    @dirs = dirs
+    @exclusions = []
+  end
+
+  def expand!(ex)
+    if ex.is_a?(Regexp)
+      @exclusions << ex 
+      return
     end
-  end
 
-  def expanded_exclusions
-    return @expanded_exclusions if @expanded_exclusions
-
-    @exclusions ||= []
-    @expanded_exclusions, string_exclusions = @exclusions.partition { |x| x.respond_to?("~") }
-    
     @dirs.each do |dir|
       Dir.chdir(dir) do
-        string_exclusions.each do |ex|
-          exclusions = Dir.glob(ex)
-          exclusions = exclusions.map { |x| File.join(dir, x) } unless exclusions[0] == ex
-          exclusions << ex if exclusions.empty?
-          @expanded_exclusions += exclusions
-        end
+        matches = Dir.glob(ex)
+        matches = matches.map { |path| File.join(dir, path) } unless matches[0] == ex
+        @exclusions += (matches.empty? ? [ex] : matches)
       end
     end
+  end
 
-    @expanded_exclusions
+  def exclude?(path)
+    @exclusions.any? do |ex|
+      return path =~ ex if ex.is_a?(Regexp)
+      return path == ex
+    end
   end
 end

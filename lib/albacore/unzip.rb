@@ -1,12 +1,11 @@
-require 'albacore/albacoretask'
+require "albacore/albacoretask"
 require "albacore/config/unzipconfig"
-require 'zip'
-require 'zip/filesystem'
-
-include Zip
+require "zip"
+require "zip/filesystem"
 
 class Unzip
   include Albacore::Task
+  include Configuration::Unzip
   
   attr_reader   :force
   
@@ -15,7 +14,7 @@ class Unzip
 
   def initialize
     super()
-    update_attributes(Albacore.configuration.unzip.to_hash)
+    update_attributes(unzip.to_hash)
   end
     
   def execute()
@@ -30,7 +29,7 @@ class Unzip
         dir = File.dirname(path)
         
         FileUtils.mkdir_p(dir)
-        File.delete(path) if @force and File.file?(path)
+        File.delete(path) if (@force && File.file?(path))
         
         zip.extract(file, path) unless File.exist?(path)
       end
