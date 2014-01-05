@@ -3,7 +3,7 @@ rvm:
 - 1.9.3
 - 2.0.0
 - jruby
-script: bundle exec rake specs:assemblyinfo specs:albacoremodel specs:attrmethods
+script: bundle exec rake specs:all
 bundler_args: --without=wiki
 notifications:
   email: false
