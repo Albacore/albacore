@@ -5,7 +5,7 @@ class SQLCmd
   TaskName = :sqlcmd
 
   VERSIONS  = ["110", "100", "90"]
-  PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]]
+  PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]].compact
 
   include Albacore::Task
   include Albacore::RunCommand
@@ -69,12 +69,10 @@ class SQLCmd
   end
 
   def default_command
-    PLATFORMS.product(VERSIONS).
-      map { |platform, version| installed_path(platform, version) if platform }.
-      find { |path| File.exist?(path) }
+    PLATFORMS.product(VERSIONS).map { |env, ver| install_path(env, ver) }.find { |path| File.exist?(path) }
   end
 
-  def installed_path(platform, version)
-    File.join(platform, "Microsoft SQL Server", version, "tools/binn/sqlcmd.exe").gsub("\\", "/")
+  def install_path(platform, version)
+    File.join(platform, "Microsoft SQL Server", version, "tools/binn/sqlcmd.exe")
   end
 end
