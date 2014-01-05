@@ -51,7 +51,6 @@ describe XUnit do
     before :each do
       task.assemblies = ["a.dll"]
       task.continue_on_error
-      task.disable_system = true
       task.execute
     end
 
