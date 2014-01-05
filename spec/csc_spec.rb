@@ -5,7 +5,6 @@ describe CSC do
   subject(:task) do
     task = CSC.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "csc"
     task.compile = ["File1.cs", "File2.cs"]
     task.references = ["foo.dll"]

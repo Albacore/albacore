@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'albacore/albacoretask'
-require 'fail_patch'
 include ::Rake::DSL if defined?(::Rake::DSL)
 
 class SampleObject
@@ -65,14 +64,12 @@ describe "when execution fails" do
     Albacore.create_task :failing_task, SampleObject
 
   	failing_task :sample_fail do |x|
-  	  x.extend(FailPatch)
-  	  x.fail
+      raise
   	end
-    Rake::Task[:sample_fail].invoke
   end
   
   it "should fail the rake task" do
-    $task_failed.should == true
+    expect { Rake::Task[:sample_fail].invoke }.to raise_error
   end
 end
 

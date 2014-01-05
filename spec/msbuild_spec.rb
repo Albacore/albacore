@@ -5,7 +5,6 @@ describe MSBuild do
   subject(:task) do
     task = MSBuild.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "msbuild"
     task.solution = "solution"
     task.targets = [:clean, :build]

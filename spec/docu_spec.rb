@@ -5,7 +5,6 @@ describe Docu, "when defining a basic docu task" do
   subject(:task) do
     task = Docu.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.output_path = "whatever"
     task.assemblies = ["a.dll", "b.dll"]
     task.xml_files = ["a.xml", "b.xml"]

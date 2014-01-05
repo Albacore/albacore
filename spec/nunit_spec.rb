@@ -5,7 +5,6 @@ describe NUnit do
   subject(:task) do
     task = NUnit.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nunit"
     task.assemblies = ["a.dll", "b.dll"]
     task.results_path = "results.xml"

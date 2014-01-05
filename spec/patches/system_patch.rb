@@ -3,6 +3,10 @@ module SystemPatch
   
   def system(cmd)
     @system_command = cmd
-    return true
+    return !@fail
+  end
+
+  def force_failure
+    @fail = true
   end
 end

@@ -5,7 +5,6 @@ describe PLink do
   subject(:task) do
     task = PLink.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "plink"
     task.host = "host"
     task.port = 443

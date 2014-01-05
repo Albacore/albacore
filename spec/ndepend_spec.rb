@@ -5,7 +5,6 @@ describe NDepend do
   subject(:task) do
     task = NDepend.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "ndepend"
     task.project_file = "projectfile"
     task

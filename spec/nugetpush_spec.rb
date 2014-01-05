@@ -5,7 +5,6 @@ describe NuGetPack do
   subject(:task) do
     task = NuGetPush.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nuget"
     task.package = "package"
     task.apikey = "apikey"

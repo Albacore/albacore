@@ -5,7 +5,6 @@ describe SpecFlow do
   subject(:task) do
     task = SpecFlow.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "specflow"
     task.report = :nunitexecutionreport
     task.project = "myproject.csproj"

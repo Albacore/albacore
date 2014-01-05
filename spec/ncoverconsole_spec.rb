@@ -14,7 +14,6 @@ describe NCoverConsole do
   subject(:task) do
     task = NCoverConsole.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "ncover"
     task.include_assemblies = ["a.dll", "b.dll"]
     task.exclude_assemblies = ["c.dll"]

@@ -5,7 +5,6 @@ describe MSTest do
   subject(:task) do
     task = MSTest.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "mstest"
     task.assemblies = ["a.dll", "b.dll"]
     task.tests = ["foo", "bar"]

@@ -6,7 +6,6 @@ describe AspNetCompiler do
   subject(:task) do
     task = AspNetCompiler.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "aspnetcompiler"
     task.physical_path = "physical/path"
     task.target_path = "target/path"

@@ -5,7 +5,6 @@ describe SQLCmd do
   subject(:task) do
     task = SQLCmd.new
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "sqlcmd"
     task.server = "server"
     task.database = "database"

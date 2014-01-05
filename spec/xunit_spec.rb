@@ -5,7 +5,6 @@ describe XUnit do
   subject(:task) do
     task = XUnit.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "xunit"
     task.output_path = {:html => "output.html"}
     task
@@ -49,13 +48,13 @@ describe XUnit do
 
   context "when continuing on error" do
     before :each do
+      task.force_failure
       task.assemblies = ["a.dll"]
       task.continue_on_error
-      task.execute
     end
 
     it "should not fail" do
-      $task_failed.should be_false
+      expect { task.execute }.to_not raise_error
     end
   end
 end

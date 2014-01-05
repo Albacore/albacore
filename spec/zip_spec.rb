@@ -90,4 +90,10 @@ describe ZipDirectory do
       File.exist?(File.join(unzip_path, "bar/bar.txt")).should be_false
     end
   end
+
+  context "without flatten" do
+    it "should zip" do
+      pending("needs some thought")
+    end
+  end
 end

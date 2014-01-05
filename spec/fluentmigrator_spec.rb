@@ -5,7 +5,6 @@ describe FluentMigrator do
   subject(:task) do
     task = FluentMigrator.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "fluentm"
     task.namespace = "namespace"
     task.provider = "provider"

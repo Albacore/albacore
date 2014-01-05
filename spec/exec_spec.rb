@@ -5,7 +5,6 @@ describe Exec do
   subject(:task) do
     task = Exec.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "whatever"
     task.parameters = ["foo", "bar"]
     task

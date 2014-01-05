@@ -5,7 +5,6 @@ describe NuGetPack do
   subject(:task) do
     task = NuGetPack.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nuget"
     task.nuspec = "nuspec"
     task.output = "out/package"

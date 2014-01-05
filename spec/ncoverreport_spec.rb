@@ -5,7 +5,6 @@ describe NCoverReport do
   subject(:task) do
     task = NCoverReport.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "ncover"
     task.coverage_files = ["a.xml", "b.xml"]
     task.filters = [NCover::AssemblyFilter.new(:filter => "filter")]

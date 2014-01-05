@@ -5,7 +5,6 @@ describe XBuild do
   subject(:task) do
     task = XBuild.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "xbuild"
     task.solution = "solution"
     task.verbosity = "minimal"

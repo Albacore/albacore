@@ -5,7 +5,6 @@ describe NAnt do
   subject(:task) do
     task = NAnt.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nant"
     task.targets = [:clean, :build]
     task.build_file = "buildfile"

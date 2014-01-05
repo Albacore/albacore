@@ -5,7 +5,6 @@ describe NuGetUpdate do
   subject(:task) do
     task = NuGetUpdate.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nuget"
     task.input_file = "TestSolution.sln"
     task.source = ["source1", "source2"]

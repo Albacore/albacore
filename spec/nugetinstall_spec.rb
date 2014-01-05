@@ -5,7 +5,6 @@ describe NuGetInstall do
   subject(:task) do
     task = NuGetInstall.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nuget"
     task.package = "Hircine"
     task.sources = ["source1", "source2"]

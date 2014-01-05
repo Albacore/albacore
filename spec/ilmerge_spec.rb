@@ -5,7 +5,6 @@ describe ILMerge do
   subject(:task) do
     task = ILMerge.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "ilmerge"
     task.output = "output.dll"
     task.target_platform = "net40"

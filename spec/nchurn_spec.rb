@@ -5,7 +5,6 @@ describe NChurn do
   subject(:task) do
     task = NChurn.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "nchurn"
     task.input = "input"
     task.output = "output"

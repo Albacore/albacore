@@ -5,7 +5,6 @@ describe MSpec do
   subject(:task) do
     task = MSpec.new()
     task.extend(SystemPatch)
-    task.extend(FailPatch)
     task.command = "mspec"
     task.assemblies = ["a.dll", "b.dll"]
     task.html_output = "output.html"
