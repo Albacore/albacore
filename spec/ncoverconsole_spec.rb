@@ -1,6 +1,6 @@
 require "spec_helper"
 require "albacore/ncoverconsole"
-require "albacore/nunittestrunner"
+require "albacore/nunit"
 
 describe NCoverConsole do
   let(:runner) do
