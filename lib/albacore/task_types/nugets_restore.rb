@@ -73,6 +73,7 @@ module Albacore
 
       def initialize
         @include_official = false
+        @list_spec = File.join '**', 'packages.config'
       end
 
       # the output directory passed to nuget when restoring the nugets
@@ -81,8 +82,13 @@ module Albacore
       # nuget source, when other than MSFT source
       attr_accessor :source
 
+      # specifies the list specification to load 'packages.config' files
+      # from.
+      #
+      # e.g. '**/packages.config' on *nix.
+      attr_accessor :list_spec
+
       def packages
-        list_spec = File.join '**', 'packages.config'
         # it seems FileList doesn't care about the curr dir
         in_work_dir do
           FileList[
