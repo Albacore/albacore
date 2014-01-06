@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/specflow"
 
 describe SpecFlow do
   subject(:task) do

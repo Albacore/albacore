@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/fluentmigrator"
 
 describe FluentMigrator do
   subject(:task) do

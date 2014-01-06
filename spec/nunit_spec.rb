@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nunit"
 
 describe NUnit do
   subject(:task) do

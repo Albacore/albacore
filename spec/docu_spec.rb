@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/docu"
 
 describe Docu, "when defining a basic docu task" do  
   subject(:task) do

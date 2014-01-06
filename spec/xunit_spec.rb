@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/xunit"
 
 describe XUnit do
   subject(:task) do

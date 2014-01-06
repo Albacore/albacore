@@ -1,7 +1,6 @@
 require "fileutils"
 require "spec_helper"
 require "tempfile"
-require "albacore/assemblyinfo"
 
 describe AssemblyInfo do
   let(:input_path) { File.expand_path("spec/assemblyinfo/AssemblyInfo.cs") }

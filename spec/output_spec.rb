@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/output"
 require "fileutils"
 
 describe Output do

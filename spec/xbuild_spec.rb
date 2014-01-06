@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/xbuild"
 
 describe XBuild do
   subject(:task) do

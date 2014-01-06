@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/mstest"
 
 describe MSTest do
   subject(:task) do

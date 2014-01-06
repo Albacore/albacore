@@ -1,5 +1,4 @@
-require 'spec_helper'
-require 'albacore/support/attrmethods'
+require "spec_helper"
 
 describe "when setting an array attribute value without the equal sign" do
   before :each do 

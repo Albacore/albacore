@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nugetinstall"
 
 describe NuGetInstall do  
   subject(:task) do

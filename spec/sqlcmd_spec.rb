@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/sqlcmd"
 
 describe SQLCmd do
   subject(:task) do

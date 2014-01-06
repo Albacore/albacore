@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/ncoverreport"
 
 describe NCoverReport do
   subject(:task) do

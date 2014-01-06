@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nchurn"
 
 describe NChurn do
   subject(:task) do

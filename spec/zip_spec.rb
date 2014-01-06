@@ -1,7 +1,5 @@
 require "spec_helper"
 require "fileutils"
-require "albacore/zipdirectory"
-require "albacore/unzip"
 
 describe ZipDirectory do
   let(:output_path) { File.join(Dir.mktmpdir(), "test.zip") }

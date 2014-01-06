@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nugetpush"
 
 describe NuGetPack do
   subject(:task) do

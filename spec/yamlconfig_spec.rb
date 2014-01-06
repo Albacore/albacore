@@ -1,5 +1,4 @@
-require 'spec_helper'
-require 'albacore/albacoretask'
+require "spec_helper"
 
 class ::YamlTest
   include Albacore::Task

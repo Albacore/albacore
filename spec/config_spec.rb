@@ -1,6 +1,4 @@
-require 'spec_helper'
-require 'albacore/albacoretask'
-require 'albacore/config/config'
+require "spec_helper"
 
 class ConfigTest
   include Albacore::Task

@@ -1,5 +1,5 @@
-require 'spec_helper'
-require 'albacore/albacoretask'
+require "spec_helper"
+require "rake/tasklib"
 include ::Rake::DSL if defined?(::Rake::DSL)
 
 class SampleObject

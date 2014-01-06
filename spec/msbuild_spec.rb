@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/msbuild"
 
 describe MSBuild do
   subject(:task) do

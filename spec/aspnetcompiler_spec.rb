@@ -1,6 +1,4 @@
 require "spec_helper"
-require "albacore/aspnetcompiler"
-require "albacore/support/platform"
 
 describe AspNetCompiler do
   subject(:task) do

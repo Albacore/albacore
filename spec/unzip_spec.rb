@@ -1,5 +1,4 @@
-require 'spec_helper'
-require 'albacore/unzip'
+require "spec_helper"
 
 describe Unzip, "when providing configuration" do
   let :uz do

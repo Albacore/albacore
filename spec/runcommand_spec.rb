@@ -1,6 +1,4 @@
-require 'spec_helper'
-require 'albacore/albacoretask'
-require 'system_patch'
+require "spec_helper"
 
 class RunCommandObject
   include Albacore::Task

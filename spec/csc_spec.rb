@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/csc"
 
 describe CSC do
   subject(:task) do

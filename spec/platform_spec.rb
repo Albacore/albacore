@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/support/platform"
 
 describe Albacore::Support::Platform do
   it "should quote strings" do

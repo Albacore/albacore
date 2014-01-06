@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nuspec"
 require "fileutils"
 require "nokogiri"
 require "tempfile"

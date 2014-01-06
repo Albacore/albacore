@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/plink"
 
 describe PLink do
   subject(:task) do

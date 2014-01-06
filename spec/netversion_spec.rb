@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/config/netversion"
 
 class NetVersionTester
   include Configuration::NetVersion

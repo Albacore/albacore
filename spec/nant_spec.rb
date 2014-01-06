@@ -1,5 +1,4 @@
 require "spec_helper"
-require "albacore/nant"
 
 describe NAnt do
   subject(:task) do
