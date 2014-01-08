@@ -1,48 +1,53 @@
 require "spec_helper"
 
-class ::YamlTest
+class Test
   include Albacore::Task
-  attr_accessor :some_name, :another_name, :a_hash, :what_ever
+
+  attr_accessor :foo,
+                :bar,
+                :baz
 end
 
-describe "when configuring with yaml" do
-  before :all do
-    @yml = YamlTest.new
-    @yml.configure File.join(File.dirname(__FILE__), 'support', 'test.yml')
+describe "yaml configuration" do
+  subject(:yml) { Test.new() }
+
+  before :each do  
+    yml.configure("spec/yaml/test.yml")
   end
   
-  it "should set the value of some_name" do
-    @yml.some_name.should == "some value"
-  end
-  
-  it "should create and set the value of another_name" do
-    @yml.another_name.should == "another value"
+  it "should set the property" do
+    yml.foo.should == "foo"
   end
       
-  it "should allow hash tables" do
-    @yml.a_hash.length.should == 2
-    @yml.a_hash['name'].should == "value"
-    @yml.a_hash['foo'].should == "bar"
+  it "should set the hashtable" do
+    yml.bar["foo"].should == "foo"
+    yml.bar["bar"].should == "bar"
   end
   
-  it "should allow symbols" do
-    @yml.what_ever.should == :a_symbol
+  it "should set a symbol value" do
+    yml.baz.should == :baz
   end  
 end
 
-describe "when specifying a yaml config folder and configuring" do
-  class ::YAML_AutoConfig_Test
-    include Albacore::Task
-    attr_accessor :some_attribute
+describe "yaml configuration by folder" do
+  Albacore.configure.yaml_config_folder = "spec/yaml"
+
+  subject(:yml) { Test.new() }
+
+  before :each do
+    yml.load_config_by_task_name("test")
   end
   
-  before :all do
-    Albacore.configure.yaml_config_folder = File.join(File.dirname(__FILE__), 'support', 'yamlconfig')
-    @yamltest = YAML_AutoConfig_Test.new
-    @yamltest.load_config_by_task_name("yaml_autoconfig_test")
+  it "should set the property" do
+    yml.foo.should == "foo"
+  end
+      
+  it "should set the hashtable" do
+    yml.bar["foo"].should == "foo"
+    yml.bar["bar"].should == "bar"
   end
   
-  it "should automatically configure the class from the yaml file in the specified folder" do
-    @yamltest.some_attribute.should == "this value was loaded from a folder, specified by Albacore.configure.yaml_config_folder"
-  end
+  it "should set a symbol value" do
+    yml.baz.should == :baz
+  end  
 end
