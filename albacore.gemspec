@@ -7,7 +7,7 @@ require "albacore/version"
 Gem::Specification.new do |spec|
   spec.name          = "albacore"
   spec.version       = Albacore::VERSION
-  spec.authors       = ["Henrik Feldt", "Anthony Mastrean"]
+  spec.authors       = ["Henrik Feldt", "Anthony Mastrean", "Derick Bailey"]
   spec.email         = ["albacorebuild@gmail.com"]
   spec.description   = %q{Albacore is a professional quality suite of Rake tasks for building .NET or Mono based systems.}
   spec.summary       = %q{Dolphin-safe .NET and Mono rake tasks}
@@ -23,8 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rake"
   spec.add_dependency "rubyzip", "~> 1.0"
 
-  spec.add_development_dependency "guard"
-  spec.add_development_dependency "guard-rspec"
   spec.add_development_dependency "rspec"
 
   spec.rubyforge_project = "albacore"
