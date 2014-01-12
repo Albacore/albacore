@@ -143,17 +143,11 @@ can append the `--trace` flag to the invocation.
 DEBUG=true rake --trace
 ```
 
-## Tips and Tricks
-
-rake script:
-
-```
-source "https://rubygems.org"
-
 ## Task Types
 
 Task types are the pre-built factories for rake tasks. They often take care of
-what's slightly more complex, beyond just invoking commands.
+what's slightly more complex, beyond just invoking commands. They are available
+and methods in the DSL you get when you do `require 'albacore'`
 
 ### Docs: build
 
