@@ -31,8 +31,14 @@ build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
     source 'http://rubygems.org'
-    gem 'albacore', '2.0.0.rc.2'
+    gem 'albacore', '2.0.0.rc.5'
 
+When setting up your build you need to ensure it is reproducible.  Bundler
+allows you to lock down all gems that albacore depend on to their specific
+versions, ensuring that your peers can re-run the same rake script you just
+built and that it works well on your continous integration server.
+
+The first step after installing `bundler` is to create a `Gemfile` next to your
 Now, install albacore from this repository by running:
 
     bundle
@@ -90,7 +96,7 @@ task :default => :create_nugets
 
 You can now run:
 
-    rake
+    bundle exec rake
 
 ## Contributing
 
@@ -100,6 +106,49 @@ You can now run:
  1. Send a PR with that feature branch to this branch
     a. Make sure TravisCI is OK with it
     b. Describe your PR in English.
+
+## DSL
+
+When you `require 'albacore'` you will get a few methods added and available for
+use within your Rakefile, these are specified in CrossPlatformCmd, and are as
+follows:
+
+ - `#system`
+ - `#sh`
+ - `#shie`
+ - `#system_control`
+ - `#which`
+ - `#normalise_slashes` 
+ - `#chdir (work_dir : ?string) (block : Block<unit, x>) : x` - takes a string work dir to be
+   in and a block of ruby to execute in that work dir and returns the return
+   value of block.
+
+
+## Debugging Albacore scripts
+
+You can call the rakefile as such:
+
+```
+DEBUG=true rake
+```
+
+This changes the behaviour of the logging to output debug verbosity. It also
+changes some tasks to override Rakefile settings for verbosity and prints more
+debug information. I've tried to keep the information structured.
+
+If you're reporting a bug or need crash information to file a bug report, you
+can append the `--trace` flag to the invocation.
+
+```
+DEBUG=true rake --trace
+```
+
+## Tips and Tricks
+
+rake script:
+
+```
+source "https://rubygems.org"
 
 ## Task Types
 

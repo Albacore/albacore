@@ -15,6 +15,56 @@ describe Albacore::CrossPlatformCmd.method(:which), "what happens when calling #
   end
 end
 
+describe Albacore::CrossPlatformCmd.method(:prepare_command) do
+  it 'should be callable' do
+    subject.should respond_to(:call)
+  end
+  before :all do
+    # noteworthy: escape spaces with backslash!
+    @exe, @pars, @printable, @handler = subject.call %w[echo Hello World Goodbye\ World], true
+  end
+  it "should not return nil for anything" do
+    { exe:       @exe,
+      pars:      @pars,
+      printable: @printable,
+      handler:   @handler
+    }.each do |kv|
+      kv[1].should_not be_nil
+    end
+  end
+  if Albacore.windows? then
+    it 'should not include mono' do
+      @exe.should_not include('mono')
+    end
+
+    it 'should return first param correctly' do
+      @pars[0].should eq('Hello')
+    end
+    it 'should return second param correctly' do
+      @pars[1].should eq('World')
+    end
+    it 'should return third param correctly' do
+      @pars[2].should eq('Goodbye World')
+    end
+  else
+    it 'should include mono' do
+      @exe.should include('mono')
+    end
+    it 'should return first param as "echo"' do
+      @pars[0].should eq('echo')
+    end
+    it 'should return second param as "Hello"' do
+      @pars[1].should eq('Hello')
+    end
+    it 'should return third param as "World"' do
+      @pars[2].should eq('World')
+    end
+    it 'should return fourth param as "Goodbye World"' do
+      @pars[3].should eq('Goodbye World')
+    end
+  end
+end
+
 [:system, :sh, :shie].each do |method|
   describe Albacore::CrossPlatformCmd.method(method), "##{method}" do
     describe 'its positive modes' do

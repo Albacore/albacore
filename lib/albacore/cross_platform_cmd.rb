@@ -60,6 +60,9 @@ module Albacore
     #  output:   whether to supress the command's output (default false)
     #  out:      output pipe
     #  err:      error pipe
+    #  clr_command:
+    #            whether to include 'mono' in front of the things to run
+    #            if the command is a clr command
     #
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
@@ -69,9 +72,10 @@ module Albacore
           output: true,
           work_dir: FileUtils.pwd,
           out: Albacore.application.output,
-          err: Albacore.application.output_err)
+          err: Albacore.application.output_err,
+          clr_command: false)
 
-      exe, pars, printable, block = prepare_command cmd, &block
+      exe, pars, printable, block = prepare_command cmd, (opts.get('clr_command')), &block
 
       # TODO: figure out how to interleave output and error streams
       out, _, inmem = opts.get(:out), opts.get(:err), StringIO.new
@@ -231,10 +235,10 @@ module Albacore
     
     private
 
-    def prepare_command cmd, &block
+    def prepare_command cmd, clr_command = false, &block
+      cmd = cmd.unshift 'mono' if clr_command && ! ::Albacore.windows?
       pars = cmd[1..-1].flatten
       raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
-
       exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
       printable = %Q{#{exe} #{pars.join(' ')}}
       handler = block_given? ? block : handler_with_message(printable)
