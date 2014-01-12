@@ -1,11 +1,12 @@
-# Albacore Clean Slate
+# Albacore
 
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
 
 Version 2.0 of Albacore.
 
 This branch is the next official version. It is currently being used for
-numerous builds for us and is free of known bugs. It works on RMI 1.9.3.
+numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and RMI
+2.0.
 
     gem install albacore --prerelease
 
