@@ -306,6 +306,7 @@ module Albacore
       end
 
       def write_nuspec! proj, nuspec, symbols
+        raise ArgumentError, "no nuspect metadata id, project at path: #{proj.proj_path_base}, nuspec: #{nuspec.inspect}" unless nuspec.metadata.id
         nuspec_path = File.join(proj.proj_path_base, nuspec.metadata.id + "#{ symbols ? '.symbols' : '' }.nuspec")
 
         File.write(nuspec_path, nuspec.to_xml)
