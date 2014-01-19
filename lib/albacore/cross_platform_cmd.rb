@@ -81,7 +81,7 @@ module Albacore
       # TODO: figure out how to interleave output and error streams
       out, _, inmem = opts.get(:out), opts.get(:err), StringIO.new
 
-      trace { "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s}), in directory: #{opts.getopt(:workdir, '<<current>>')} [cross_platform_cmd #system]" }
+      trace { "system( exe=#{exe}, pars=[#{pars.join(', ')}], options=#{opts.to_s}), in directory: #{opts.getopt(:work_dir, '<<current>>')} [cross_platform_cmd #system]" }
 
       puts printable unless opts.get :silent, false # log cmd verbatim
 
