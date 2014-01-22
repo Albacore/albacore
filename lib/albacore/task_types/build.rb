@@ -68,7 +68,7 @@ module Albacore
       # If you specify any targets by using this switch, they are run instead of any targets in the DefaultTargets attribute in the project file. For more information, see Target Build Order (http://msdn.microsoft.com/en-us/library/vstudio/ee216359.aspx) and How to: Specify Which Target to Build First (http://msdn.microsoft.com/en-us/library/vstudio/ms171463.aspx).
       # A target is a group of tasks. For more information, see MSBuild Targets (http://msdn.microsoft.com/en-us/library/vstudio/ms171462.aspx)."
       #
-      # t  :: the array or string target to add to the list of tarets to build
+      # t  :: the array or string target to add to the list of targets to build
       attr_path_accessor :target do |t|
         update_array_prop "target", method(:make_target), :targets, t
       end
