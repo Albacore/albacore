@@ -47,7 +47,7 @@ module Albacore::Paths
     # join an Enumerable of paths by normalising slashes on each of the segments, then
     # joining them, returning a string
     def join_str *paths
-      join(*paths).to_s
+      normalise_slashes(join(*paths).to_s)
     end
   end
 end
