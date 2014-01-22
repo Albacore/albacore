@@ -1,4 +1,5 @@
 require 'albacore/cross_platform_cmd'
+require 'albacore/paths'
 
 module Albacore
   module DSL
