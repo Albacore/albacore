@@ -152,7 +152,21 @@ and methods in the DSL you get when you do `require 'albacore'`
 
 ### Docs: build
 
-TBD
+``` ruby
+require 'albacore'
+build :compile_this do |b|
+  b.file   = Paths.join 'src', 'MyProj.fsproj' # the file that you want to build
+  # b.sln  = Paths.join 'src', 'MyProj.sln'    # alt. name
+  b.target 'Clean', 'Rebuild'                  # call with an array of targets or just a single target
+  b.prop 'Configuration', 'Release'            # call with 'key, value', to specify a MsBuild property
+  b.cores = 4                                  # no of cores to build with, defaults to the number of cores on your machine
+  b.clp 'ShowEventId'                          # any parameters you want to pass to the console logger of MsBuild
+  b.logging 'verbose'                          # verbose logging mode
+  # b.be_quiet                                 # opposite of the above
+  b.no_logo                                    # no Microsoft/XBuild header output
+end
+
+```
 
 ### Docs: nugets_pack
 
