@@ -41,7 +41,7 @@ module Albacore::Paths
     # joining them
     def join *paths
       raise ArgumentError, 'no paths given' if paths.nil?
-      paths[1..-1].inject(Pathname.new(paths[0])) { |s, t| s + normalise_slashes(t) }
+      paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) { |s, t| s + normalise_slashes(t) }
     end
 
     # join an Enumerable of paths by normalising slashes on each of the segments, then
