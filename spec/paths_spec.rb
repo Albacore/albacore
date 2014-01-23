@@ -20,6 +20,10 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   it 'should be +-able' do
     (sample + 'd').to_s.should include(Paths.separator)
   end
+
+  it 'can join with *' do
+    subject.call('a').join('*/').to_s.should eq('a/*/')
+  end
 end
 
 describe ::Albacore::Paths.method(:join_str), 'when joining path segments' do
