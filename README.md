@@ -161,7 +161,7 @@ build :compile_this do |b|
   b.prop 'Configuration', 'Release'            # call with 'key, value', to specify a MsBuild property
   b.cores = 4                                  # no of cores to build with, defaults to the number of cores on your machine
   b.clp 'ShowEventId'                          # any parameters you want to pass to the console logger of MsBuild
-  b.logging 'verbose'                          # verbose logging mode
+  b.logging = 'verbose'                          # verbose logging mode
   # b.be_quiet                                 # opposite of the above
   b.no_logo                                    # no Microsoft/XBuild header output
 end
