@@ -22,7 +22,7 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   end
 
   it 'can join with *' do
-    subject.call('a').join('*/').to_s.should eq('a/*/')
+    subject.call('a').join('*/').to_s.should eq('a' + Paths.separator + '*' + Paths.separator)
   end
 end
 
