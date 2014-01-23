@@ -1,11 +1,21 @@
 # -*- encoding: utf-8 -*-
 
 require 'rake'
+require 'albacore/albacore_module'
 require 'pathname'
 
 # module methods for handling paths
 module Albacore::Paths
   class PathnameWrap < Pathname
+    def parent
+      PathnameWrap.new(super)
+    end
+    def +(other)
+      PathnameWrap.new(super(other))
+    end
+    def join other
+      PathnameWrap.new(super(other))
+    end
     def to_s
       Paths.normalise_slashes(super)
     end
