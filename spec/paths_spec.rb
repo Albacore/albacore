@@ -1,5 +1,16 @@
 require 'albacore/paths'
 
+describe ::Albacore::Paths.method(:join), 'when joining path segments' do
+  it 'should return id' do
+    subject.call('abc').to_s.should eq('abc')
+  end 
+
+  it 'should return with proper separator' do
+    subject.call(*%w|a b c|).to_s.should eq(
+      'a' + Paths.separator + 'b' + Paths.separator + 'c')
+  end
+end
+
 describe ::Albacore::Paths.method(:join_str), 'when joining path segments' do
   it 'id' do
     subject.call('.').should eq('.')

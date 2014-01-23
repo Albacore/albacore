@@ -5,6 +5,12 @@ require 'pathname'
 
 # module methods for handling paths
 module Albacore::Paths
+  class PathnameWrap < Pathname
+    def to_s
+      Paths.normalise_slashes(super)
+    end
+  end
+
   class << self
 
     # returns the operating system separator character as a string
@@ -41,13 +47,15 @@ module Albacore::Paths
     # joining them
     def join *paths
       raise ArgumentError, 'no paths given' if paths.nil?
-      paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) { |s, t| s + normalise_slashes(t) }
+      PathnameWrap.new(
+        paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) { |s, t| s + normalise_slashes(t) }
+      )
     end
 
     # join an Enumerable of paths by normalising slashes on each of the segments, then
     # joining them, returning a string
     def join_str *paths
-      normalise_slashes(join(*paths).to_s)
+      join(*paths).to_s
     end
   end
 end
