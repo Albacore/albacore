@@ -178,7 +178,7 @@ module Albacore
           %w{v4.0.30319 v4.0 v3.5 v2.0}.collect { |fw_ver|
             msb = File.join ENV['WINDIR'], 'Microsoft.NET', 'Framework', fw_ver, 'msbuild.exe'
             CrossPlatformCmd.which(msb) ? msb : nil
-          }.first
+          }.compact.first
         else
           nil
         end

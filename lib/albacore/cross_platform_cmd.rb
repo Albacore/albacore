@@ -196,7 +196,7 @@ module Albacore
     end
 
     def which executable
-      raise ArgumentError, "executable is nil" unless executable
+      raise ArgumentError, "executable to #which is nil" unless executable
 
       dir = File.dirname executable
       file = File.basename executable
