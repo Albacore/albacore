@@ -30,6 +30,7 @@ module Albacore::Paths
 
     # normalize the slashes of the path to what the operating system prefers
     def normalise_slashes path
+      return path unless path.respond_to? :gsub
       raise ArgumentError, "path is nil" if path.nil?
       ::Rake::Win32.windows? ? path.gsub('/', '\\') : path.gsub('\\', '/')
     end
@@ -57,9 +58,10 @@ module Albacore::Paths
     # joining them
     def join *paths
       raise ArgumentError, 'no paths given' if paths.nil?
-      PathnameWrap.new(
-        paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) { |s, t| s + normalise_slashes(t) }
-      )
+      joined = paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) do |s, t|
+        s + normalise_slashes(t)
+      end
+      PathnameWrap.new joined
     end
 
     # join an Enumerable of paths by normalising slashes on each of the segments, then
