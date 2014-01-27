@@ -13,8 +13,8 @@ module Albacore::Paths
     def +(other)
       PathnameWrap.new(super(other))
     end
-    def join other
-      PathnameWrap.new(super(other))
+    def join *other
+      PathnameWrap.new(super(*other))
     end
     def to_s
       Paths.normalise_slashes(super)
