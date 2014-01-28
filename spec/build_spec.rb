@@ -40,6 +40,7 @@ describe 'when running with sln' do
 
   before do
     cfg.sln = 'src/HelloWorld.sln'
+    cfg.target = %w|Clean Build|
     cmd.execute
   end
 
@@ -51,7 +52,7 @@ describe 'when running with sln' do
     subject.executable.should eq('xbuild')
   end
   it do
-    subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'}|)
+    subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'} /target:Clean;Build|)
   end
   it do
     subject.is_mono_command?.should be_false
