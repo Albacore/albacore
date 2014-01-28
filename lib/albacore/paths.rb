@@ -6,18 +6,39 @@ require 'pathname'
 
 # module methods for handling paths
 module Albacore::Paths
-  class PathnameWrap < Pathname
+  class PathnameWrap
+
+    # inner pathname
+    attr_reader :inner
+
+    # string pathname
+    attr_reader :p
+
+    def initialize p
+      raise ArgumentError, 'p is nil' if p.nil?
+      @p = (p.is_a?(String) ? p : p.to_s)
+      @inner = Pathname.new @p
+    end
+
     def parent
-      PathnameWrap.new(super)
+      PathnameWrap.new(inner.parent)
     end
+
     def +(other)
-      PathnameWrap.new(super(other))
+      PathnameWrap.new(inner + other)
     end
+
     def join *other
-      PathnameWrap.new(super(*other))
+      PathnameWrap.new(inner.join(*other))
     end
+
     def to_s
-      Paths.normalise_slashes(super)
+      Paths.normalise_slashes p
+    end
+
+    # unwraps the pathname; defaults all return forward slashes
+    def as_unix
+      inner
     end
   end
 

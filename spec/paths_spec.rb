@@ -40,6 +40,10 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   it 'returns something accepting multiple paths' do
     subject.call('a', 'b', 'c').join('d', 'e').to_s.should eq(abc + s + 'd' + s + 'e')
   end
+
+  it 'should be presentable in "unix" style' do
+    sample.as_unix.to_s.should_not include('\\')
+  end
 end
 
 describe ::Albacore::Paths.method(:join_str), 'when joining path segments' do
