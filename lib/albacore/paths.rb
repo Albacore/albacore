@@ -37,6 +37,16 @@ module Albacore::Paths
       Paths.normalise_slashes p
     end
 
+    def ==(o)
+      ((o.respond_to? :p) && (o.p == p)) ||
+      ((o.is_a? String) && o == p)
+    end
+    alias_method :eql?, :==
+
+    def hash
+      p.hash
+    end
+
     # unwraps the pathname; defaults all return forward slashes
     def as_unix
       inner
@@ -80,9 +90,11 @@ module Albacore::Paths
     # joining them
     def join *paths
       raise ArgumentError, 'no paths given' if paths.nil?
-      joined = paths[1..-1].inject(Pathname.new(normalise_slashes(paths[0]))) do |s, t|
+
+      joined = paths[1..-1].inject(PathnameWrap.new(normalise_slashes(paths[0]))) do |s, t|
         s + normalise_slashes(t)
       end
+
       PathnameWrap.new joined
     end
 

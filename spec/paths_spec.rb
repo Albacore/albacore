@@ -46,12 +46,36 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   end
 
   it 'should handle joining on a type like itself' do
-    sample.join(sample)
+    sample.join(sample).should eq(abc + s + abc)
     sample.join(sample, sample)
   end
 
   it 'should handle +-ing on a type like itself' do
     sample + sample
+  end
+
+  it 'should handle joining with a Pathname' do
+    (sample.join Pathname.new('x')).should eq(Paths::PathnameWrap.new(abc + s + 'x'))
+  end
+
+  it 'should handle +-ing with a Pathname' do
+    (sample + Pathname.new('x')).should eq(Paths::PathnameWrap.new(abc + s + 'x'))
+  end
+
+  it do
+    sample.should respond_to(:hash)
+  end
+
+  it do
+    sample.should respond_to(:eql?)
+  end
+  
+  it 'joins with identity' do
+    subject.call(Paths::PathnameWrap.new(abc)).should eq(abc)
+  end
+
+  it 'joins with others' do
+    sample.join(Paths::PathnameWrap.new(abc)).should eq(abc + s + abc)
   end
 end
 
