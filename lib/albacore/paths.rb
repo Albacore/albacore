@@ -25,11 +25,12 @@ module Albacore::Paths
     end
 
     def +(other)
-      PathnameWrap.new(inner + other)
+      join other
     end
 
     def join *other
-      PathnameWrap.new(inner.join(*other))
+      args = other.collect { |x| x.is_a?(PathnameWrap) ? x.p : x }
+      PathnameWrap.new(inner.join(*args))
     end
 
     def to_s

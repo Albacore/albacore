@@ -44,6 +44,15 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   it 'should be presentable in "unix" style' do
     sample.as_unix.to_s.should_not include('\\')
   end
+
+  it 'should handle joining on a type like itself' do
+    sample.join(sample)
+    sample.join(sample, sample)
+  end
+
+  it 'should handle +-ing on a type like itself' do
+    sample + sample
+  end
 end
 
 describe ::Albacore::Paths.method(:join_str), 'when joining path segments' do
