@@ -2,11 +2,13 @@
 
 require 'rake'
 require 'albacore/albacore_module'
+require 'albacore/logging'
 require 'pathname'
 
 # module methods for handling paths
 module Albacore::Paths
   class PathnameWrap
+    include ::Albacore::Logging
 
     # inner pathname
     attr_reader :inner
@@ -38,8 +40,10 @@ module Albacore::Paths
     end
 
     def ==(o)
-      ((o.respond_to? :p) && (o.p == p))
+      trace { "#{self} ==( #{o} )" }
+      (o.respond_to? :p) && o.p == p
     end
+
     alias_method :eql?, :==
 
     def hash
@@ -48,7 +52,7 @@ module Albacore::Paths
 
     # unwraps the pathname; defaults all return forward slashes
     def as_unix
-      inner
+      to_s.gsub /\\/, '/'
     end
   end
 
