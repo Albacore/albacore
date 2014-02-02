@@ -21,9 +21,6 @@ describe Albacore::Project, "when loading packages.config" do
     subject.output_path('Release').should eq('bin\\Release\\')
     subject.try_output_path('Release').should eq('bin\\Release\\')
   end
-  it 'should only ever include a single result' do
-    pending 'should add a second build configuration'
-  end
   it 'should raise "ConfigurationNotFoundEror" if not found' do
     begin
       subject.output_path('wazaaa')
