@@ -38,8 +38,7 @@ module Albacore::Paths
     end
 
     def ==(o)
-      ((o.respond_to? :p) && (o.p == p)) ||
-      ((o.is_a? String) && o == p)
+      ((o.respond_to? :p) && (o.p == p))
     end
     alias_method :eql?, :==
 
@@ -76,7 +75,6 @@ module Albacore::Paths
       exe = normalise_slashes executable
       %Q{"#{exe}" #{params}}
     end
-
 
     # normalise slashes in an executable/parameters combo
     def normalise executable, parameters
