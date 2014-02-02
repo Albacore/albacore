@@ -335,7 +335,7 @@ end})
             verify_files:         false,
             nuget_dependencies:   true })
 
-        trace { "#from_xxproj opts: #{opts} [nuget model: package]" }
+        trace { "#from_xxproj proj: #{proj} opts: #{opts} [nuget model: package]" }
 
         version = opts.get :version
         package = Package.new
@@ -361,7 +361,7 @@ end})
           end
         end
 
-        output = proj.output_path(opts.get(:configuration))
+        output = get_output_path proj, opts
         target_lib = %W[lib #{opts.get(:dotnet_version)}].join(Albacore::Paths.separator)
 
         if opts.get :symbols 
@@ -401,6 +401,13 @@ end})
 
         package
       end
+      def self.get_output_path proj, opts
+        try = proj.try_output_path(opts.get(:configuration))
+        return try if try
+        warn 'using fallback output path'
+        proj.fallback_output_path
+      end
+
     end
   end
 end

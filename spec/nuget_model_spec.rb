@@ -151,7 +151,6 @@ XML
   end
 end
 
-
 describe "when reading xml from a fsproj file into Project/Metadata" do
   let :projfile do
     curr = File.dirname(__FILE__)
@@ -188,7 +187,6 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     has_file 'bin/Debug/Project.pdb', 'lib/net40'
   end
 end
-
 
 describe Albacore::NugetModel::Package, "overriding metadata" do
   let :p1 do
@@ -347,6 +345,12 @@ describe "creating nuget on dependent proj file" do
   end
 
   describe 'Release-only output' do
+    # In this case we only have a Release output, and the nuget should pick the
+    # single one that exists.
+    # The idea is that we should succeed rather than fail, to remove friction, but
+    # there should also be a warning about it in the output; that an OutputPath
+    # was selected from a specific configuration that wasn't configured in the
+    # task type.
     let :projfile do
       curr = File.dirname(__FILE__)
       File.join curr, "testdata", "EmptyProject", "EmptyProject.csproj"

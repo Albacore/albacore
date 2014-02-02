@@ -1,7 +1,14 @@
 require 'nokogiri'
+require 'albacore/logging'
 require 'albacore/semver'
 
 module Albacore
+
+  # error raised from Project#output_path if the given configuration wasn't
+  # found
+  class ConfigurationNotFoundError < ::StandardError
+  end
+
   # a project encapsulates the properties from a xxproj file.
   class Project
     include Logging
@@ -34,14 +41,27 @@ module Albacore
       read_property "Authors"
     end 
 
-    # gets the output path of the project given the configuration
+    # gets the output path of the project given the configuration or raise
+    # an error otherwise
     def output_path conf
-      path = @proj_xml_node.css("Project PropertyGroup[Condition*=#{conf}] OutputPath")
-      debug "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]"
-      return path.inner_text unless path.empty?
+      try_output_path conf || raise(ConfigurationNotFoundError, "could not find configuration '#{conf}'")
+    end
 
-      path = @proj_xml_node.css("Project PropertyGroup OutputPath")
-      path.inner_text
+    def try_output_path conf
+      path = @proj_xml_node.css("Project PropertyGroup[Condition*=#{conf}] OutputPath")
+      # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
+
+      debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }
+
+      return path.inner_text unless path.empty?
+      nil
+    end
+
+    def fallback_output_path
+      fallback = @proj_xml_node.css("Project PropertyGroup OutputPath").first
+      condition = fallback.parent['Condition'] || 'No \'Condition\' specified'
+      warn "chose an OutputPath in: '#{self}' for Configuration: <#{condition}> [albacore: project]"
+      fallback.inner_text
     end
     
     # find the NodeList reference list

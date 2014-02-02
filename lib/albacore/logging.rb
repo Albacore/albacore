@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
+
 require 'logger'
-require 'albacore/application'
+require 'albacore/albacore_module'
 
 module Albacore
   module Logging

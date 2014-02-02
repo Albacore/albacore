@@ -1,4 +1,5 @@
 require 'rake'
+
 module Albacore
   class Application
 
