@@ -99,6 +99,16 @@ module Albacore
         set_logging mode
       end
 
+
+      #  Gets or sets a target .NET Framework version to build the project with, which
+      #  enables an MSBuild task to build a project that targets a different version of
+      #  the .NET Framework than the one specified in the project. Valid values are 2.0,
+      #  3.0 and 3.5.
+      #
+      attr_path_accessor :tools_version do |t|
+        @parameters.add "/toolsversion:#{t}"
+      end
+
       # Specifies the number of parallel worker processes to build with
       # Defaults to the number of logical cores
       attr_path_accessor :cores do |num|
