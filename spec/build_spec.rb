@@ -7,7 +7,7 @@ describe 'build config' do
   subject do
     Albacore::Build::Config.new
   end
-  %w[file= sln= target target= logging logging= prop cores cores=].each do |writer|
+  %w[file= sln= target target= logging logging= prop cores cores= tools_version tools_version=].each do |writer|
     it "should have property :#{writer}" do
       subject.respond_to?(:"#{writer}").should be_true
     end
@@ -19,9 +19,11 @@ describe 'build config' do
   describe 'when setting properties' do
     before do
       subject.logging = 'minimal'
+      subject.tools_version = '3.5'
     end
     it do
       subject.parameters.should include('/verbosity:minimal')
+      subject.parameters.should include('/toolsversion:3.5')
     end
   end
 end
