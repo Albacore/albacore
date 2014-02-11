@@ -111,7 +111,7 @@ module Albacore
         #debug 'waiting for thread completion'
         #@out_thread.join
 
-        return block.call(status.success? && inmem.string, status)
+        return block.call(status.success? && inmem.string, status, inmem.string)
       end
     end  
 
@@ -162,7 +162,7 @@ module Albacore
           end
         end
 
-        return block.call($? == 0 && lines, $?)
+        return block.call($? == 0 && lines, $?, lines)
       end
     end
     
@@ -173,7 +173,7 @@ module Albacore
     #    #exitstatus : Int
     #    #pid      : Int
     def shie *cmd, &block
-      block = lambda { |ok, status| ok } unless block_given?
+      block = lambda { |ok, status, output| ok } unless block_given?
       sh *cmd, &block
     end
     
@@ -247,16 +247,16 @@ module Albacore
     end
 
     def handler_with_message printable
-      lambda { |ok, status| ok or raise_failure(printable, status) }
+      lambda { |ok, status, output| ok or raise_failure(printable, status, output) }
     end
 
     # handles the errors from not finding the executable on the system
     def handle_not_found rescue_block
       yield
     rescue Errno::ENOENT => e
-      rescue_block.call(nil, PseudoStatus.new(127))
+      rescue_block.call(nil, PseudoStatus.new(127), e.to_s)
     rescue IOError => e # rescue for JRuby
-      rescue_block.call(nil, PseudoStatus.new(127)) 
+      rescue_block.call(nil, PseudoStatus.new(127), e.to_s) 
     end
 
 
@@ -264,11 +264,11 @@ module Albacore
       { 127 => 'number 127 in particular means that the operating system could not find the executable' }
     end
 
-    def raise_failure cmd, status
+    def raise_failure cmd, status, output
       if status.exitstatus == 127
         raise CommandNotFoundError.new(format_failure(cmd, status), cmd)
       else
-        raise CommandFailedError.new(format_failure(cmd, status), cmd)
+        raise CommandFailedError.new(format_failure(cmd, status), cmd, output)
       end
     end
 
