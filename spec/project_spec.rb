@@ -56,3 +56,9 @@ describe Albacore::Project, "when reading project file" do
     library1.should_not be_nil
   end
 end
+describe Albacore::Project, 'when given a PathnameWrap' do
+  it 'should allow argument of PathnameWrap' do
+    require 'albacore/paths'
+    Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path('../testdata/Project/Project.fsproj', __FILE__)))
+  end
+end
