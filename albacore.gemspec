@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary     = 'Dolphin-safe and awesome Mono and .Net Rake-tasks'
   s.description = 'Easily build your .Net or Mono project using this collection of Rake tasks.'
 
-  s.add_dependency 'rubyzip'
+  s.add_dependency 'rubyzip', '< 1.0.0'
 
   s.rubyforge_project = 'albacore'
 
