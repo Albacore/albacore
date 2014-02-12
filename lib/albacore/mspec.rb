@@ -7,10 +7,10 @@ class MSpec
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::MSpec
-  
-  attr_accessor :html_output
 
   attr_array    :assemblies
+  
+  attr_hash     :results_path
   
   def initialize()
     super()
@@ -25,7 +25,7 @@ class MSpec
   def build_parameters
     p = []
     p << @assemblies.map { |asm| "\"#{asm}\"" } if @assemblies
-    p << "--html \"#{@html_output}\"" if @html_output
+    p << "--#{@results_path.first.first} \"#{@results_path.first.last}\"" if @results_path
     p
   end
 

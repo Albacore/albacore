@@ -10,7 +10,7 @@ class XUnit
 
   attr_accessor :assembly
   
-  attr_hash     :output_path
+  attr_hash     :results_path
                 
   def initialize()
     super()
@@ -30,7 +30,7 @@ class XUnit
   def build_parameters
     p = []  
     p << "\"#{@assembly}\""
-    p << "/#{@output_path.first.first} \"#{@output_path.first.last}\"" if @output_path
+    p << "/#{@results_path.first.first} \"#{@results_path.first.last}\"" if @results_path
     p
   end
   

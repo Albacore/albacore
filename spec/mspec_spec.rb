@@ -6,7 +6,7 @@ describe MSpec do
     task.extend(SystemPatch)
     task.command = "mspec"
     task.assemblies = ["a.dll", "b.dll"]
-    task.html_output = "output.html"
+    task.results_path = {:html => "output.html"}
     task
   end
 

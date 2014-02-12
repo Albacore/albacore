@@ -6,7 +6,7 @@ describe XUnit do
     task.extend(SystemPatch)
     task.command = "xunit"
     task.assembly = "a.dll"
-    task.output_path = {:html => "output.html"}
+    task.results_path = {:html => "output.html"}
     task
   end
 
