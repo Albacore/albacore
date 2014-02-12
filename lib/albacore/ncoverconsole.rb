@@ -22,6 +22,7 @@ class NCoverConsole
   
   def initialize
     @register = true
+    
     super()
     update_attributes(ncoverconsole.to_hash)
   end

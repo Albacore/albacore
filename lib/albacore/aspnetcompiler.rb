@@ -24,6 +24,8 @@ class AspNetCompiler
 
   def initialize
     @virtual_path = "/"
+    @command = "aspnet_compiler"
+    
     super()
     update_attributes(aspnetcompiler.to_hash)
   end

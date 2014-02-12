@@ -21,6 +21,8 @@ class MSBuild
                 :other_switches
   
   def initialize
+    @command = "msbuild"
+    
     super()
     update_attributes(msbuild.to_hash)
   end

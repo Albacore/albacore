@@ -28,6 +28,8 @@ class CSC
                 :define
 
   def initialize
+    @command = "csc"
+    
     super()
     update_attributes(csc.to_hash)
   end

@@ -19,6 +19,7 @@ class PLink
 
   def initialize()
     @port = 22
+    
     super()
     update_attributes(plink.to_hash)
   end

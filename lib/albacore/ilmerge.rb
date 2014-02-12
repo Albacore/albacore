@@ -16,7 +16,7 @@ class ILMerge
   attr_array    :assemblies
 
   def initialize
-    @command = default_command
+    @command = default_command || "ilmerge"
     
     super()
     update_attributes(ilmerge.to_hash)

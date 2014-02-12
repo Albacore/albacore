@@ -26,7 +26,7 @@ class SQLCmd
   attr_hash     :variables
   
   def initialize
-    @command = default_command
+    @command = default_command || "sqlcmd"
     
     super()
     update_attributes(sqlcmd.to_hash)

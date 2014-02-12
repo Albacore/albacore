@@ -14,6 +14,8 @@ class MSTest
               :tests
   
   def initialize()
+    @command = "mstest"
+
     super()
     update_attributes(mstest.to_hash)
   end
