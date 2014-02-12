@@ -3,8 +3,6 @@ require "albacore/config/ilmergeconfig"
 
 class ILMerge
   TaskName = :ilmerge
-
-  PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]].compact
   
   include Albacore::Task
   include Albacore::RunCommand
@@ -16,7 +14,7 @@ class ILMerge
   attr_array    :assemblies
 
   def initialize
-    @command = default_command || "ilmerge"
+    @command = "ilmerge"
     
     super()
     update_attributes(ilmerge.to_hash)
@@ -36,13 +34,5 @@ class ILMerge
     p << "/targetPlatform:#{@target_platform}" if @target_platform
     p << @assemblies.map { |asm| "\"#{asm}\"" } if @assemblies
     p
-  end
-
-  def default_command
-    PLATFORMS.map { |env| install_path(env) }.find { |path| File.exists?(path) }
-  end
-
-  def install_path(platform)
-    File.join(platform, "Microsoft/ILMerge/ilmerge.exe")
   end
 end

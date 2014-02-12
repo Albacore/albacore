@@ -4,9 +4,6 @@ require "albacore/config/sqlcmdconfig"
 class SQLCmd
   TaskName = :sqlcmd
 
-  VERSIONS  = ["110", "100", "90"]
-  PLATFORMS = [ENV["PROGRAMFILES"], ENV["PROGRAMFILES(X86)"]].compact
-
   include Albacore::Task
   include Albacore::RunCommand
   include Configuration::SQLCmd
@@ -26,7 +23,7 @@ class SQLCmd
   attr_hash     :variables
   
   def initialize
-    @command = default_command || "sqlcmd"
+    @command = "sqlcmd"
     
     super()
     update_attributes(sqlcmd.to_hash)
@@ -66,13 +63,5 @@ class SQLCmd
   
   def batch_abort
     @batch_abort = true
-  end
-
-  def default_command
-    PLATFORMS.product(VERSIONS).map { |env, ver| install_path(env, ver) }.find { |path| File.exist?(path) }
-  end
-
-  def install_path(platform, version)
-    File.join(platform, "Microsoft SQL Server", version, "tools/binn/sqlcmd.exe")
   end
 end
