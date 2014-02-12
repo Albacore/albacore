@@ -8,50 +8,37 @@ class XUnit
   include Albacore::RunCommand
   include Configuration::XUnit
 
-  attr_reader   :continue_on_error
-
+  attr_accessor :assembly
+  
   attr_hash     :output_path
                 
-  attr_array    :assemblies
-
   def initialize()
     super()
     update_attributes(xunit.to_hash)
   end
 
   def execute()    		
-    unless @assemblies
-      fail_with_message("xunit requires #assemblies")
+    unless @assembly
+      fail_with_message("xunit requires #assembly")
       return
     end
     
-    # xunit supports only one test-assembly at a time
-    @assemblies.each_with_index do |asm, index|
-      result = run_command("xunit", build_parameters(asm, index, @assemblies.count > 1))
-      fail_with_message("XUnit failed, see build log for details.") unless (result || @continue_on_error)
-    end       
+    result = run_command("xunit", build_parameters)
+    fail_with_message("XUnit failed, see build log for details.") unless result
   end
   
-  def build_parameters(assembly, index, multiple = false)
+  def build_parameters
     p = []  
-    p << "\"#{assembly}\""
-    p << build_output_path(index, multiple) if @output_path
+    p << "\"#{@assembly}\""
+    p << "/#{@output_path.first.first} \"#{@output_path.first.last}\"" if @output_path
     p
   end
   
-  def continue_on_error
-    @continue_on_error = true
-  end
-  
-  def build_output_path(index, multiple = false)
-    type, path = @output_path.first
-    
-    dir = File.dirname(path)
-    ext = File.extname(path)
-    base = File.basename(path, ext)
-
-    multiple ? 
-      "/#{type} \"#{File.join(dir, "#{base}_#{index + 1}#{ext}")}\"" : 
-      "/#{type} \"#{path}\"" 
+  def build_command_line
+    c = []
+    c << @command
+    c << build_parameters
+    c << @parameters
+    c
   end
 end
