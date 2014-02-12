@@ -15,7 +15,7 @@ class CSC
                 :delay_sign,
                 :no_logo
 
-  attr_accessor :output, 
+  attr_accessor :out, 
                 :target, 
                 :doc, 
                 :main,
@@ -42,7 +42,7 @@ class CSC
     p << @references.map { |ref| "/reference:#{Platform.format_path(ref)}" } if @references
     p << @resources.map { |res| "/resource:#{Platform.format_path(res)}" } if @resources
     p << "/main:#{@main}" if @main
-    p << "/out:#{Platform.format_path(@output)}" if @output
+    p << "/out:#{Platform.format_path(@out)}" if @out
     p << "/target:#{@target}" if @target
     p << "/optimize+" if @optimize
     p << "/keyfile:#{Platform.format_path(@key_file)}" if @key_file

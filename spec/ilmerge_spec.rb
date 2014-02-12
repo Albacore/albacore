@@ -5,7 +5,7 @@ describe ILMerge do
     task = ILMerge.new()
     task.extend(SystemPatch)
     task.command = "ilmerge"
-    task.output = "output.dll"
+    task.out = "output.dll"
     task.target_platform = "net40"
     task.assemblies = ["a.dll", "b.dll"]
     task

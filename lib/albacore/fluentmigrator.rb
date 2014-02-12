@@ -8,7 +8,7 @@ class FluentMigrator
   include Albacore::RunCommand
   include Configuration::FluentMigrator
 
-  attr_reader   :output,
+  attr_reader   :out,
                 :verbose,
                 :preview
 
@@ -16,7 +16,7 @@ class FluentMigrator
                 :provider, 
                 :connection, 
                 :namespace, 
-                :output_filename, 
+                :out_file, 
                 :steps, 
                 :tag, 
                 :task, 
@@ -41,8 +41,8 @@ class FluentMigrator
     p << "/provider=#{@provider}"
     p << "/connection=\"#{@connection}\""
     p << "/ns=#{@namespace}" if @namespace
-    p << "/out" if @output
-    p << "/outfile=\"#{@output_filename}\"" if @output_filename
+    p << "/out" if @out
+    p << "/outfile=\"#{@out_file}\"" if @out_file
     p << "/preview" if @preview
     p << "/steps=#{@steps}" if @steps
     p << "/task=#{@task}" if @task
@@ -63,7 +63,7 @@ class FluentMigrator
     @preview = true
   end
   
-  def output
-    @output = true
+  def out
+    @out = true
   end
 end

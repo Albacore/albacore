@@ -11,8 +11,8 @@ class NuGetPack
   attr_reader   :symbols
   
   attr_accessor :nuspec,
-                :output,
-                :base_folder
+                :output_directory,
+                :base_path
 
   attr_hash     :properties
 
@@ -38,8 +38,8 @@ class NuGetPack
     p << "pack"
     p << "-Symbols" if @symbols
     p << "\"#{@nuspec}\""
-    p << "-BasePath \"#{@base_folder}\"" if @base_folder
-    p << "-OutputDirectory \"#{@output}\"" if @output
+    p << "-BasePath \"#{@base_path}\"" if @base_path
+    p << "-OutputDirectory \"#{@output_directory}\"" if @output_directory
     p << "-Properties #{@properties.map { |key, value| "#{key}=\"#{value}\"" }.join(";")}" if @properties
     p
   end

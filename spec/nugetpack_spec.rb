@@ -6,8 +6,8 @@ describe NuGetPack do
     task.extend(SystemPatch)
     task.command = "nuget"
     task.nuspec = "nuspec"
-    task.output = "out/package"
-    task.base_folder = "bin/Release"
+    task.output_directory = "out/package"
+    task.base_path = "bin/Release"
     task.properties = {:foo => "foo", :bar => "bar"}
     task.symbols
     task

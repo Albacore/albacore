@@ -10,7 +10,7 @@ class ILMerge
   include Albacore::RunCommand
   include Configuration::ILMerge
 
-  attr_accessor :output, 
+  attr_accessor :out, 
                 :target_platform
 
   attr_array    :assemblies
@@ -23,7 +23,7 @@ class ILMerge
   end
 
   def execute
-    raise "ilmerge requires #output" unless @output
+    raise "ilmerge requires #out" unless @out
     raise "ilmerge requires #assemblies" unless @assemblies
 
     result = run_command("ILMerge", build_parameters)
@@ -32,8 +32,8 @@ class ILMerge
 
   def build_parameters  
     p = []
-    p << "/out:\"#{output}\""
-    p << "/targetPlatform:#{target_platform}" if @target_platform
+    p << "/out:\"#{@out}\""
+    p << "/targetPlatform:#{@target_platform}" if @target_platform
     p << @assemblies.map { |asm| "\"#{asm}\"" } if @assemblies
     p
   end

@@ -6,7 +6,7 @@ describe NuGetPack do
     task.extend(SystemPatch)
     task.command = "nuget"
     task.package = "package"
-    task.apikey = "apikey"
+    task.api_key = "apikey"
     task.source = "source"
     task
   end

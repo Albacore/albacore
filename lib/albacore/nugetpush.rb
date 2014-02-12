@@ -9,7 +9,7 @@ class NuGetPush
   include Configuration::NuGetPush
   
   attr_accessor :package,
-                :apikey,
+                :api_key,
                 :source
 
   def initialize()
@@ -33,7 +33,7 @@ class NuGetPush
     p = []
     p << "push"
     p << "\"#{@package}\""
-    p << "#{@apikey}" if @apikey
+    p << "#{@api_key}" if @api_key
     p << "-Source #{source}" if @source
     p
   end

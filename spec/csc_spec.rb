@@ -10,7 +10,7 @@ describe CSC do
     task.resources = ["foo.resx"]
     task.define = [:symbol1, :symbol2]
     task.target = :library
-    task.output = "output.dll"
+    task.out = "output.dll"
     task.doc = "docfile.xml"
     task.main = "Program"
     task.key_file = "keyfile"

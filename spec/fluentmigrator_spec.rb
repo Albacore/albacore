@@ -9,8 +9,8 @@ describe FluentMigrator do
     task.provider = "provider"
     task.target = "target"
     task.connection = "connection"
-    task.output
-    task.output_filename = "output.txt"
+    task.out
+    task.out_file = "output.txt"
     task.steps = 1
     task.task = "migrate:up"
     task.version = "001"
