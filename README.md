@@ -1,10 +1,10 @@
 # Albacore
 
-[![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=clean_slate)](http://travis-ci.org/Albacore/albacore)
+[![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=master)](http://travis-ci.org/Albacore/albacore)
 
 Version 2.0 of Albacore.
 
-This branch is the next official version. It is currently being used for
+It is currently being used for
 numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and RMI
 2.0.
 
@@ -32,7 +32,7 @@ build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
     source 'http://rubygems.org'
-    gem 'albacore', '2.0.0.rc.5'
+    gem 'albacore', '2.0.0.rc.7'
 
 When setting up your build you need to ensure it is reproducible.  Bundler
 allows you to lock down all gems that albacore depend on to their specific
@@ -214,7 +214,7 @@ TBD
 Tasks are things you can include that create singleton ruby tasks that are
 pre-named and pre-made. As opposed to the task types, these are 'includeable'.
 More info can be found in the
-[README](https://github.com/Albacore/albacore/blob/clean_slate/lib/albacore/tasks/README.md).
+[README](https://github.com/Albacore/albacore/blob/master/lib/albacore/tasks/README.md).
 
 ### Versionizer
 
