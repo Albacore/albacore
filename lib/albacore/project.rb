@@ -134,8 +134,9 @@ module Albacore
     end
     
     # save the xml
-    def save
-      File.open(path, 'w') { |f| @proj_xml_node.write_xml_to f }
+    def save(output = nil)
+      output = path unless output
+      File.open(output, 'w') { |f| @proj_xml_node.write_xml_to f }
     end
     
     # get the path of 'packages.config'
