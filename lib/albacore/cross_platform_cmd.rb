@@ -68,13 +68,13 @@ module Albacore
     def system *cmd, &block
       raise ArgumentError, "cmd is nil" if cmd.nil? # don't allow nothing to be passed
       opts = Map.options((Hash === cmd.last) ? cmd.pop : {}). # same arg parsing as rake
-        apply(
-          silent: false,
-          output: true,
-          work_dir: FileUtils.pwd,
-          out: Albacore.application.output,
-          err: Albacore.application.output_err,
-          clr_command: false)
+        apply({
+          :silent => false,
+          :output => true,
+          :work_dir => FileUtils.pwd,
+          :out => Albacore.application.output,
+          :err => Albacore.application.output_err,
+          :clr_command => false })
 
       exe, pars, printable, block = prepare_command cmd, (opts.get('clr_command')), &block
 
@@ -101,15 +101,12 @@ module Albacore
 
         debug 'execute the new process, letting it write to the write FD (file descriptor)'
         @pid = Process.spawn(*[exe, *pars],
-          out:   write,
-        #  err:   ewrite,
-          chdir: opts.get(:work_dir))
+          { :out => write,
+            #:err => ewrite,
+            :chdir => opts.get(:work_dir) })
 
         debug 'waiting for process completion'
         _, status = Process.wait2 @pid
-
-        #debug 'waiting for thread completion'
-        #@out_thread.join
 
         return block.call(status.success? && inmem.string, status, inmem.string)
       end
