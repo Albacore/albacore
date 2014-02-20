@@ -5,39 +5,10 @@ require 'pathname'
 require 'rake'
 require 'albacore/logging'
 require 'albacore/project'
+require 'albacore/package'
+require 'albacore/package_repo'
 
 module Albacore::Tools
-  # a package repository is a location where the nugets or wraps are stored
-  class PackageRepo
-    include Logging
-    # initialize that package repository with a path to all the packages
-    def initialize path
-      @path = path
-    end
-    # find the latest package based on the package id
-    def find_latest pkg_id
-      trace "finding latest from #{@path}, id: #{pkg_id}"
-      sorted = Dir.glob(File.join(@path, "#{pkg_id}*/**/*.dll")) # find the latest
-      path = sorted.first
-      Package.new pkg_id, path
-    end
-  end
-
-  # a package encapsulates the properties of a set package with a 
-  # distinct path, version and id
-  class Package
-    attr_reader :id, :path
-    def initialize id, path
-      @id = id
-      @path = path
-    end
-    def path
-      @path
-    end
-    def to_s
-      "Package[#{@path}]"
-    end
-  end
 
   # a tuple of a package and a ref
   class MatchedRef
@@ -46,7 +17,6 @@ module Albacore::Tools
       @package, @ref = package, ref
     end
   end
-
   
   module RestoreHintPaths
     class Config

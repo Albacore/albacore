@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'albacore/logging'
 require 'albacore/semver'
+require 'albacore/package_repo'
 
 module Albacore
 
@@ -58,11 +59,20 @@ module Albacore
       nil
     end
 
+    # This is the output path if the project file doens't have a configured
+    # 'Configuration' condition like all default project files have that come
+    # from Visual Studio/Xamarin Studio.
     def fallback_output_path
       fallback = @proj_xml_node.css("Project PropertyGroup OutputPath").first
       condition = fallback.parent['Condition'] || 'No \'Condition\' specified'
       warn "chose an OutputPath in: '#{self}' for Configuration: <#{condition}> [albacore: project]"
       fallback.inner_text
+    end
+
+    # Gets the relative location (to the project base path) of the dll
+    # that it will output
+    def output_dll conf
+      Paths.join(output_path(conf) || fallback_output_path, "#{asmname}.dll")
     end
     
     # find the NodeList reference list
@@ -122,7 +132,7 @@ module Albacore
     # returns enumerable Package
     def find_packages
       declared_packages.collect do |package|
-        guess = PackageRepo.new('./src/packages').find_latest package['id']
+        guess = ::Albacore::PackageRepo.new('./src/packages').find_latest package.id
         debug "#{name}: guess: #{guess} [albacore: project]"
         guess
       end

@@ -170,19 +170,37 @@ end
 
 ### Docs: nugets_pack
 
-TBD
+```
+nugets_pack :create_nugets do |p|
+  p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
+    exclude(/Tests/)
+  p.out     = 'build/pkg'
+  p.exe     = 'buildsupport/NuGet.exe'
+  p.with_metadata do |m|
+    m.description = 'A cool nuget'
+    m.authors = 'Henrik'
+    m.version = ENV['NUGET_VERSION']
+  end
+  p.with_package do |p|
+    p.add_file 'file/relative/to/proj', 'lib/net40'
+  end
+end
+```
 
-#### #no_project_dependencies
+#### nugets_pack Config##no_project_dependencies
 
 Cancel following of references between projects that cause nugets_pack to find and add as nuget dependencies, linked projects.
 
-```
-# TODO
-```
-
 ### Docs: nugets_restore
 
-TBD
+Enables nuget restore throughout the solution.
+
+```
+nugets_restore :restore do |p|
+  p.out = 'src/packages'
+  p.exe = 'buildsupport/NuGet.exe'
+end
+```
 
 ### Docs: asmver
 
@@ -203,7 +221,13 @@ end
 
 ### Docs: test_runner
 
-TBD
+```
+test_runner :tests do |tests|
+  tests.files = FileList['**/*.Tests/bin/Release/*.Tests.dll'] # dll files with test
+  tests.exe = 'src/packages/NUnit.Runners.2.5.3/tools/nunit-console.exe' # executable to run tests with
+  tests.copy_local # when running from network share
+end
+```
 
 ### Docs: nugets_authentication
 

@@ -66,11 +66,7 @@ module Albacore
       Albacore.define_task *args do
         c = Albacore::TestRunner::Config.new
         yield c
-
-        c.files.each { |dll|
-          command = Albacore::TestRunner::Cmd.new c.work_dir, c.exe, c.parameters, dll
-          Albacore::TestRunner::Task.new(command).execute
-        }
+        Albacore::TestRunner::Task.new(c.opts).execute
       end
     end
 

@@ -45,9 +45,11 @@ describe Albacore::Project, "when loading packages.config" do
 end
 
 describe Albacore::Project, "when reading project file" do
+  def project_path
+    File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
+  end
   subject do
-    p = File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
-    Albacore::Project.new(p)
+    Albacore::Project.new project_path
   end
   let :library1 do
     subject.included_files.find { |p| p.include == 'Library1.fs' }
@@ -55,7 +57,42 @@ describe Albacore::Project, "when reading project file" do
   it "should contain library1" do
     library1.should_not be_nil
   end
+
+  describe 'public API' do
+    it do
+      subject.should respond_to(:name)
+    end
+    it do
+      subject.should respond_to(:asmname)
+    end
+    it do
+      subject.should respond_to(:version)
+    end
+    it do
+      subject.should respond_to(:authors)
+    end
+    it 'should have five referenced assemblies' do
+      subject.find_refs.length.should eq(5)
+    end
+    it 'knows about referenced packages' do
+      subject.should respond_to(:declared_packages)
+    end
+    it 'knows about referenced projects' do
+      subject.should respond_to(:declared_projects)
+    end
+    it 'should have three referenced packages' do
+      expected = %w|Intelliplan.Util Newtonsoft.Json NLog|
+      subject.find_packages.map(&:id).should eq(expected)
+    end
+
+    # TODO: check whether output is DLL or EXE or something else
+    it 'should know its output dll' do
+      should respond_to :output_dll
+      subject.output_dll('Release').should eq(Paths.join 'bin', 'Release', 'Project.dll')
+    end
+  end
 end
+
 describe Albacore::Project, 'when given a PathnameWrap' do
   it 'should allow argument of PathnameWrap' do
     require 'albacore/paths'
