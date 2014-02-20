@@ -5,15 +5,18 @@ include Albacore::Asmver
 
 %w|Fs Vb Cpp Cs|.each do |lang|
   require "albacore/task_types/asmver/#{lang.downcase}"
+
   describe "the #{lang} engine" do
     subject do
       "Albacore::Asmver::#{lang}".split('::').inject(Object) { |o, c| o.const_get c }.new
     end
+
     %w|build_attribute build_named_parameters build_positional_parameters build_using_statement build_comment namespace_end namespace_start|.each do |m|
       it "should have a public API ##{m.to_s}" do
         should respond_to(:"#{m}")
       end
     end
+
     describe 'when building version attribute' do
       let :version do
         subject.build_attribute 'AssemblyVersion', '0.2.3'
@@ -28,6 +31,7 @@ include Albacore::Asmver
         version.should include('assembly: ')
       end
     end
+
     describe 'when building using statement' do
       let :using do
         subject.build_using_statement 'System.Runtime.CompilerServices'
@@ -36,6 +40,7 @@ include Albacore::Asmver
         using.should =~ /System.{1,2}Runtime.{1,2}CompilerServices/
       end
     end
+
     describe 'when building named parameters' do
       let :plist do
         subject.build_named_parameters milk_cows: true, birds_fly: false, hungry_server: 'sad server'
@@ -44,6 +49,7 @@ include Albacore::Asmver
         plist.should =~ /milk_cows .{1,2} true. birds_fly .{1,2} false. hungry_server .{1,2} "sad server"/
       end
     end
+
     describe 'when building positional parameters' do
       let :plist do
         subject.build_positional_parameters ((%w|a b c hello|) << false)
@@ -52,6 +58,7 @@ include Albacore::Asmver
         plist.should eq('"a", "b", "c", "hello", false')
       end
     end
+
     describe 'when building single line comment' do
       let :comment do
         subject.build_comment 'this is my comment'
@@ -70,6 +77,7 @@ include Albacore::Asmver
         comment.should =~ expected
       end
     end
+
     describe 'when building a multi-line comment' do
       let :comment do
         subject.build_comment %{This is a very interesting comment
@@ -97,8 +105,28 @@ on many lines}
         comment.should eq(expected)
       end
     end
+
+    describe 'when building namespace' do
+      let :ns do
+        subject.send :namespace_start, 'This.Ns.Here'
+      end
+      it 'should include the string verbatim' do
+        ns =~ /This\.Ns\.Here/
+      end
+      let :expected do
+        { 'Fs' => %r{namespace This\.Ns\.Here},
+          'Vb' => %r{^$},
+          'Cs' => %r{^$},
+          'Cpp' => %r{namespace This::Ns::Here \{}
+        }[lang]
+      end
+      it 'should include the correct syntax for single line comment' do
+        ns.should =~ expected
+      end
+    end
   end
 end
+
 describe FileGenerator do
   subject do FileGenerator.new(Fs.new, 'MyNamespace.Here', {}) end
   it do
@@ -108,6 +136,7 @@ describe FileGenerator do
     FileGenerator.new(Fs.new, '', {})
   end
 end
+
 describe FileGenerator, 'when generating F# file' do
   before :all do
     @out = StringIO.new
@@ -153,6 +182,7 @@ describe FileGenerator, 'when generating F# file' do
     generated.should =~ /\(\)(\r\n?|\n)$/m
   end
 end
+
 describe FileGenerator do
   before :all do
     @out = StringIO.new

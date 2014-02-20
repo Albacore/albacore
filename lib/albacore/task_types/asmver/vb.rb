@@ -14,6 +14,14 @@ module Albacore::Asmver
       /^\<assembly: #{attr_name}(.+)/i  
     end
 
+    def namespace_start ns
+      ""
+    end
+
+    def namespace_end
+      ""
+    end
+
     # override
     def comment_singleline_token
       '\''
