@@ -33,13 +33,17 @@ module Albacore
         
         # purely M.m.p format
         ENV['FORMAL_VERSION'] = "#{ XSemVer::SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
+
+        # four-numbers version, useful if you're dealing with COM/Windows
+        ENV['LONG_VERSION'] = "#{ver.format("%M.%m.%p%s")}.0"
         
         body = proc {
           Albacore.publish :build_version, OpenStruct.new(
             :build_number   => revision,
             :build_version  => ENV['BUILD_VERSION'],
             :semver         => ver,
-            :formal_version => ENV['FORMAL_VERSION']
+            :formal_version => ENV['FORMAL_VERSION'],
+            :long_version   => ENV['LONG_VERSION']
           )
         }
 
