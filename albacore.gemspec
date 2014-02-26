@@ -28,7 +28,6 @@ EOF
   s.add_dependency 'semver2', '~> 3.3'
   s.add_dependency 'ProcessPilot', '~> 2.0'
   s.add_dependency 'highline', '~> 1.6'
-  s.add_dependency 'rubyzip', '=0.9.9'
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2'
   s.add_development_dependency 'rspec', '>= 2.13'
