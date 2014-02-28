@@ -26,6 +26,7 @@ module Albacore
         end
         Albacore.subscribe :build_version do |version|
           # tell teamcity our decision
+          # TODO: use #build_number
           ::Albacore.puts "##teamcity[buildNumber '#{version.build_version}']"
         end
         Albacore.subscribe :progress do |p|

@@ -15,3 +15,14 @@ describe 'adding versionizer to a class' do
     end
   end
 end
+
+describe 'finding build versions'
+  subject do
+    ::Albacore::Tasks::Versionizer.versions
+  end
+
+  it do
+    subject...
+  end
+end
+

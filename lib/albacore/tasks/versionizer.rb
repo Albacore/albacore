@@ -50,6 +50,8 @@ module Albacore
         Albacore.define_task *sym, &body
       end
 
+      def self.versions semver, 
+
       # load the commit data
       # returns: [short-commit :: String, date :: DateTime]
       #
