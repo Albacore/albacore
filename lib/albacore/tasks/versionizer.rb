@@ -22,35 +22,40 @@ module Albacore
       #
       def self.new *sym
         ver = XSemVer::SemVer.find
-        revision = (ENV['BUILD_NUMBER'] || ver.patch).to_i
-        ver = XSemVer::SemVer.new(ver.major, ver.minor, revision, ver.special)
+        ver.patch = (ENV['BUILD_NUMBER'] || ver.patch).to_i
+        version_data = versions(ver, &commit_data)
         
-        # extensible number w/ git hash
-        ENV['BUILD_VERSION'] = ver.format("%M.%m.%p%s") + ".#{commit_data()[0]}"
-        
-        # nuget (not full semver 2.0.0-rc.1 support) see http://nuget.codeplex.com/workitem/1796
-        ENV['NUGET_VERSION'] = ver.format("%M.%m.%p%s")
-        
-        # purely M.m.p format
-        ENV['FORMAL_VERSION'] = "#{ XSemVer::SemVer.new(ver.major, ver.minor, revision).format "%M.%m.%p"}"
+        Albacore.subscribe :build_version do |data|
+          ENV['BUILD_VERSION']  = data.build_version
+          ENV['NUGET_VERSION']  = data.nuget_version
+          ENV['FORMAL_VERSION'] = data.formal_version
+          ENV['LONG_VERSION']   = data.long_version
+        end
 
-        # four-numbers version, useful if you're dealing with COM/Windows
-        ENV['LONG_VERSION'] = "#{ver.format '%M.%m.%p'}.0"
-        
-        body = proc {
-          Albacore.publish :build_version, OpenStruct.new(
-            :build_number   => revision,
-            :build_version  => ENV['BUILD_VERSION'],
-            :semver         => ver,
-            :formal_version => ENV['FORMAL_VERSION'],
-            :long_version   => ENV['LONG_VERSION']
-          )
-        }
-
-        Albacore.define_task *sym, &body
+        Albacore.define_task *sym do
+          Albacore.publish :build_version, OpenStruct.new(version_data)
+        end
       end
 
-      def self.versions semver, 
+      def self.versions semver, &commit_data
+        {
+          # just a monotonic inc
+          :build_number   => semver.patch,
+          :semver         => semver,
+
+          # purely M.m.p format
+          :formal_version => "#{ XSemVer::SemVer.new(semver.major, semver.minor, semver.patch).format "%M.%m.%p"}",
+
+          # four-numbers version, useful if you're dealing with COM/Windows
+          :long_version   => "#{semver.format '%M.%m.%p'}.0",
+
+          # extensible number w/ git hash
+          :build_version  => semver.format("%M.%m.%p%s") + ".#{yield[0]}",
+
+          # nuget (not full semver 2.0.0-rc.1 support) see http://nuget.codeplex.com/workitem/1796
+          :nuget_version  => semver.format("%M.%m.%p%s")
+        }
+      end
 
       # load the commit data
       # returns: [short-commit :: String, date :: DateTime]
@@ -59,10 +64,10 @@ module Albacore
         begin
           commit = `git rev-parse --short HEAD`.chomp()[0,6]
           git_date = `git log -1 --date=iso --pretty=format:%ad`
-          commit_date = DateTime.parse( git_date ).strftime("%Y-%m-%d %H%M%S")
+          commit_date = DateTime.parse( git_date ).strftime("%Y-%m-%d %H:%M:%S")
         rescue Exception => e
           commit = (ENV['BUILD_VCS_NUMBER'] || "000000")[0,6]
-          commit_date = Time.new.strftime("%Y-%m-%d %H%M%S")
+          commit_date = Time.new.strftime("%Y-%m-%d %H:%M:%S")
         end
         [commit, commit_date]
       end
