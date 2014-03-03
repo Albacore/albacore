@@ -23,7 +23,7 @@ module Albacore
       def self.new *sym
         ver = XSemVer::SemVer.find
         ver.patch = (ENV['BUILD_NUMBER'] || ver.patch).to_i
-        version_data = versions(ver, &commit_data)
+        version_data = versions(ver, &method(:commit_data))
         
         Albacore.subscribe :build_version do |data|
           ENV['BUILD_VERSION']  = data.build_version
@@ -32,7 +32,7 @@ module Albacore
           ENV['LONG_VERSION']   = data.long_version
         end
 
-        Albacore.define_task *sym do
+        Albacore.define_task(*sym) do
           Albacore.publish :build_version, OpenStruct.new(version_data)
         end
       end
@@ -65,7 +65,7 @@ module Albacore
           commit = `git rev-parse --short HEAD`.chomp()[0,6]
           git_date = `git log -1 --date=iso --pretty=format:%ad`
           commit_date = DateTime.parse( git_date ).strftime("%Y-%m-%d %H:%M:%S")
-        rescue Exception => e
+        rescue
           commit = (ENV['BUILD_VCS_NUMBER'] || "000000")[0,6]
           commit_date = Time.new.strftime("%Y-%m-%d %H:%M:%S")
         end
