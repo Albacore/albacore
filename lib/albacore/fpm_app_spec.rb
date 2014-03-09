@@ -36,12 +36,12 @@ module Albacore
         '--version'     => @spec.version,
         '--epoch'       => 1,
         '--license'     => @spec.license,
-        '-C'           => @spec.dir_path,
+        '-C'            => @spec.dir_path,
         '--depends'     => 'mono',
         '--rpm-digest'  => 'sha256',
 #        '--package'     => @out # TODO: figure out how to represent the package
                                  #       name
-      }
+      }.reject { |_, v| v.nil? }
     end
 
     # Generates the flags and flatten them to an array that is possible to feed

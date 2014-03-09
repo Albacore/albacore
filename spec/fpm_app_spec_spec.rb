@@ -100,3 +100,24 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 end
 
+describe ::Albacore::FpmAppSpec, 'should never generate nils' do
+  let :spec do
+    ::Albacore::AppSpec.new 'missing descriptor path', %{
+---
+title: my.app
+project_path: spec/testdata/Project/Project.fsproj
+}, XSemVer::SemVer.new(5, 6, 7)
+  end
+
+  subject do
+    ::Albacore::FpmAppSpec.new spec 
+  end
+
+  it 'should not have a license' do
+    spec.license.should be_nil
+  end
+  
+  it 'that license should never be a FPM parameter' do
+    subject.generate_flags.has_key?('--license').should be_false
+  end
+end

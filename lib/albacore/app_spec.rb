@@ -1,21 +1,56 @@
 require 'yaml'
+require 'albacore/logging'
 
 module Albacore
   # a spec object
   class AppSpec
+    include ::Albacore::Logging
 
-    # create a new app spec from yaml data
+    # Create a new app spec from yaml data; will use heuristics to let the
+    # developer avoid as much typing and definition mongering as possible; for
+    # details see the unit tests and the documentation for this class.
     #
-    # @descriptor_path The location of the descriptor file (the .appspec)
-    # @data A yaml-containing string
-    # @semver [XSemVer] An optional semver instance that can be queried for what
+    # @descriptor_path [String] The location of the descriptor file (the .appspec)
+    # @data [String] A yaml-containing string
+    # @semver [::XSemVer] An optional semver instance that can be queried for what
     #   version the package has.
     def initialize descriptor_path, data, semver = nil
       raise ArgumentError, 'data is nil' unless data
       @path = descriptor_path
-      @conf = YAML.load data
-      @proj = Project.new @conf['project_path']
+      @conf = YAML.load(data) || Hash.new
+
+      project_path = resolve_project descriptor_path, @conf
+      raise ArgumentError, "couldn't find project, descriptor_path: #{descriptor_path.inspect}" unless valid_path project_path
+
+      @proj = Project.new project_path
       @semver = semver
+    end
+
+    # Resolves the project file given an optional descriptor path or a
+    # configuration hash or both. One of the other of the parameters need to
+    # exist, or an error will be thrown.
+    #
+    # @param descriptor_path May be nil
+    # @param conf [#[]] A hash or something indexable
+    def resolve_project descriptor_path, conf
+      trace { "trying to resolve project, descriptor_path: #{descriptor_path.inspect}, conf: #{conf.inspect} [AppSpec#resolve_path]" }
+
+      project_path = conf['project_path']
+      return File.join File.dirname(descriptor_path), project_path if project_path and valid_path descriptor_path
+
+      trace { 'didn\'t have both a project_path and a descriptor_path that was valid [AppSpec#resolve_project]' }
+      return project_path if project_path
+      find_first_project descriptor_path
+    end
+
+    # Given a descriptor path, tries to find the first matching project file. If
+    # you have multiple project files, the order of which {Dir#glob} returns
+    # values will determine which is chosen
+    def find_first_project descriptor_path
+      trace { "didn't have a valid project_path, trying to find first project at #{descriptor_path.inspect}" }
+      dir = File.dirname descriptor_path
+      abs_dir = File.expand_path dir
+      Dir.glob(File.join(abs_dir, '*proj')).first
     end
 
     # path of the *.appspec
@@ -69,10 +104,21 @@ module Albacore
     # load the App Spec from a descriptor path
     def self.load descriptor_path
       raise ArgumentError, 'missing parameter descriptor_path' unless descriptor_path
+      raise ArgumentError, 'descriptor_path does not exist' unless File.exists? descriptor_path
       AppSpec.new(descriptor_path, File.read(descriptor_path))
     end
 
+    # Customizing the to_s implementation to make the spec more amenable for printing
+    def to_s
+      "AppSpec[#{title}], #{@conf.keys.length} keys]"
+    end
+
     private
+    # determines whether the passed path is valid and existing
+    def valid_path path
+      path and File.exists? path
+    end
+
     # gets the source from the current git repository: finds the first remote and uses
     # that as the source of the RPM
     def git_source
