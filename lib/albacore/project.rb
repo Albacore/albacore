@@ -28,6 +28,9 @@ module Albacore
       prop || asmname
     end
 
+    # The same as #name
+    alias_method :title, :name
+
     # get the assembly name specified in the project file
     def asmname
       read_property 'AssemblyName'
@@ -35,13 +38,22 @@ module Albacore
 
     # gets the version from the project file
     def version
-      read_property "Version"
+      read_property 'Version'
     end
 
     # gets any authors from the project file
     def authors
-      read_property "Authors"
+      read_property 'Authors'
     end 
+
+    def description
+      read_property 'Description'
+    end
+
+    # the license that the project has defined in the metadata in the xxproj file.
+    def license
+      read_property 'License'
+    end
 
     # gets the output path of the project given the configuration or raise
     # an error otherwise
