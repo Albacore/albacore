@@ -31,7 +31,9 @@ module Albacore
         end
         Albacore.subscribe :build_version do |version|
           # tell teamcity our decision
-          ::Albacore.puts "##teamcity[buildNumber '#{version.build_number}']"
+          ::Albacore.puts "##teamcity[buildNumber '#{version.build_number}']" # available as 'build.number' in TC
+          ::Albacore.puts "##teamcity[setParameter name='build.version' value='#{version.build_version}']"
+          ::Albacore.puts "##teamcity[setParameter name='build.version.formal' value='#{version.formal_version}']"
         end
         Albacore.subscribe :progress do |p|
           # tell teamcity of our progress
