@@ -20,6 +20,13 @@ require "albacore"
 class Zippy
 
   # Initialize with the directory to zip and the location of the output archive.
+  #
+  # @param [String] input_dir The location to zip as a file system relative or
+  #                           absolute path
+  #
+  # @param [String] out_file The path of the output zip file that is generated.
+  # @param [Block] filter An optional block with a filter that is to return true
+  #                       if the file is to be added.
   def initialize input_dir, out_file, &filter
     @input_dir = input_dir.
       gsub(/[\/\\]$/, '').
