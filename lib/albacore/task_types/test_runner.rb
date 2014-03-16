@@ -87,6 +87,8 @@ module Albacore
       end
       def handle_directory dll, exe, &block
         if @opts.get(:copy_local)
+          # TODO: #mktmpdir is not always reliable; consider contributing a patch to ruby?
+          # Fails sometimes with "directory already exists"
           Dir.mktmpdir 'alba-test' do |dir|
             sut, runners = Paths.join(dir, 'sut').to_s, Paths.join(dir, 'runners').to_s
             [sut, runners].each { |d| FileUtils.mkdir_p d }

@@ -321,6 +321,28 @@ Document your code with
 writing it: it's much easier to write the documentation together with the code
 than afterwards.
 
+## Docs: Zippy
+
+This is a simple example which uses rubyzip to recursively generate a zip file
+from the contents of a specified directory. The directory itself is not included
+in the archive, rather just its contents.
+
+Usage:
+
+```
+dir_to_zip = "/tmp/input"
+out_file = "/tmp/out.zip"
+zf = Zippy.new dir_to_zip, out_file
+zf.write
+```
+
+Or:
+
+```
+z = Zippy.new(directory_to_zip, output_file) { |f| f.include? 'html' }
+z.write
+```
+
 ## Ideas:
 
 When building multiple configurations,
