@@ -26,7 +26,7 @@ module Albacore
     # Generate flags for FPM - if you don't want to execute directly with the object
     # you can use this method to generate what you should give to FPM yourself
     #
-    def generate_flags
+    def generate_flags overrides = {}
       { '-s'            => 'dir',
         '-t'            => 'rpm',
         '--name'        => @spec.title,
@@ -41,14 +41,14 @@ module Albacore
         '--rpm-digest'  => 'sha256',
 #        '--package'     => @out # TODO: figure out how to represent the package
                                  #       name
-      }.reject { |_, v| v.nil? }
+      }.merge(overrides).reject { |_, v| v.nil? }
     end
 
     # Generates the flags and flatten them to an array that is possible to feed
     # into the #system command
     #
-    def generate_flags_flat
-      generate_flags.map { |k, v| [k, v] }.flatten.push '--force'
+    def generate_flags_flat overrides = {}
+      generate_flags(overrides).map { |k, v| [k, v] }.flatten.push '--force'
     end
 
     # Calls FPM with the flags generated

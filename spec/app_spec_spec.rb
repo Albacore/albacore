@@ -43,6 +43,14 @@ project_path: spec/testdata/Project/Project.fsproj
   it 'should have a nil version' do
     subject.version.should be_nil
   end
+
+  it 'should have non-nil #bin_folder' do
+    subject.bin_folder.should_not be_nil
+  end
+
+  it 'should have non-nil #conf_folder' do
+    subject.conf_folder.should_not be_nil
+  end
 end
 
 describe ::Albacore::AppSpec, 'public API with required fields' do

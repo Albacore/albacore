@@ -101,6 +101,18 @@ module Albacore
       semver_version || conf['version'] || proj.version
     end
 
+    # gets the binary folder, first from .appspec then from proj given a configuration
+    # mode (default: Release)
+    def bin_folder configuration = 'Release'
+      conf['bin'] || proj.output_path(configuration)
+    end
+
+    # gets the folder that is used to keep configuration that defaults
+    # to the current (.) directory
+    def conf_folder
+      conf['conf_folder'] || '.'
+    end
+
     # load the App Spec from a descriptor path
     def self.load descriptor_path
       raise ArgumentError, 'missing parameter descriptor_path' unless descriptor_path
