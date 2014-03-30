@@ -113,6 +113,14 @@ module Albacore
       conf['conf_folder'] || '.'
     end
 
+    # gets an enumerable list of paths that are the 'main' contents of the package
+    #
+    def contents
+      conf['contents'] || []
+    end
+
+    # TODO: support a few of these: https://github.com/bernd/fpm-cookery/wiki/Recipe-Specification
+
     # load the App Spec from a descriptor path
     def self.load descriptor_path
       raise ArgumentError, 'missing parameter descriptor_path' unless descriptor_path

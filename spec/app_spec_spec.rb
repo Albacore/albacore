@@ -51,6 +51,14 @@ project_path: spec/testdata/Project/Project.fsproj
   it 'should have non-nil #conf_folder' do
     subject.conf_folder.should_not be_nil
   end
+
+  it 'should have non-nil #contents' do
+    subject.contents.should_not be_nil
+  end
+
+  it 'should have a #contents that responds to #each' do
+    subject.contents.should respond_to :each
+  end
 end
 
 describe ::Albacore::AppSpec, 'public API with required fields' do
