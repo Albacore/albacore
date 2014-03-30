@@ -17,6 +17,27 @@ category: webserver
   end
 end
 
+describe ::Albacore::FpmAppSpec, 'public API' do
+  include_context 'valid AppSpec'
+
+  subject do
+    ::Albacore::FpmAppSpec.new spec
+  end
+
+  it do
+    should respond_to :filename
+  end
+
+  it do
+    should respond_to :generate
+  end
+
+  it do
+    should respond_to :generate_flags
+  end
+end
+
+
 describe ::Albacore::FpmAppSpec, 'when generating command from valid AppSpec' do
   include_context 'valid AppSpec'
 

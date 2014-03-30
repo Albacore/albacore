@@ -50,6 +50,14 @@ module Albacore
       generate_flags(overrides).map { |k, v| [k, v] }.concat(%w|--force .|).flatten
     end
 
+    # gets the filename that the resulting file will have, based on the flags
+    # to be passed to fpm
+    def filename flags = nil
+      flags ||= generate_flags
+      # TODO: handle architecture
+      "#{flags['--name']}-#{flags['--version']}-#{flags['--epoch']}.x86_64.rpm}"
+    end
+
     # Calls FPM with the flags generated
     def generate
       ::Albacore::CrossPlatformCmd.system 'fpm', generate_flags_flat

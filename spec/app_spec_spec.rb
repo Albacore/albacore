@@ -71,8 +71,6 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   # TODO: create a spike that actually works and document what is required here  
-
-
 end
 
 describe ::Albacore::AppSpec, 'when getting version from semver' do
