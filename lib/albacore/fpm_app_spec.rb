@@ -39,8 +39,7 @@ module Albacore
         '-C'            => @spec.dir_path,
         '--depends'     => 'mono',
         '--rpm-digest'  => 'sha256',
-#        '--package'     => @out # TODO: figure out how to represent the package
-                                 #       name
+        '--package'     => @out
       }.merge(overrides).reject { |_, v| v.nil? }
     end
 
