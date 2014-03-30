@@ -103,8 +103,9 @@ module Albacore
     #  - .appspec's version
     #  - .xxproj's version
     #  - semver from disk
+    #  - if all above fails; use '1.0.0'
     def version
-      semver_version || ENV['BUILD_VERSION'] || conf['version'] || proj.version || semver_disk_version
+      semver_version || ENV['BUILD_VERSION'] || conf['version'] || proj.version || semver_disk_version || '1.0.0'
     end
 
     # gets the binary folder, first from .appspec then from proj given a configuration
