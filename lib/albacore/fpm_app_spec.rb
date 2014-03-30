@@ -54,7 +54,7 @@ module Albacore
     # to be passed to fpm
     def filename flags = nil
       flags ||= generate_flags
-      # TODO: handle architecture
+      # TODO: handle OS architecture properly by taking from context
       "#{flags['--name']}-#{flags['--version']}-#{flags['--epoch']}.x86_64.rpm"
     end
 
@@ -65,17 +65,54 @@ module Albacore
   end
 
   class FpmAppSpec::Config
+    # create a new configuration for multiple xxproj-s to be packed with fpm into .deb/.rpm
+    def initialize
+      @bundler = true
+    end
+
+    # turn off the using of bundler; bundler will be used by default
+    def no_bundler
+      @bundler = false
+    end
+
+    # set the output path, defaults to '.'
+    def out=
+    end
+
+    # give the configuration a list of files to match
     def files=
     end
 
     def opts
-      Map.new
+      Map.new bundler: @bundler
     end
   end
 
+  # task implementation that can be #execute'd
   class FpmAppSpec::Task
+    include ::Albacore::CrossPlatformCmd
+
+    # create a new task instance with the given opts
+    def initialize opts
+      raise ArgumentError, 'opts is nil' if opts.nil?
+      @opts = opts
+    end
+
+    # this runs fpm and does some file copying
     def execute
-      puts 'TBD'
+      # TODO: supporting multiple projects
+
+      if opts.get :bundler
+        system 'bundle', %w|exec fpm|.concat(opts.get(:fpm_spec).generate_flags_flat)
+      else
+        system 'fpm', opts.get(:fpm_spec).generate_flags_flat
+      end
+    end
+
+    private
+    # TODO: finish
+    def specs
+      @opts.files
     end
   end
 end

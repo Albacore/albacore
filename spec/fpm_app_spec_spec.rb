@@ -146,3 +146,11 @@ project_path: spec/testdata/Project/Project.fsproj
     subject.generate_flags.has_key?('--license').should be_false
   end
 end
+
+describe ::Albacore::FpmAppSpec::Config do
+  %w|files= out= opts no_bundler|.each do |sym|
+    it "should respond_to :#{sym}" do
+      should respond_to :"#{sym}"
+    end
+  end
+end

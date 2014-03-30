@@ -41,7 +41,7 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should have a nil version' do
-    subject.version.should be_nil
+    subject.version.should eq('1.0.0')
   end
 
   it 'should have non-nil #bin_folder' do
