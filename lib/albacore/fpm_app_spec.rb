@@ -63,4 +63,19 @@ module Albacore
       ::Albacore::CrossPlatformCmd.system 'fpm', generate_flags_flat
     end
   end
+
+  class FpmAppSpec::Config
+    def files=
+    end
+
+    def opts
+      Map.new
+    end
+  end
+
+  class FpmAppSpec::Task
+    def execute
+      puts 'TBD'
+    end
+  end
 end
