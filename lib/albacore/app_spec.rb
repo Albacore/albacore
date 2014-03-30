@@ -1,5 +1,6 @@
 require 'yaml'
 require 'albacore/logging'
+require 'xsemver'
 
 module Albacore
   # a spec object
@@ -96,9 +97,14 @@ module Albacore
       conf['license'] || proj.license
     end
 
-    # gets the version
+    # gets the version with the following priorities:
+    #  - semver version passed in c'tor
+    #  - ENV['BUILD_VERSION']
+    #  - .appspec's version
+    #  - .xxproj's version
+    #  - semver from disk
     def version
-      semver_version || conf['version'] || proj.version
+      semver_version || ENV['BUILD_VERSION'] || conf['version'] || proj.version || semver_disk_version
     end
 
     # gets the binary folder, first from .appspec then from proj given a configuration
@@ -149,9 +155,20 @@ module Albacore
         first
     end
 
-    # Gets the semver version in %M.%m.%p form or nil if a semver isn't given.
+    # Gets the semver version in %M.%m.%p form or nil if a semver isn't given
+    # in the c'tor of this class. If we have gotten an explicit version in the constructor,
+    # let's assume that version should be used in front of anything else and that the calling
+    # libraries know what they are doing.
     def semver_version
       return @semver.format '%M.%m.%p' if @semver
+      nil
+    end
+
+    # if everything else fails, return the semver from disk
+    def semver_disk_version
+      v = XSemVer::SemVer.find
+      v.format '%M.%m.%p' if v
+    rescue SemVerMissingError
       nil
     end
   end
