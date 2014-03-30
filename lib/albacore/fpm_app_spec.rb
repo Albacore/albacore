@@ -48,7 +48,7 @@ module Albacore
     # into the #system command
     #
     def generate_flags_flat overrides = {}
-      generate_flags(overrides).map { |k, v| [k, v] }.flatten.push '--force'
+      generate_flags(overrides).map { |k, v| [k, v] }.concat(%w|--force .|).flatten
     end
 
     # Calls FPM with the flags generated
