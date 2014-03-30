@@ -55,7 +55,7 @@ module Albacore
     def filename flags = nil
       flags ||= generate_flags
       # TODO: handle architecture
-      "#{flags['--name']}-#{flags['--version']}-#{flags['--epoch']}.x86_64.rpm}"
+      "#{flags['--name']}-#{flags['--version']}-#{flags['--epoch']}.x86_64.rpm"
     end
 
     # Calls FPM with the flags generated

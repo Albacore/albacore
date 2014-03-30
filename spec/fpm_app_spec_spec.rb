@@ -28,6 +28,10 @@ describe ::Albacore::FpmAppSpec, 'public API' do
     should respond_to :filename
   end
 
+  it 'should know resulting filename' do
+    subject.filename.should eq('my.app-5.6.7-1.x86_64.rpm')
+  end
+
   it do
     should respond_to :generate
   end
