@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+require 'albacore/logging'
 require 'albacore/package'
 
 module Albacore

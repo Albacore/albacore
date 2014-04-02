@@ -2,7 +2,7 @@ require 'albacore/package'
 
 describe ::Albacore::Package do
   subject do
-    Package.new 'NLog', 'path/to/asm.dll'
+    Albacore::Package.new 'NLog', 'path/to/asm.dll'
   end
   it do
     should respond_to :id

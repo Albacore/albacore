@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'albacore/semver'
 require 'albacore/project'
+require 'albacore/paths'
 
 describe Albacore::Project, "when loading packages.config" do
   subject do
