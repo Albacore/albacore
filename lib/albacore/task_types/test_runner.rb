@@ -8,21 +8,6 @@ require 'albacore/cross_platform_cmd'
 
 module Albacore
   module TestRunner
-    class Cmd
-      include CrossPlatformCmd
-      def initialize work_dir, executable, parameters, file
-        @work_dir, @executable = work_dir, executable
-        @parameters = parameters.to_a.unshift(file)
-      end
-
-      def execute
-        system @executable,
-          @parameters,
-          :work_dir    => @work_dir,
-          :clr_command => true
-      end
-    end
-
     # the configuration object for the test runner
     class Config
       include CmdConfig
@@ -61,6 +46,22 @@ module Albacore
         end
       end
     end
+
+    class Cmd
+      include CrossPlatformCmd
+      def initialize work_dir, executable, parameters, file
+        @work_dir, @executable = work_dir, executable
+        @parameters = parameters.to_a.unshift(file)
+      end
+
+      def execute
+        system @executable,
+          @parameters,
+          :work_dir    => @work_dir,
+          :clr_command => true
+      end
+    end
+
 
     class Task
       include Logging

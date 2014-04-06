@@ -33,6 +33,28 @@ describe ::Albacore::TestRunner::Config do
   end
 end
 
+describe 'the order of which parameters are passed', ::Albacore::TestRunner::Config do
+  subject do
+    cmd = ::Albacore::TestRunner::Config.new
+    cmd.files = 'file.dll'
+    cmd.exe   = 'test-runner.exe'
+    cmd.add_parameter '/TestResults=abc.xml'
+    cmd
+  end
+
+  let :params do
+    subject.opts.get(:parameters)
+  end
+
+  it 'should first pass the flags' do
+    params.first.should eq('/TestResults=abc.xml')
+  end
+
+  it 'should pass the file as a :files' do
+    subject.opts.get(:files).should eq(['file.dll'])
+  end
+end
+
 describe ::Albacore::TestRunner::Cmd do
   subject do
     cmd = ::Albacore::TestRunner::Cmd.new 'work_dir', 'run-tests.exe', %w[params go here], 'lib.tests.dll'
