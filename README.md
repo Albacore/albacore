@@ -225,6 +225,7 @@ end
 test_runner :tests do |tests|
   tests.files = FileList['**/*.Tests/bin/Release/*.Tests.dll'] # dll files with test
   tests.exe = 'src/packages/NUnit.Runners.2.5.3/tools/nunit-console.exe' # executable to run tests with
+  tests.add_parameter '/TestResults=Lallaa.xml' # you may add parameters to the execution
   tests.copy_local # when running from network share
 end
 ```
