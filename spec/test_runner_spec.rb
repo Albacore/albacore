@@ -1,4 +1,5 @@
 require 'albacore/task_types/test_runner'
+require 'support/sh_interceptor'
 require 'map'
 
 describe ::Albacore::TestRunner::Config do
@@ -18,13 +19,37 @@ describe ::Albacore::TestRunner::Config do
     should respond_to :exe=
   end
 end
+describe ::Albacore::TestRunner::Config do
+  subject do
+    ::Albacore::TestRunner::Config.new
+  end
+
+  before :each do
+    subject.add_parameter '/TestResults=/b/c/d/e.xml'
+  end
+
+  it 'should have the appropriate parameter in #opts.get(:parameters)' do
+    subject.opts.get(:parameters).should include('/TestResults=/b/c/d/e.xml')
+  end
+end
 
 describe ::Albacore::TestRunner::Cmd do
   subject do
-    ::Albacore::TestRunner::Cmd.new 'work_dir', 'run-tests.exe', %w[params go here], 'lib.tests.dll'
+    cmd = ::Albacore::TestRunner::Cmd.new 'work_dir', 'run-tests.exe', %w[params go here], 'lib.tests.dll'
+    cmd.extend ShInterceptor
+    cmd
   end
+
   it do
     should respond_to :execute
+  end
+
+  it 'should include the parameters when executing' do
+    subject.execute
+
+    # the intersection of actual parameters with expected should eq expected
+    (subject.parameters - (subject.parameters - %w|params go here|)).
+      should eq(%w|params go here|)
   end
 end
 

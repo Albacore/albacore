@@ -41,7 +41,8 @@ module Albacore
         Map.new(
           :files      => files,
           :copy_local => @copy_local,
-          :exe        => @exe)
+          :exe        => @exe,
+          :parameters => @parameters)
       end
 
       # mark that it should be possible to copy the test files local
