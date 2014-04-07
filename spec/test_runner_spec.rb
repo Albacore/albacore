@@ -36,7 +36,7 @@ end
 describe 'the order of which parameters are passed', ::Albacore::TestRunner::Config do
   subject do
     cmd = ::Albacore::TestRunner::Config.new
-    cmd.files = 'file.dll'
+    cmd.files = 'a/b/c/file.dll'
     cmd.exe   = 'test-runner.exe'
     cmd.add_parameter '/TestResults=abc.xml'
     cmd
@@ -51,7 +51,7 @@ describe 'the order of which parameters are passed', ::Albacore::TestRunner::Con
   end
 
   it 'should pass the file as a :files' do
-    subject.opts.get(:files).should eq(['file.dll'])
+    subject.opts.get(:files).should eq(['a/b/c/file.dll'])
   end
 end
 
