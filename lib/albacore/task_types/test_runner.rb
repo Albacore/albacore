@@ -49,19 +49,22 @@ module Albacore
 
     class Cmd
       include CrossPlatformCmd
+
+      # expects both parameters and executable to be relative to the
+      # work_dir parameter
       def initialize work_dir, executable, parameters, file
         @work_dir, @executable = work_dir, executable
         @parameters = parameters.to_a.unshift(file)
       end
 
       def execute
+        info { "executing in directory './#{@work_dir}'" }
         system @executable,
           @parameters,
           :work_dir    => @work_dir,
           :clr_command => true
       end
     end
-
 
     class Task
       include Logging
@@ -103,11 +106,22 @@ module Albacore
             debug { "copying the runners form #{runners_glob} [test_runner #handle_directory]" }
             FileUtils.cp_r(Dir.glob(runners_glob), runners, :verbose => true)
 
-            # call back with the new paths
+            # call back with the new paths, easy because we have copied everything
             yield [sut, Paths.join(runners, File.basename(exe)).to_s]
           end
         else
-          yield [File.dirname(dll), exe]
+          dir, exe =
+            case File.dirname dll
+              when /^\.\./
+                # if the dll is negative to this Rakefile, use absolute paths
+                [Pathname.new(File.absolute_path(dll)), Pathname.new(File.absolute_path(exe))]
+              else 
+                # otherwise, please continue with the basics
+                [Pathname.new(File.dirname(dll)), Pathname.new(exe)]
+            end
+
+          exe_rel = exe.relative_path_from dir
+          yield [File.dirname(dll), exe_rel.to_s]
         end
       end
     end
