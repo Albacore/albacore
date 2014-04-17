@@ -170,7 +170,7 @@ end
 
 ### Docs: nugets_pack
 
-```
+``` ruby
 nugets_pack :create_nugets do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
@@ -195,7 +195,7 @@ Cancel following of references between projects that cause nugets_pack to find a
 
 Enables nuget restore throughout the solution.
 
-```
+``` ruby
 nugets_restore :restore do |p|
   p.out = 'src/packages'
   p.exe = 'buildsupport/NuGet.exe'
@@ -221,7 +221,7 @@ end
 
 ### Docs: test_runner
 
-```
+``` ruby
 test_runner :tests do |tests|
   tests.files = FileList['**/*.Tests/bin/Release/*.Tests.dll'] # dll files with test
   tests.exe = 'src/packages/NUnit.Runners.2.5.3/tools/nunit-console.exe' # executable to run tests with
@@ -317,7 +317,7 @@ in the archive, rather just its contents.
 
 Usage:
 
-```
+``` ruby
 dir_to_zip = "/tmp/input"
 out_file = "/tmp/out.zip"
 zf = Zippy.new dir_to_zip, out_file
@@ -326,7 +326,7 @@ zf.write
 
 Or:
 
-```
+``` ruby
 z = Zippy.new(directory_to_zip, output_file) { |f| f.include? 'html' }
 z.write
 ```
