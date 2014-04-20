@@ -220,6 +220,33 @@ asmver :asmver do |a|
 end
 ```
 
+### Docs: asmver_files
+
+```
+desc 'create assembly infos'
+asmver_files :assembly_info do |a|
+  a.files = FileList['**/*proj'] # optional, will find all projects recursively by default
+
+  # attributes are required:
+  a.attributes assembly_description: "My wonderful lib",
+               assembly_configuration: 'RELEASE',
+               assembly_company: 'Wonders Inc.',
+               assembly_copyright: "(c) #{Time.now.year} by John Doe",
+               assembly_version: ENV['LONG_VERSION'],
+               assembly_file_version: ENV['LONG_VERSION'],
+               assembly_informational_version: ENV['BUILD_VERSION']
+
+  # optional, not widely supported yet, as there's no way to read the attributes
+  # file an issue if you have a use-case
+  a.handle_config do |proj, conf|
+    # do something with configuration
+    # conf.attributes ...
+  end
+end
+```
+
+
+
 ### Docs: test_runner
 
 ``` ruby
