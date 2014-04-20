@@ -197,8 +197,9 @@ Enables nuget restore throughout the solution.
 
 ``` ruby
 nugets_restore :restore do |p|
-  p.out = 'src/packages'
-  p.exe = 'buildsupport/NuGet.exe'
+  p.out = 'src/packages'             # required
+  p.exe = 'buildsupport/NuGet.exe'   # required
+  p.list_spec = '**/packages.config' # optional
 end
 ```
 
