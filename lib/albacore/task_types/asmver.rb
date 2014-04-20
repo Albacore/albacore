@@ -3,6 +3,7 @@ require 'albacore/logging'
 require 'albacore/cross_platform_cmd'
 require 'albacore/cmd_config'
 require 'albacore/errors/unfilled_property_error'
+require 'albacore/project'
 require 'albacore/task_types/asmver/cs'
 require 'albacore/task_types/asmver/vb'
 require 'albacore/task_types/asmver/cpp'
@@ -11,6 +12,41 @@ require 'albacore/task_types/asmver/file_generator'
 
 module Albacore
   module Asmver
+    class MultipleFilesConfig
+      include ::Albacore::Logging
+
+      # list of xxproj files to iterate over
+      attr_writer :files
+
+      def attributes attrs
+        @attributes = attrs
+      end
+
+      # block should have signature: Project -> AsmVer::Config -> AsmVer::Config
+      # because you can use this block to change the configuration generated
+      def handle_config &block
+        @handle_config = block
+      end
+
+      def configurations
+        @files ||= FileList['**/*.{fsproj,csproj,vbproj}']
+
+        debug { "generating config for files: #{@files}" }
+
+        @files.map { |proj|
+            proj =~ /(\w\w)proj$/
+            [ $1, Project.new(proj) ]
+          }.map { |ext, proj|
+            attrs = @attributes.clone
+            attrs[:assembly_title] = proj.name
+            file_path = "#{proj.proj_path_base}/AssemblyVersionInfo.#{ext}"
+            cfg = Albacore::Asmver::Config.new file_path, proj.asmname, attrs
+            cfg = @handle_config.call(proj, cfg) if @handle_config
+            cfg
+          }
+      end
+    end
+
     class Config
       include CmdConfig
       self.extend ConfigDSL
@@ -21,11 +57,12 @@ module Albacore
       # the namespace to output into the version file
       attr_writer :namespace
 
-
       # (optional) output stream
       attr_writer :out
 
-      def initialize
+      # creates a new config with some pre-existing data
+      def initialize file_path = nil, namespace = nil, attributes = nil
+        @file_path, @namespace, @attributes = file_path, namespace, attributes
       end
 
       # the hash of attributes to write to the assembly info file
@@ -43,6 +80,10 @@ module Albacore
           language:  lang
         m[:out] = @out if @out
         m
+      end
+
+      def to_s
+        "AsmVer::Config[#{file_path}]"
       end
 
       private

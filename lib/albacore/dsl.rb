@@ -19,6 +19,18 @@ module Albacore
       end
     end
 
+    def asmver_files *args, &block
+      Albacore.define_task *args do
+        c = Albacore::Asmver::MultipleFilesConfig.new
+        yield c
+
+        c.configurations.each do |conf|
+          trace { "generating asmver for #{conf}" }
+          Albacore::Asmver::Task.new(conf.opts).execute
+        end
+      end
+    end
+
     # a task for building sln or proj files - or just invoking something
     # with MsBuild
     def build *args, &block
