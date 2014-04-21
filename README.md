@@ -170,7 +170,7 @@ end
 
 ### Docs: nugets_pack
 
-```
+``` ruby
 nugets_pack :create_nugets do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
@@ -195,10 +195,11 @@ Cancel following of references between projects that cause nugets_pack to find a
 
 Enables nuget restore throughout the solution.
 
-```
+``` ruby
 nugets_restore :restore do |p|
-  p.out = 'src/packages'
-  p.exe = 'buildsupport/NuGet.exe'
+  p.out = 'src/packages'             # required
+  p.exe = 'buildsupport/NuGet.exe'   # required
+  p.list_spec = '**/packages.config' # optional
 end
 ```
 
@@ -219,12 +220,40 @@ asmver :asmver do |a|
 end
 ```
 
-### Docs: test_runner
+### Docs: asmver_files
 
 ```
+desc 'create assembly infos'
+asmver_files :assembly_info do |a|
+  a.files = FileList['**/*proj'] # optional, will find all projects recursively by default
+
+  # attributes are required:
+  a.attributes assembly_description: "My wonderful lib",
+               assembly_configuration: 'RELEASE',
+               assembly_company: 'Wonders Inc.',
+               assembly_copyright: "(c) #{Time.now.year} by John Doe",
+               assembly_version: ENV['LONG_VERSION'],
+               assembly_file_version: ENV['LONG_VERSION'],
+               assembly_informational_version: ENV['BUILD_VERSION']
+
+  # optional, not widely supported yet, as there's no way to read the attributes
+  # file an issue if you have a use-case
+  a.handle_config do |proj, conf|
+    # do something with configuration
+    # conf.attributes ...
+  end
+end
+```
+
+
+
+### Docs: test_runner
+
+``` ruby
 test_runner :tests do |tests|
   tests.files = FileList['**/*.Tests/bin/Release/*.Tests.dll'] # dll files with test
   tests.exe = 'src/packages/NUnit.Runners.2.5.3/tools/nunit-console.exe' # executable to run tests with
+  tests.add_parameter '/TestResults=Lallaa.xml' # you may add parameters to the execution
   tests.copy_local # when running from network share
 end
 ```
@@ -329,7 +358,7 @@ in the archive, rather just its contents.
 
 Usage:
 
-```
+``` ruby
 dir_to_zip = "/tmp/input"
 out_file = "/tmp/out.zip"
 zf = Zippy.new dir_to_zip, out_file
@@ -338,7 +367,7 @@ zf.write
 
 Or:
 
-```
+``` ruby
 z = Zippy.new(directory_to_zip, output_file) { |f| f.include? 'html' }
 z.write
 ```

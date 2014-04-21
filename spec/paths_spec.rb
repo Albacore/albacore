@@ -1,6 +1,6 @@
 require 'albacore/paths'
 
-describe ::Albacore::Paths.method(:join), 'when joining path segments' do
+describe Paths.method(:join), 'when joining path segments' do
   let :s do
     Paths.separator
   end
@@ -81,7 +81,7 @@ describe ::Albacore::Paths.method(:join), 'when joining path segments' do
   end
 end
 
-describe ::Albacore::Paths.method(:join_str), 'when joining path segments' do
+describe Paths.method(:join_str), 'when joining path segments' do
   let :s do
     Paths.separator
   end

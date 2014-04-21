@@ -19,7 +19,7 @@ describe Albacore::CrossPlatformCmd.method(:prepare_command) do
   it 'should be callable' do
     subject.should respond_to(:call)
   end
-  before :all do
+  before :each do
     # noteworthy: escape spaces with backslash!
     @exe, @pars, @printable, @handler = subject.call %w[echo Hello World Goodbye\ World], true
   end
