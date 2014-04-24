@@ -222,7 +222,7 @@ end
 
 ### Docs: asmver_files
 
-```
+``` ruby
 desc 'create assembly infos'
 asmver_files :assembly_info do |a|
   a.files = FileList['**/*proj'] # optional, will find all projects recursively by default
