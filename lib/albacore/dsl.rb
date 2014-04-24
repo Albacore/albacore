@@ -20,6 +20,7 @@ module Albacore
     end
 
     def asmver_files *args, &block
+      require 'albacore/task_types/asmver'
       Albacore.define_task *args do
         c = Albacore::Asmver::MultipleFilesConfig.new
         yield c
