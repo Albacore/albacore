@@ -20,6 +20,7 @@ module Albacore
     end
 
     def asmver_files *args, &block
+      require 'albacore/task_types/asmver'
       Albacore.define_task *args do
         c = Albacore::Asmver::MultipleFilesConfig.new
         yield c
@@ -91,6 +92,16 @@ module Albacore
 
         t = Albacore::RestoreHintPaths::Task.new c
         t.execute
+      end
+    end
+
+    # Generate .rpm or .deb files from .appspec files
+    def fpm_gen *args, &block
+      require 'albacore/fpm_app_spec'
+      Albacore.define_task *args do
+        c = ::Albacore::FpmAppSpec::Config.new
+        yield c
+        ::Albacore::FpmAppSpec::Task.new(c.opts).execute
       end
     end
   end

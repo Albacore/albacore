@@ -338,6 +338,19 @@ filesystem:
     + Files not in src/MyMvcSite/MyMvcSite.csproj but on filesystem:
       file_missing_in_csproj.png
 
+## Writing Code
+
+ 1. Add a rspec spec in specs/
+ 1. Run `bundle exec rspec spec` to verify test fails
+ 1. Implement feature you want
+ 1. Run the tests again, have them pass
+ 1. Make a PR from your feature branch against `master`
+
+Document your code with
+[YARD](http://rubydoc.info/gems/yard/file/docs/GettingStarted.md) as you're
+writing it: it's much easier to write the documentation together with the code
+than afterwards.
+
 ## Docs: Zippy
 
 This is a simple example which uses rubyzip to recursively generate a zip file
