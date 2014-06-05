@@ -121,6 +121,7 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should raise InvalidAppSpecError' do
+    pending 'to be done'
     expect { ::Albacore::FpmAppSpec.new spec }.to raise_error ::Albacore::InvalidAppSpecError
   end
 end
