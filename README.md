@@ -200,6 +200,7 @@ nugets_restore :restore do |p|
   p.out = 'src/packages'             # required
   p.exe = 'buildsupport/NuGet.exe'   # required
   p.list_spec = '**/packages.config' # optional
+  p.exclude_version                  # optional
 end
 ```
 

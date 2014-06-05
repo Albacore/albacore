@@ -102,6 +102,10 @@ module Albacore
       # defaults to true
       attr_accessor :include_official
 
+      def exclude_version
+        add_parameter "-ExcludeVersion"
+      end
+      
       def has_credentials?
         username && password && source
       end
