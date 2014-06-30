@@ -12,7 +12,7 @@ numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and RMI
 
 ## Getting Started
 
-In a command prompt, run:
+Install [Chocolatey](http://chocolatey.org) by, in a command prompt, running:
 
     @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%systemdrive%\chocolatey\bin
 
