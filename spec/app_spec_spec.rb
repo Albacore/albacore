@@ -137,6 +137,7 @@ describe ::Albacore::AppSpec, 'when fetching ALL data from Project.fsproj' do
 
   it 'should have the title' do
     subject.title.should eq 'project'
+    subject.title_raw.should eq 'Project'
   end
 
   it 'should have no license' do

@@ -59,8 +59,8 @@ describe Albacore::NugetModel::Package, "when doing some xml generation" do
   it "should generate default metadata" do
     subject.to_xml.should include('<metadata')
   end
-  it "should generate default files" do
-    subject.to_xml.should include('<files')
+  it "should not generate default files" do
+    subject.to_xml.should_not include('<files')
   end
 end
 

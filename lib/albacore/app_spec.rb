@@ -71,8 +71,12 @@ module Albacore
 
     # title for puppet, title for app, title for process running on server
     def title
-      t = conf['title'] || proj.title
-      t.downcase
+      title_raw.downcase
+    end
+
+    # the title as-is without any downcasing
+    def title_raw
+      conf['title'] || proj.title
     end
 
     # the description that is used when installing and reading about the package in the
@@ -100,13 +104,13 @@ module Albacore
 
     # gets the version with the following priorities:
     #  - semver version passed in c'tor
-    #  - ENV['BUILD_VERSION']
+    #  - ENV['FORMAL_VERSION']
     #  - .appspec's version
     #  - .xxproj's version
     #  - semver from disk
     #  - if all above fails; use '1.0.0'
     def version
-      semver_version || ENV['BUILD_VERSION'] || conf['version'] || proj.version || semver_disk_version || '1.0.0'
+      semver_version || ENV['FORMAL_VERSION'] || conf['version'] || proj.version || semver_disk_version || '1.0.0'
     end
 
     # gets the binary folder, first from .appspec then from proj given a configuration
@@ -172,6 +176,14 @@ module Albacore
       v.format '%M.%m.%p' if v
     rescue SemVerMissingError
       nil
+    end
+
+    # Listen to all 'getters'
+    #
+    def method_missing name, *args, &block
+      unless name =~ /\w=$/
+        @conf.send(:'[]', *[name.to_s, args].flatten, &block)
+      end
     end
   end
 end

@@ -45,16 +45,21 @@ end})
         end 
       end
 
-      # gets or sets the id of this package
+      # REQUIRED: gets or sets the id of this package
       nuspec_field :id
-      
-      # gets or sets the version of this package
-      nuspec_field :version
 
-      # gets or sets the authors of this package
+      # REQUIRED: gets or sets the version of this package
+      nuspec_field :version
+      
+      # The human-friendly title of the package displayed in the Manage NuGet
+      # Packages dialog. If none is specified, the ID is used instead.
+      nuspec_field :title
+
+      # REQUIRED: gets or sets a comma-separated string of the authors of this
+      # package
       nuspec_field :authors
 
-      # gets or sets the description of this package
+      # REQUIRED: gets or sets the description of this package
       nuspec_field :description
 
       # gets or sets the summary of this package
@@ -66,6 +71,11 @@ end})
       # gets or sets the project url for this package
       nuspec_field :project_url
 
+      # A URL for the image to use as the icon for the package in the Manage
+      # NuGet Packages dialog box. This should be a 32x32-pixel .png file that
+      # has a transparent background.
+      nuspec_field :icon_url
+
       # gets or sets the license url for this package
       nuspec_field :license_url
 
@@ -75,8 +85,8 @@ end})
       # gets or sets the owners of this package
       nuspec_field :owners
 
-      # gets or sets whether this package requires a license acceptance from the user
-      # hint: don't.
+      # gets or sets whether this package requires a license acceptance from
+      # the user hint: don't set it!
       nuspec_field :require_license_acceptance
 
       # gets or sets the copyright for this package
@@ -251,15 +261,17 @@ end})
             x << md
             #x.__send__ :insert, md.at_css("metadata")
 #           x << md.at_css("metadata").to_xml(indent: 4)
-            x.files {
-              @files.each do |f|
-                if f.exclude
-                  x.file src: f.src, target: f.target, exclude: f.exclude
-                else
-                  x.file src: f.src, target: f.target
+            unless @files.empty?
+              x.files {
+                @files.each do |f|
+                  if f.exclude
+                    x.file src: f.src, target: f.target, exclude: f.exclude
+                  else
+                    x.file src: f.src, target: f.target
+                  end
                 end
-              end
-            }
+              }
+            end
           }
         end
       end
