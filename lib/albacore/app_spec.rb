@@ -1,5 +1,6 @@
 require 'yaml'
 require 'albacore/logging'
+require 'albacore/project'
 require 'xsemver'
 
 module Albacore
