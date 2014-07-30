@@ -114,10 +114,10 @@ When you `require 'albacore'` you will get a few methods added and available for
 use within your Rakefile, these are specified in CrossPlatformCmd, and are as
 follows:
 
- - `#system`
- - `#sh`
- - `#shie`
- - `#which`
+ - `#system` : (processPath : string) -> (arguments : string array)
+ - `#sh` : same as above
+ - `#shie` : same as above
+ - `#which` : (binaryName : string) -> (path : string)
  - `#normalise_slashes` 
  - `#chdir (work_dir : ?string) (block : Block<unit, x>) : x` - takes a string work dir to be
    in and a block of ruby to execute in that work dir and returns the return
