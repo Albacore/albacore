@@ -3,7 +3,6 @@
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
 require 'albacore/logging'
-require 'highline/import'
 
 module Albacore::Tools
   module FluentMigrator

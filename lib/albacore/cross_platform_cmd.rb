@@ -3,7 +3,6 @@ require 'map'
 require 'open3'
 require 'timeout'
 require 'stringio'
-require 'processpilot/processpilot'
 require 'albacore/paths'
 require 'albacore/logging'
 require 'albacore/errors/command_not_found_error'
@@ -172,15 +171,6 @@ module Albacore
     def shie *cmd, &block
       block = lambda { |ok, status, output| ok } unless block_given?
       sh *cmd, &block
-    end
-    
-    def system_control cmd, *opts, &block
-      cmd = opts[0]
-      opts = Map.options((Hash === cmd.last) ? cmd.pop : {}) # same arg parsing as rake
-      chdir opts[:work_dir] do
-        puts cmd
-        ProcessPilot::pilot cmd, opts, &block
-      end
     end
 
     def normalise_slashes path
