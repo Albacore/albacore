@@ -1,10 +1,8 @@
 require 'albacore/app_spec'
+require 'albacore/errors/invalid_app_spec_error'
 require 'map'
 
 module Albacore
-  class InvalidAppSpecError < ::StandardError
-  end
-
   # An object that is capable of generating FPM commands - use by giving it a
   # spec and then calling #execute or #generate_flags. You may use this object
   # to package a directory.
@@ -119,7 +117,7 @@ module Albacore
 
       appspecs.
         map { |path| Albacore::AppSpec.load path }.
-        map { |as| [as, Albacore::FpmAppSpec.new(as, pkg)] }.
+        map { |spec| [spec, Albacore::FpmAppSpec.new(spec, pkg)] }.
         each do |spec, fpm|
         targ = "#{out}/#{spec.title}/tmp-dest/"
         FileUtils.mkdir_p targ

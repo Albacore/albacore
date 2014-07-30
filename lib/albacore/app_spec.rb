@@ -79,6 +79,8 @@ module Albacore
       conf['title'] || proj.title
     end
 
+    alias_method :id, :title_raw
+
     # the description that is used when installing and reading about the package in the
     # package manager
     def description

@@ -263,6 +263,43 @@ end
 
 TBD
 
+### Docs: appspecs
+
+Example rakefile (see spec/test_appspecs/corp.service in albacore source).
+
+```
+require 'bundler/setup'
+require 'albacore'
+
+Configuration = ENV['CONFIGURATION'] || 'Release'
+
+desc 'build example project'
+build :compile do |b|
+  b.sln = 'corp.service.svc.sln'
+  b.prop 'Configuration', Configuration
+end
+
+desc 'build service packages from all the appspecs'
+appspecs :services => :compile do |as|
+  as.files = Dir.glob '**/.appspec', File::FNM_DOTMATCH
+  as.out   = 'build'
+end
+
+task :default => :services
+```
+
+This example Rakefile will create RPMs on RHEL-derivative systems, DEBs on
+Debian-derivative systems and Chocolatey packages on Windows, as well as publish
+those packages to the CI server.
+
+As usual you can use Albacore.subscribe to jack into the output of this
+task-type, if you e.g. want to publish your packages to your package server -
+DAB or YUM. If you include the TeamCity extension, your TeamCity server will
+automatically become a chocolatey package server that you can use
+[puppet-chocolatey](git@github.com:karaaie/puppet-chocolatey.git) to install the
+packages of on your Windows boxen. Or you can use puppet proper with a yum repo
+on your linux boxen.
+
 ## Tasks
 
 Tasks are things you can include that create singleton ruby tasks that are

@@ -1,8 +1,16 @@
 require 'bundler/setup'
 require 'albacore'
 
+Configuration = ENV['CONFIGURATION'] || 'Release'
+
+desc 'build example project'
+build :compile do |b|
+  b.sln = 'corp.service.svc.sln'
+  b.prop 'Configuration', Configuration
+end
+
 desc 'build service packages from all the appspecs'
-appspecs :services do |as|
+appspecs :services => :compile do |as|
   as.files = Dir.glob '**/.appspec', File::FNM_DOTMATCH
   as.out   = 'build'
 end
