@@ -265,7 +265,9 @@ TBD
 
 ### Docs: appspecs
 
-Example rakefile (see spec/test_appspecs/corp.service in albacore source).
+Example rakefile (see
+[spec/test_appspecs/corp.service](https://github.com/Albacore/albacore/tree/master/spec/test_appspecs/corp.service)
+in albacore source).
 
 ``` ruby
 require 'bundler/setup'
