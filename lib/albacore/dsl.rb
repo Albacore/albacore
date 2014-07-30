@@ -96,12 +96,21 @@ module Albacore
     end
 
     # Generate .rpm or .deb files from .appspec files
-    def fpm_gen *args, &block
-      require 'albacore/fpm_app_spec'
-      Albacore.define_task *args do
-        c = ::Albacore::FpmAppSpec::Config.new
-        yield c
-        ::Albacore::FpmAppSpec::Task.new(c.opts).execute
+    def appspecs *args, &block
+      if Albacore.windows?
+        require 'albacore/cpack_app_spec'
+        Albacore.define_task *args do
+          c = ::Albacore::CpackAppSpec::Config.new
+          yield c
+          ::Albacore::CpackAppSpec::Task.new(c.opts).execute
+        end
+      else
+        require 'albacore/fpm_app_spec'
+        Albacore.define_task *args do
+          c = ::Albacore::FpmAppSpec::Config.new
+          yield c
+          ::Albacore::FpmAppSpec::Task.new(c.opts).execute
+        end
       end
     end
   end

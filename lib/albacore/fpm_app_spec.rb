@@ -68,6 +68,8 @@ module Albacore
     # create a new configuration for multiple xxproj-s to be packed with fpm into .deb/.rpm
     def initialize
       @bundler = true
+      @files   = []
+      @out     = '.'
     end
 
     # turn off the using of bundler; bundler will be used by default
@@ -76,20 +78,25 @@ module Albacore
     end
 
     # set the output path, defaults to '.'
-    def out=
+    def out= out
+      @out = out
     end
 
     # give the configuration a list of files to match
-    def files=
+    def files= files
+      @files = files
     end
 
     def opts
-      Map.new bundler: @bundler
+      Map.new bundler: @bundler,
+              files: @files,
+              out: @out
     end
   end
 
   # task implementation that can be #execute'd
   class FpmAppSpec::Task
+    include ::Albacore::Logging
     include ::Albacore::CrossPlatformCmd
 
     # create a new task instance with the given opts
@@ -100,19 +107,53 @@ module Albacore
 
     # this runs fpm and does some file copying
     def execute
-      # TODO: supporting multiple projects
+      warn 'executing fpm app spec task, but there are no input files [fpm_app_spec::task#execute]' if
+        @opts.get(:files).empty?
 
-      if opts.get :bundler
-        system 'bundle', %w|exec fpm|.concat(opts.get(:fpm_spec).generate_flags_flat)
-      else
-        system 'fpm', opts.get(:fpm_spec).generate_flags_flat
-      end
+      fpm_package @opts.get(:out), @opts.get(:files)
     end
 
     private
-    # TODO: finish
-    def specs
-      @opts.files
+    def fpm_package out, appspecs
+      pkg = File.join out, 'pkg'
+
+      appspecs.
+        map { |path| Albacore::AppSpec.load path }.
+        map { |as| [as, Albacore::FpmAppSpec.new(as, pkg)] }.
+        each do |spec, fpm|
+        targ = "#{out}/#{spec.title}/tmp-dest/"
+        FileUtils.mkdir_p targ
+
+        bin = File.join targ, "opt/#{spec.title}/bin"
+        FileUtils.mkdir_p bin
+        FileUtils.cp_r Dir.glob(File.join(fpm_rel(spec, spec.bin_folder), '*')),
+                       bin, verbose: true
+
+        etc = File.join targ, "etc/#{spec.title}"
+        FileUtils.mkdir_p etc, verbose: true
+  #      FileUtils.cp_r Dir.glob(File.join(fpm_rel(spec, spec.conf_folder), '*')),
+  #                     etc, verbose: true
+
+        spec.contents.each do |con|
+          FileUtils.cp_r fpm_rel(spec, con), File.join(targ, con), verbose: true
+        end
+
+        run fpm.generate_flags_flat({ '-C' => targ })
+      end
+    end
+
+
+    def fpm_rel spec, path
+      File.join spec.dir_path, path
+    end
+
+    def run pars
+      if @opts.get :bundle
+        system 'bundle', %w|exec fpm|.concat(pars)
+      else
+        system 'fpm', pars
+      end
+      Albacore.publish :artifact, OpenStruct.new({ :location => "#{pkg}/#{fpm.filename}" })
     end
   end
 end
