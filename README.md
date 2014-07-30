@@ -117,7 +117,6 @@ follows:
  - `#system`
  - `#sh`
  - `#shie`
- - `#system_control`
  - `#which`
  - `#normalise_slashes` 
  - `#chdir (work_dir : ?string) (block : Block<unit, x>) : x` - takes a string work dir to be
