@@ -267,7 +267,7 @@ TBD
 
 Example rakefile (see spec/test_appspecs/corp.service in albacore source).
 
-```
+``` ruby
 require 'bundler/setup'
 require 'albacore'
 
