@@ -3,7 +3,7 @@ require 'albacore'
 
 desc 'build service packages from all the appspecs'
 appspecs :services do |as|
-  as.files = Dir.glob 'src/**/.appspec', File::FNM_DOTMATCH
+  as.files = Dir.glob '**/.appspec', File::FNM_DOTMATCH
   as.out   = 'build'
 end
 
