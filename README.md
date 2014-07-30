@@ -300,6 +300,22 @@ automatically become a chocolatey package server that you can use
 packages of on your Windows boxen. Or you can use puppet proper with a yum repo
 on your linux boxen.
 
+The appspec simply looks something like this:
+
+``` yaml
+---
+version: 1.2.3
+authors: Henrik Feldt
+```
+
+You can put any nuget-spec property there in `snake_case` and it will be set in
+the resulting nuget file. When building RPMs, the title of the project file will
+be used as the id (the non-lowercased title will be used for the NuGet).
+
+This task-type works by checking if it's running on Windows, and then running
+chocolatey, otherwise running fpm. This means that you have to have either
+installed, depending on your OS of choice.
+
 ## Tasks
 
 Tasks are things you can include that create singleton ruby tasks that are
