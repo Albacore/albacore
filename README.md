@@ -351,6 +351,15 @@ type.
 
 **deploy_dir** - fully qualified path to deploy the contents
 
+#### Example IIS Site `.appspec` file
+
+``` yaml
+---
+authors: Intelliplan Employees
+provider: iis_site
+project_path: ../CMDB.Web.csproj
+```
+
 ## Tasks
 
 Tasks are things you can include that create singleton ruby tasks that are
