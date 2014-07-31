@@ -118,7 +118,9 @@ follows:
  - `#sh` : same as above
  - `#shie` : same as above
  - `#which` : (binaryName : string) -> (path : string)
- - `#normalise_slashes` 
+ - `#normalise_slashes`  - takes a path-looking string and normalises the
+   slashes to the operating system that the command is running on. So for
+   Windows, you'd get back-slashes and for linux forward slashes.
  - `#chdir (work_dir : ?string) (block : Block<unit, x>) : x` - takes a string work dir to be
    in and a block of ruby to execute in that work dir and returns the return
    value of block.
