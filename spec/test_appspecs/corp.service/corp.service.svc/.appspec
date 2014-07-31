@@ -1,3 +1,5 @@
 ---
 version: 1.2.3
 authors: Henrik Feldt
+exe: corp.service.svc.exe
+deploy_dir: C:\Services\corp.service.svc

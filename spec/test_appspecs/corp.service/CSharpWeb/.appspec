@@ -1,0 +1,5 @@
+---
+version: 0.0.1
+authors: Henrik Feldt
+provider: iis_site
+project_path: ../CSharpWeb.csproj

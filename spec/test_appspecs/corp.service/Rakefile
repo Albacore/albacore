@@ -3,15 +3,26 @@ require 'albacore'
 
 Configuration = ENV['CONFIGURATION'] || 'Release'
 
+task :clean do
+  FileUtils.rm_rf './build/'
+end
+
 desc 'build example project'
 build :compile do |b|
   b.sln = 'corp.service.svc.sln'
   b.prop 'Configuration', Configuration
 end
 
+build :pkg_web do |b|
+  b.file = 'CSharpWeb/CSharpWeb.csproj'
+  b.prop 'DeployOnBuild',  'true'
+  b.prop 'PublishProfile', 'local'
+  b.prop 'Configuration',  Configuration
+end
+
 desc 'build service packages from all the appspecs'
-appspecs :services => :compile do |as|
-  as.files = Dir.glob '**/.appspec', File::FNM_DOTMATCH
+appspecs :services => [:compile, :pkg_web] do |as|
+  as.files = Dir.glob('{corp.service.svc,CSharpWeb/build}/.appspec', File::FNM_DOTMATCH)
   as.out   = 'build'
 end
 

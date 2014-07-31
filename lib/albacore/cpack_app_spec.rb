@@ -100,43 +100,25 @@ module Albacore
       p.to_xml
     end
 
-    # create a chocolatey install script for a topshelf service on windows
-    def create_chocolatey_install out, service_dir, exe, app_spec
-      tools = "#{out}/#{app_spec.id}/tools"
-
-      FileUtils.mkdir tools unless Dir.exists? tools
-      File.open(File.join(tools, 'chocolateyInstall.ps1'), 'w+') do |io|
-        contents = embedded_resource '../../resources/chocolateyInstall.ps1'
-        io.write contents
-        io.write %{
-Install-Service `
-  -ServiceExeName "#{exe}" -ServiceDir "#{service_dir}" `
-  -CurrentPath (Split-Path $MyInvocation.MyCommand.Path)
-}
-      end
-    end
-
     def create_cpack out, app_spec, nuspec_xml, configuration
-      target = "#{out}/#{app_spec.id}"
-      bin = "#{target}/bin"
+      provider = find_provider app_spec
 
-      # create target
+      target = "#{out}/#{app_spec.id}"
+      contents = "#{target}/#{provider.nuget_contents}/"
+
+      debug { 'create target [cpack_app_spec#create_cpack]' }
       FileUtils.mkdir_p target
 
-      # write nuspec
+      debug { 'write nuspec [cpack_app_spec#create_cpack]' }
       File.open("#{target}/#{app_spec.id}.nuspec", 'w+') { |io| io.write nuspec_xml }
 
-      # write tools
-      create_chocolatey_install out,
-                                app_spec.exe,
-                                "#{app_spec.target_root_dir}\\#{app_spec.id}",
-                                app_spec
+      debug { 'write tools/chocolateyInstall.ps1 [cpack_app_spec#create_cpack]' }
+      provider.install_script out, app_spec
 
-      # copy contents of package
-      proj_path = File.join(app_spec.proj.proj_path_base,
-                            app_spec.proj.output_path(configuration), '.').
-                    gsub(/\//, '\\')
-      FileUtils.cp_r proj_path, bin, :verbose => true
+      debug { 'copy contents of package [cpack_app_spec#create_cpack]' }
+      FileUtils.cp_r provider.source_dir(app_spec, configuration),
+                     contents,
+                     :verbose => true
 
       # package it
       Dir.chdir target do
@@ -144,15 +126,21 @@ Install-Service `
       end
 
       # publish it
-      Albacore.publish :artifact, OpenStruct.new(:location => "#{target}/*.nupkg")
+      Albacore.publish :artifact, OpenStruct.new(
+        :location => "#{target}/#{app_spec.id}.#{app_spec.version}.nupkg"
+      )
     end
 
-    def embedded_resource relative_path
-      File.open(embedded_resource_path(relative_path), 'r') { |io| io.read }
-    end
-
-    def embedded_resource_path relative_path
-      File.join(File.dirname(File.expand_path(__FILE__)), relative_path)
+    def find_provider app_spec
+      require "albacore/app_spec/#{app_spec.provider}"
+      case app_spec.provider
+      when 'defaults'
+        AppSpec::Defaults.new
+      when 'iis_site'
+        AppSpec::IisSite.new
+      else
+        raise ArgumentError, "unknown app_spec.provider: #{app_spec.provider}"
+      end
     end
   end
 end

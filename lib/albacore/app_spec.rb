@@ -28,6 +28,27 @@ module Albacore
       @semver = semver
     end
 
+    # Gets the path that the .appspec file was read from when it was initialised.
+    #
+    def path
+      @path
+    end
+
+    # Gets the executable name if this service has one -- defaults to the
+    # assembly name of the corresponding project, plus 'exe', which is how the
+    # compilers name the executables.
+    #
+    def exe
+      conf['exe'] || "#{proj.asmname}.exe"
+    end
+
+    # Gets the location fully qualified path that the finished artefact will be
+    # installed into. Defaults to C:\\Services\\{id}.
+    #
+    def deploy_dir
+      conf['deploy_dir'] || "C:\\Services\\#{id}"
+    end
+
     # Resolves the project file given an optional descriptor path or a
     # configuration hash or both. One of the other of the parameters need to
     # exist, or an error will be thrown.
@@ -115,25 +136,36 @@ module Albacore
       semver_version || ENV['FORMAL_VERSION'] || conf['version'] || proj.version || semver_disk_version || '1.0.0'
     end
 
-    # gets the binary folder, first from .appspec then from proj given a configuration
-    # mode (default: Release)
+    # gets the binary folder, first from .appspec then from proj given a
+    # configuration mode (default: Release)
     def bin_folder configuration = 'Release'
       conf['bin'] || proj.output_path(configuration)
     end
 
-    # gets the folder that is used to keep configuration that defaults
-    # to the current (.) directory
+    # gets the folder that is used to keep configuration that defaults to the
+    # current (.) directory
     def conf_folder
       conf['conf_folder'] || '.'
     end
 
-    # gets an enumerable list of paths that are the 'main' contents of the package
+    # gets an enumerable list of paths that are the 'main' contents of the
+    # package
     #
     def contents
       conf['contents'] || []
     end
 
-    # TODO: support a few of these: https://github.com/bernd/fpm-cookery/wiki/Recipe-Specification
+    # gets the provider to use to calculate the directory paths to construct
+    # inside the nuget
+    #
+    # defaults to the 'defaults' provider which can be found in
+    # 'albacore/app_spec/defaults.rb'
+    def provider
+      conf['provider'] || 'defaults'
+    end
+
+    # TODO: support a few of these:
+    # https://github.com/bernd/fpm-cookery/wiki/Recipe-Specification
 
     # load the App Spec from a descriptor path
     def self.load descriptor_path

@@ -319,6 +319,34 @@ This task-type works by checking if it's running on Windows, and then running
 chocolatey, otherwise running fpm. This means that you have to have either
 installed, depending on your OS of choice.
 
+### Known .appspec options
+
+**project_path** - if you are, say, building a package from a web site (like
+CSharpWeb is an example of), then you probably don't want to package all of your
+.cs files, nor would you like to package only the bin folder. Instead you add
+the .appspec to the list of files in the csproj file, so that it gets copied
+when you have a local publish like this:
+
+``` ruby
+build :pkg_web do |b|
+  b.file = 'CSharpWeb/CSharpWeb.csproj'
+  b.prop 'DeployOnBuild',  'true'
+  b.prop 'PublishProfile', 'local'
+  b.prop 'Configuration',  Configuration
+end
+```
+
+After calling this task, you'll find the appspec at `CSharpWeb/build/.appspec`
+(which mean it's part of the contents of the site). Now it's easy for albacore
+to find it and create a package from it, but it can't easily find the project
+that corresponds to it, because it's not next to the csproj file.
+
+This is where `project_path` comes in; make it something like
+`../CSharpWeb.csproj` in the .appspec file and then albacore knows where to get
+the data from.
+
+**deploy_dir** - fully qualified path to deploy the contents
+
 ## Tasks
 
 Tasks are things you can include that create singleton ruby tasks that are
