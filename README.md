@@ -345,6 +345,10 @@ This is where `project_path` comes in; make it something like
 `../CSharpWeb.csproj` in the .appspec file and then albacore knows where to get
 the data from.
 
+**provider** - `defaults` or `iis_site` -- needs to be specified currently if
+you're building a site -- a nice PR would be to discover that from the project
+type.
+
 **deploy_dir** - fully qualified path to deploy the contents
 
 ## Tasks
