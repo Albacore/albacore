@@ -67,7 +67,10 @@ module Albacore
     end
 
     def git_release_notes
-      tags = `git tag`.split(/\n/)
+      tags = `git tag`.split(/\n/).
+                map { |tag| [ ::XSemVer::SemVer.parse_rubygems(tag), tag ] }.
+                sort { |a, b| a <=> b }.
+                map { |_, tag| tag }
       last_tag = tags[-1]
       second_last_tag = tags[-2] || `git rev-list --max-parents=0 HEAD`
       logs = `git log --pretty=format:%s #{second_last_tag}..`.split(/\n/)
@@ -84,8 +87,8 @@ module Albacore
         m.version       = app_spec.version
         m.authors       = app_spec.authors
         m.owners        = app_spec.owners
-        m.description   = app_spec.description || app_spec.title
-        m.release_notes = git_release_notes
+        m.description   = app_spec.description || app_spec.title_raw
+        m.release_notes = app_spec.release_notes || git_release_notes
         m.summary       = app_spec.summary
         m.language      = app_spec.language
         m.project_url   = app_spec.project_url || 'https://haf.se'
