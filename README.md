@@ -317,7 +317,7 @@ This task-type works by checking if it's running on Windows, and then running
 chocolatey, otherwise running fpm. This means that you have to have either
 installed, depending on your OS of choice.
 
-### Known .appspec options
+#### Known .appspec options
 
 **project_path** - if you are, say, building a package from a web site (like
 CSharpWeb is an example of), then you probably don't want to package all of your
@@ -467,6 +467,13 @@ Or:
 z = Zippy.new(directory_to_zip, output_file) { |f| f.include? 'html' }
 z.write
 ```
+
+## Albacore v1.0
+
+Please browse
+[https://github.com/Albacore/albacore/tree/releases/v1.x](https://github.com/Albacore/albacore/tree/releases/v1.x)
+for all of the README and code for v1.0 (which is API compatible with all pre
+1.0 releases).
 
 ## Ideas:
 
