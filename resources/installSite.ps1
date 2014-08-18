@@ -9,7 +9,7 @@ Function Install-Site(
 
     # Where the source files are -- without any trailing slash or otherwise --
     # just the name, please.
-    [string] $SourceDirectory = "source",
+    [string] $SourceDirectory = "contents",
 
     # Name of site that you're setting up
     [string] $SiteName
@@ -36,7 +36,7 @@ Function Install-Site(
         new-item $siteInstallLocation -ItemType directory -Force
 
         # Copy site files to site folder
-        Copy-Item $SourceDirectory -Recurse $siteInstallLocation -Force
+        Copy-Item "$SourceDirectory\*" -Recurse $siteInstallLocation -Force
 
         # Create application pool
         New-WebAppPool -Name $siteAppPool -Force
