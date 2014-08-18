@@ -1,4 +1,4 @@
-﻿Import-Module WebAdministration
+Import-Module WebAdministration
 
 Function Install-Site(
     # Folder where all your websites are located
