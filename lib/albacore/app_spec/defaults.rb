@@ -38,6 +38,13 @@ module Albacore
       end
     end
 
+    # Gets the location fully qualified path that the finished artefact will be
+    # installed into. Defaults to C:\\Services\\{id}.
+    #
+    def deploy_dir app_spec
+      app_spec.conf['deploy_dir'] || "C:\\Services\\#{app_spec.id}"
+    end
+
     # Get the relative resource from 'albacore/app_spec/.' as a string.
     def embedded_resource relative_path
       File.open(embedded_resource_path(relative_path), 'r') { |io| io.read }
@@ -53,7 +60,7 @@ module Albacore
 
       io.write %{
 Install-Service `
-  -ServiceExeName "#{app_spec.exe}" -ServiceDir "#{app_spec.deploy_dir}" `
+  -ServiceExeName "#{app_spec.exe}" -ServiceDir "#{deploy_dir app_spec}" `
   -CurrentPath (Split-Path $MyInvocation.MyCommand.Path)
 }
     end

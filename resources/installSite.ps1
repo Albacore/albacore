@@ -4,12 +4,15 @@ Function Install-Site(
     # Folder where all your websites are located
     [string] $WebSiteRootFolder = "C:\WebSites",
 
-    # The port your default binding is using
-    [int] $Port = 80,
-
     # Where the source files are -- without any trailing slash or otherwise --
     # just the name, please.
     [string] $SourceDirectory = "contents",
+
+    # What domain name the site should bind to
+    [string] $HostHeader,
+
+    # The port your default binding is using
+    [int] $Port,
 
     # Name of site that you're setting up
     [string] $SiteName
@@ -41,10 +44,8 @@ Function Install-Site(
         # Create application pool
         New-WebAppPool -Name $siteAppPool -Force
 
-        $hostHeader = Invoke-Expression "facter fqdn"
-
         # Create site
-        New-Website -Name $SiteName -Port $Port -HostHeader $hostHeader `
+        New-Website -Name $SiteName -Port $Port -HostHeader $HostHeader `
             -ApplicationPool $siteAppPool -PhysicalPath $siteInstallLocation
     }
 }

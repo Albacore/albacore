@@ -42,13 +42,6 @@ module Albacore
       conf['exe'] || "#{proj.asmname}.exe"
     end
 
-    # Gets the location fully qualified path that the finished artefact will be
-    # installed into. Defaults to C:\\Services\\{id}.
-    #
-    def deploy_dir
-      conf['deploy_dir'] || "C:\\Services\\#{id}"
-    end
-
     # Resolves the project file given an optional descriptor path or a
     # configuration hash or both. One of the other of the parameters need to
     # exist, or an error will be thrown.
@@ -162,6 +155,19 @@ module Albacore
     # 'albacore/app_spec/defaults.rb'
     def provider
       conf['provider'] || 'defaults'
+    end
+
+    # Gets the configured port to bind the site to
+    #
+    def port
+      conf['port'] || '80'
+    end
+
+    # Gets the host header to use for the binding in IIS - defaults to *, i.e.
+    # binding to all hosts
+    #
+    def host_header
+      conf['host_header'] || '*'
     end
 
     # TODO: support a few of these:
