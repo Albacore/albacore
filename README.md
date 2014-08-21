@@ -5,14 +5,58 @@
 [![Gittip      ](http://img.shields.io/gittip/haf.svg?style=flat)](http://gittip.com/haf)
 [![Code Climate](https://img.shields.io/codeclimate/github/albacore/albacore.svg?style=flat)](https://codeclimate.com/github/albacore/albacore)
 
+Albacore is a suite of tools for the professional .Net or mono developer that
+make their life easier.
 
-It is currently being used for
-numerous builds for us and is free of known bugs. It works on RMI 1.9.3 and RMI
-2.0.
+    gem install albacore
 
-    gem install albacore --prerelease
+## Main Features
+
+ - Runs .Net and mono builds on OS X, Windows and Linux quick and painless
+ - Actively developed by Henrik Feldt, Software Architect at
+   [Intelliplan](http://intelliplan.se)
+ - Manage xbuild/msbuild transparently
+ - NuGet restore without intrusive .nuget target files in your project files,
+   authentication supported
+ - NuGet pack task types for packaging your code, supports packaging
+   symbols/source and custom nuspecs, getting metadata from context
+ - Declarative Rake syntax makes it easy to read Rakefiles
+ - Most tasks, including the NuGet tasks accept an array of csproj- or fsproj-
+   files and act on all those projects, discovering metadata from their XML.
+ - An improved set APIs for calling operating system processes and managing them
+   from the build script (see DSL below)
+ - Quick and easy to turn on debugging, just set the DEBUG env var
+ - Assembly version generation in C#, F#, C++ and VB
+ - A copy-local test-runner for those of you with Parallels/Fusion needing to
+   shadow-copy assemblies from a 'network drive'
+ - An innovative `.appspec` file lets you construct IIS Site-packages with
+   Chocolatey on Windows, Topshelf services with Chocolatey on Windows and RPM
+   and DEB services on Linux with three lines of code - become the DevOps GOD of
+   your company!
+ - Transparent publish of artifacts to TeamCity with the TC extension
+ - Unit tested, high quality Ruby code
 
 ## Getting Started
+
+Follow along for a quick intro, but if on Windows, see the section 'Installing
+Ruby' first. Albacore works on both Ruby 1.9.3 and 2.x.
+
+First create `Gemfile` with these contents:
+
+    source 'https://rubygems.org'
+    gem 'albacore', '2.0.0'
+
+Now you can bundle the dependencies, effectively freezing all gem dependencies
+that your build depends on.
+
+    bundle install
+    git add Gemfile
+    git add Gemfile.lock
+    git commit -m 'Installed Albacore'
+
+Now you are ready to continue reading below for your first Rakefile.
+
+### Installing Ruby on Windows
 
 Install [Chocolatey](http://chocolatey.org) by, in a command prompt, running:
 
@@ -29,12 +73,16 @@ extension points aimed to make your life as a .Net developer easier:
 
     gem install bundler
 
+Continue below with your first Rakefile.
+
+## Creating Your First Rakefile
+
 Bundler is a tool that fetches gems for you. Now, specify what ruby gems your
 build will use. Create a new file, named `Gemfile`. This file should look like
 this:
 
-    source 'http://rubygems.org'
-    gem 'albacore', '2.0.0.rc.7'
+    source 'https://rubygems.org'
+    gem 'albacore', '2.0.0'
 
 When setting up your build you need to ensure it is reproducible.  Bundler
 allows you to lock down all gems that albacore depend on to their specific
