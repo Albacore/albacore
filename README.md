@@ -386,6 +386,7 @@ FORMAL_VERSION uses only the integers 'major', 'minor' and 'patch'.
 Publishes symbol `:build_version`.
 
 ``` ruby
+require 'albacore/tasks/versionizer'
 Albacore::Tasks::Versionizer.new :versioning
 ```
 
