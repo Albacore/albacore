@@ -54,51 +54,51 @@ describe ::Albacore::FpmAppSpec, 'when generating command from valid AppSpec' do
   end
 
   it 'should generate command source' do
-    flags['-s'].should eq 'dir'
+    expect(flags['-s']).to eq 'dir'
   end
 
   it 'should generate command target' do
-    flags['-t'].should eq 'rpm'
+    expect(flags['-t']).to eq 'rpm'
   end
 
   it 'should generate command name/title' do
-    flags['--name'].should eq 'my.app'
+    expect(flags['--name']).to eq 'my.app'
   end
 
   it 'should generate command description' do
-    flags['--description'].should eq 'my.app implements much wow'
+    expect(flags['--description']).to eq 'my.app implements much wow'
   end
 
   it 'should generate command url' do
-    flags['--url'].should eq 'https://github.com/Albacore/albacore'
+    expect(flags['--url']).to eq 'https://github.com/Albacore/albacore'
   end
 
   it 'should generate command category' do
-    flags['--category'].should eq 'webserver'
+    expect(flags['--category']).to eq 'webserver'
   end
 
   it 'should generate command version' do
-    flags['--version'].should eq '5.6.7'
+    expect(flags['--version']).to eq '5.6.7'
   end
 
   it 'should generate command epoch' do
-    flags['--epoch'].should eq 1
+    expect(flags['--epoch']).to eq 1
   end
 
   it 'should generate command license' do
-    flags['--license'].should eq 'MIT'
+    expect(flags['--license']).to eq 'MIT'
   end
 
   it 'should generate command "look in this directory" flag' do
-    flags['-C'].should eq '/a/b'
+    expect(flags['-C']).to eq '/a/b'
   end
 
   it 'should generate command depends' do
-    flags['--depends'].should eq 'mono'
+    expect(flags['--depends']).to eq 'mono'
   end
 
   it 'should generate command rpm-digest' do
-    flags['--rpm-digest'].should eq 'sha256'
+    expect(flags['--rpm-digest']).to eq 'sha256'
   end
 end
 
@@ -140,18 +140,18 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should not have a license' do
-    spec.license.should be_nil
+    expect(spec.license).to be nil
   end
   
   it 'that license should never be a FPM parameter' do
-    subject.generate_flags.has_key?('--license').should be_false
+    expect(subject.generate_flags.has_key?('--license')).to be false
   end
 end
 
 describe ::Albacore::FpmAppSpec::Config do
   %w|files= out= opts no_bundler|.each do |sym|
     it "should respond_to :#{sym}" do
-      should respond_to :"#{sym}"
+      expect(subject).to respond_to :"#{sym}"
     end
   end
 end

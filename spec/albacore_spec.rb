@@ -7,14 +7,14 @@ describe "pub sub" do
       @got_it = obj
     end
     Albacore.publish :pubsub, true
-    @got_it.should be_true
+    expect(@got_it).to be true
   end
 
   it 'knows if it\'s Windows it\'s running on' do
-    (::Albacore.windows? === true || ::Albacore::windows? === false).should be_true
+    expect(::Albacore.windows? === true || ::Albacore::windows? === false).to be true
   end
   it 'should not be nil' do
-    ::Albacore.windows?.should_not be_nil
+    expect(::Albacore.windows?).to_not be nil
   end
 end
 

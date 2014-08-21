@@ -13,16 +13,16 @@ shared_context 'package_metadata_dsl' do
 
   def self.has_dep name, version
     it "has dependency on '#{name}'" do
-      m.dependencies.has_key?(name).should be_true
+      expect(m.dependencies.has_key?(name)).to be true
     end
     it "overrode dependency on '#{name}'" do
-      m.dependencies[name].version.should eq version
+      expect(m.dependencies[name].version).to eq version
     end
   end
 
   def self.has_not_dep name
     it "does not have a dependency on #{name}" do
-      m.dependencies.has_key?(name).should be_false
+      expect(m.dependencies.has_key?(name)).to be false
     end
   end
 
@@ -35,12 +35,12 @@ shared_context 'package_metadata_dsl' do
      #    puts "subject.files: #{subject.files}, index of: #{subject.files.find_index { |f| f.src == src }}"
      #    puts "#{f.inspect}"
      #  end
-      file.should_not be_nil 
+      expect(file).to_not be nil
     end
 
     it "has file[#{src}].target == '#{target}'" do
       file = subject.files.find { |f| f.src == src }
-      file.target.should eq target
+      expect(file.target).to eq target
     end 
   end
 
@@ -48,7 +48,7 @@ shared_context 'package_metadata_dsl' do
     src = norm src
     it "has not file[#{src}]" do
       file = subject.files.find { |f| f.src == src }
-      file.should be_nil
+      expect(file).to be nil
     end
   end
 

@@ -8,12 +8,12 @@ describe 'build config' do
     Albacore::Build::Config.new
   end
   %w[file= sln= target target= logging logging= prop cores cores= tools_version tools_version=].each do |writer|
-    it "should have property :#{writer}" do
-      subject.respond_to?(:"#{writer}").should be_true
+    it "should respond to :#{writer}" do
+      expect(subject).to respond_to(:"#{writer}")
     end
   end
   it 'should not have any property' do
-    subject.respond_to?(:something_nonexistent).should be_false
+    expect(subject).to_not respond_to(:something_nonexistent)
   end
 
   describe 'when setting properties' do
@@ -22,8 +22,8 @@ describe 'build config' do
       subject.tools_version = '3.5'
     end
     it do
-      subject.parameters.should include('/verbosity:minimal')
-      subject.parameters.should include('/toolsversion:3.5')
+      expect(subject.parameters).to include('/verbosity:minimal')
+      expect(subject.parameters).to include('/toolsversion:3.5')
     end
   end
 end
@@ -51,13 +51,13 @@ describe 'when running with sln' do
   end
 
   it do
-    subject.executable.should eq('xbuild')
+    expect(subject.executable).to eq('xbuild')
   end
   it do
-    subject.parameters.should eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'} /target:Clean;Build|)
+    expect(subject.parameters).to eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'} /target:Clean;Build|)
   end
   it do
-    subject.is_mono_command?.should be_false
+    expect(subject.is_mono_command?).to be false
   end
 end
 

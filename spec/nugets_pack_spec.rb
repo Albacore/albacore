@@ -156,7 +156,7 @@ describe NuspecTask, "when testing public interface" do
   include_context 'path testing'
 
   it "accepts .nuspec files" do
-    NuspecTask.accept?('some.nuspec').should be_true
+    expect(NuspecTask.accept?('some.nuspec')).to be true
   end
 
   let (:cmd) do
@@ -174,10 +174,10 @@ describe NuspecTask, "when testing public interface" do
   end
 
   it "should run the correct executable" do
-    subject.mono_command.should eq('NuGet.exe')
+    expect(subject.mono_command).to eq 'NuGet.exe'
   end
   it "should give the correct parameters" do
-    subject.mono_parameters.should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
+    expect(subject.mono_parameters).to eq %W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec]
   end
 end
 

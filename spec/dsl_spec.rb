@@ -1,3 +1,4 @@
+require 'albacore/dsl'
 require 'spec_helper'
 
 describe "what methods are included by default" do
@@ -9,7 +10,6 @@ end
 
 class X
   include Albacore::DSL
-  def initialize ; end
 end
 
 #puts "X has methods: #{X.new.private_methods.inspect}"
@@ -21,7 +21,7 @@ end
       X.new
     end
     it do
-      subject.respond_to?(method, true).should be_true
+      expect(subject.method(method)).to_not be nil
     end
   end
 end
@@ -34,6 +34,6 @@ describe 'calling dsl method without symbol name' do
     end
   end
   it 'should be named "build"' do
-    subject.name.should eq('build')
+    expect(subject.name).to eq('build')
   end
 end

@@ -28,21 +28,21 @@ end
 describe "when supplying a csproj file with files added but not present on the filesystem" do
   before(:all) { @f = project_lint_on(:first, File.join( 'added_but_not_on_filesystem', 'aproject.csproj')) }
 
-  it("should fail") { @f.failed.should be_true }
+  it("should fail") { expect(@f.failed).to be true }
 
-  it("should report failure") { @f.failure_message.should include("-") }
+  it("should report failure") { expect(@f.failure_message).to include "-" }
 
-  it("should report file.cs") { @f.failure_message.should include('File.cs') }
+  it("should report file.cs") { expect(@f.failure_message).to include 'File.cs' }
 
-  it("should report Image.txt") { @f.failure_message.should include('Image.txt') }
+  it("should report Image.txt") { expect(@f.failure_message).to include 'Image.txt' }
 
-  it("should report MyHeavy.heavy") { @f.failure_message.should include('MyHeavy.heavy') }
+  it("should report MyHeavy.heavy") { expect(@f.failure_message).to include 'MyHeavy.heavy' }
 
-  it("should report Schema.xsd") { @f.failure_message.should include('Schema.xsd') }
+  it("should report Schema.xsd") { expect(@f.failure_message).to include 'Schema.xsd' }
 
-  it("should report SubFolder/AnotherFile.cs") { @f.failure_message.should include('AnotherFile.cs') }
+  it("should report SubFolder/AnotherFile.cs") { expect(@f.failure_message).to include 'AnotherFile.cs' }
 
-  it("should not report linked files") { @f.failure_message.should_not include('SomeFile.cs') }
+  it("should not report linked files") { expect(@f.failure_message).to_not include 'SomeFile.cs' }
 end
 
 describe "when supplying a correct csproj file with files added and present on the filesystem" do
@@ -50,21 +50,21 @@ describe "when supplying a correct csproj file with files added and present on t
   before(:all) { @f = project_lint_on(:second, File.join( 'correct', 'aproject.csproj')) }
 
   it("should not fail") {
-    @f.failed.should be_false
+    expect(@f.failed).to be false
   }
-  it("no message") { @f.failure_message.should be_nil } 
+  it("no message") { expect(@f.failure_message).to be nil } 
 end
 
 describe "when supplying a csproj file with files not added but present on the filesystem" do
   before(:all) { @f = project_lint_on(:third, File.join( 'on_filesystem_but_not_added', 'aproject.csproj')) }
 
-  it("should fail") { @f.failed.should be_true }
+  it("should fail") { expect(@f.failed).to be true }
 
-  it("should report failure") { @f.failure_message.should include("+") }
+  it("should report failure") { expect(@f.failure_message).to include '+' }
 
-  it("should report file.cs") { @f.failure_message.should include('File.cs') }
+  it("should report file.cs") { expect(@f.failure_message).to include 'File.cs' }
 
-  it("should report Image.txt") { @f.failure_message.should include('Image.txt') }
+  it("should report Image.txt") { expect(@f.failure_message).to include 'Image.txt' }
 end
 
 
@@ -73,5 +73,5 @@ describe "when supplying a csproj files with files on filesystem ignored" do
     @f = project_lint_on(:fourth, File.join('on_filesystem_but_not_added', 'aproject.csproj'), [/.*\.txt$/, /.*\.cs$/])
   }
 
-  it("should not fail") { @f.failed.should be_false }
+  it("should not fail") { expect(@f.failed).to be false }
 end

@@ -2,6 +2,7 @@ require 'rspec'
 require 'albacore/albacore_module'
 
 RSpec.configure do |config|
+  config.raise_errors_for_deprecations! if ENV['RAISE_DEPRECATED']
   config.before(:each) do
     @logout = StringIO.new
     @logout = STDOUT if ENV['TEST_DEBUG']
