@@ -13,8 +13,6 @@ make their life easier.
 ## Main Features
 
  - Runs .Net and mono builds on OS X, Windows and Linux quick and painless
- - Actively developed by Henrik Feldt, Software Architect at
-   [Intelliplan](http://intelliplan.se)
  - Manage xbuild/msbuild transparently
  - NuGet restore without intrusive .nuget target files in your project files,
    authentication supported
@@ -35,6 +33,10 @@ make their life easier.
    your company!
  - Transparent publish of artifacts to TeamCity with the TC extension
  - Unit tested, high quality Ruby code
+ - Actively developed by Henrik Feldt, Software Architect at
+   [Intelliplan](http://intelliplan.se) - there's someone looking after the
+   code. We're active and taking pull requests - an open source project is not a
+   single-person game, but it's nice to have some stability.
 
 ## Getting Started
 
