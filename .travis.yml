@@ -29,7 +29,7 @@ rvm:
 #  - jruby
 
 branches:
-  only: clean_slate
+  only: master
 
 notifications:
   email: henrik@haf.se
