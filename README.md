@@ -3,7 +3,7 @@
 [![Version     ](https://img.shields.io/gem/v/albacore.svg?style=flat)](https://rubygems.org/gems/albacore)
 [![Build Status](http://img.shields.io/travis/albacore/albacore/master.svg?style=flat)](http://travis-ci.org/Albacore/albacore)
 [![Gittip      ](http://img.shields.io/gittip/haf.svg?style=flat)](http://gittip.com/haf)
-[![Code Climate](https://img.shields.io/codeclimate/github/albacore/albacore.svg?style=flat)](https://codeclimate.com/github/albacore/albacore)
+[![Code Climate](https://img.shields.io/codeclimate/github/Albacore/albacore.svg?style=flat)](https://codeclimate.com/github/albacore/albacore)
 
 Albacore is a suite of tools for the professional .Net or mono developer that
 make their life easier.
