@@ -1,7 +1,8 @@
 # Albacore v2.0
 
+[![Version     ](https://img.shields.io/gem/v/albacore.svg?style=flat)](https://rubygems.org/gems/albacore)
 [![Build Status](https://secure.travis-ci.org/Albacore/albacore.png?branch=master)](http://travis-ci.org/Albacore/albacore)
-[![Gittip](http://img.shields.io/gittip/haf.svg?style=flat)](http://gittip.com/haf)
+[![Gittip      ](http://img.shields.io/gittip/haf.svg?style=flat)](http://gittip.com/haf)
 
 
 It is currently being used for
