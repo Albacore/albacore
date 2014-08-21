@@ -38,10 +38,10 @@ make their life easier.
    code. We're active and taking pull requests - an open source project is not a
    single-person game, but it's nice to have some stability.
 
-The [wiki] is the main reference for the above task types, but there's also
-[very extensive](http://rubydoc.info/gems/albacore/2.0.0/frames) documentation
-in the code, as well as hundreds of unit tests written in a easy-to-read rspec
-syntax.
+The [wiki](https://github.com/Albacore/albacore/wiki) is the main reference for
+the above task types, but there's also [very
+extensive](http://rubydoc.info/gems/albacore/2.0.0/frames) documentation in the
+code, as well as hundreds of unit tests written in a easy-to-read rspec syntax.
 
 ## Getting Started
 
