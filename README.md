@@ -10,7 +10,7 @@ Details about goals and releases can be found at [albacorebuild.net](http://alba
 Add this line to the Gemfile where you maintain the dependencies for your build (we recommend the latest RC for RubyZip 1.0 support, only remove the version spec if you know what you're doing!):
 
 ```ruby
-gem "albacore", "~> 1.0.rc"
+gem "albacore", "~> 1.0.0"
 ```
 
 And then execute
