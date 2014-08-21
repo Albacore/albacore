@@ -15,13 +15,13 @@ gem "albacore", "~> 1.0.0"
 
 And then execute
 
-```bat
+```batch
 > bundle install
 ```
     
 Or install it yourself:
 
-```bat
+```batch
 > gem install albacore
 ```
 
