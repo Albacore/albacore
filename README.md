@@ -1,7 +1,7 @@
 # Albacore v2.0
 
 [![Version     ](https://img.shields.io/gem/v/albacore.svg?style=flat)](https://rubygems.org/gems/albacore)
-[![Build Status](http://img.shields.io/travis/albacore/albacore/master.svg?style=flat)](http://travis-ci.org/Albacore/albacore)
+[![Build Status](http://img.shields.io/travis/Albacore/albacore/master.svg?style=flat)](http://travis-ci.org/Albacore/albacore)
 [![Gittip      ](http://img.shields.io/gittip/haf.svg?style=flat)](http://gittip.com/haf)
 [![Code Climate](https://img.shields.io/codeclimate/github/Albacore/albacore.svg?style=flat)](https://codeclimate.com/github/albacore/albacore)
 
