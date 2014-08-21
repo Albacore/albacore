@@ -20,6 +20,10 @@ project_path: spec/testdata/Project/Project.fsproj
     end
   end
 
+  def teamcity?
+    !!ENV['TEAMCITY_VERSION']
+  end
+
   it 'should have correct title' do
     subject.title.should eq 'superapp.now'
   end
@@ -33,7 +37,7 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should never have nil uri, since we\'re in the albacore git repo and it defaults to the current repo' do
-    subject.uri.should include 'albacore.git'
+    subject.uri.should include 'albacore.git' unless teamcity? # teamcity doesn't keep git folder
   end
 
   it 'should have "apps" category, since it\'s not specified anywhere' do
