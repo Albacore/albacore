@@ -16,7 +16,7 @@ gem "albacore", "~> 1.0.0"
 And then execute
 
 ```bat
-> bundle
+> bundle install
 ```
     
 Or install it yourself:
