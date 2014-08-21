@@ -38,6 +38,11 @@ make their life easier.
    code. We're active and taking pull requests - an open source project is not a
    single-person game, but it's nice to have some stability.
 
+The [wiki] is the main reference for the above task types, but there's also
+[very extensive](http://rubydoc.info/gems/albacore/2.0.0/frames) documentation
+in the code, as well as hundreds of unit tests written in a easy-to-read rspec
+syntax.
+
 ## Getting Started
 
 Follow along for a quick intro, but if on Windows, see the section 'Installing
@@ -139,11 +144,6 @@ You can now run:
 
     bundle exec rake
 
-The [wiki] is the main reference for the above task types, but there's also
-[very extensive](http://rubydoc.info/gems/albacore/2.0.0/frames) documentation
-in the code, as well as hundreds of unit tests written in a easy-to-read rspec
-syntax.
-
 ## Contributing
 
  1. Create a feature branch with your change:
@@ -152,8 +152,6 @@ syntax.
  1. Send a PR with that feature branch to this branch
     a. Make sure TravisCI is OK with it
     b. Describe your PR in English.
-
-### Docs: csprojfiles
 
 ## Writing Code
 
