@@ -48,6 +48,11 @@ First create `Gemfile` with these contents:
     source 'https://rubygems.org'
     gem 'albacore', '2.0.0'
 
+When setting up your build you need to ensure it is reproducible.  Bundler
+allows you to lock down the few gems that Albacore depend on to their specific
+versions, ensuring that your peers can re-run the same build script you just
+built and that it works well on your continous integration server.
+
 Now you can bundle the dependencies, effectively freezing all gem dependencies
 that your build depends on.
 
@@ -79,23 +84,6 @@ Continue below with your first Rakefile.
 
 ## Creating Your First Rakefile
 
-Bundler is a tool that fetches gems for you. Now, specify what ruby gems your
-build will use. Create a new file, named `Gemfile`. This file should look like
-this:
-
-    source 'https://rubygems.org'
-    gem 'albacore', '2.0.0'
-
-When setting up your build you need to ensure it is reproducible.  Bundler
-allows you to lock down all gems that albacore depend on to their specific
-versions, ensuring that your peers can re-run the same rake script you just
-built and that it works well on your continous integration server.
-
-The first step after installing `bundler` is to create a `Gemfile` next to your
-Now, install albacore from this repository by running:
-
-    bundle
-
 In order to build your project, you need to create a `Rakefile`, with contents
 like these:
 
@@ -117,7 +105,7 @@ end
 desc 'restore all nugets as per the packages.config files'
 nugets_restore :restore do |p|
   p.out = 'src/packages'
-  p.exe = 'buildsupport/NuGet.exe'
+  p.exe = 'tools/NuGet.exe'
 end
 
 desc 'Perform full build'
