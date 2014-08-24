@@ -347,7 +347,7 @@ end})
             verify_files:         false,
             nuget_dependencies:   true })
 
-        trace { "#from_xxproj proj: #{proj} opts: #{opts} [nuget model: package]" }
+        trace { "#from_xxproj proj: '#{proj}' opts: #{opts} [nuget model: package]" }
 
         version = opts.get :version
         package = Package.new

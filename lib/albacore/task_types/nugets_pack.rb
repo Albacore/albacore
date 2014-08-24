@@ -269,7 +269,7 @@ module Albacore
         project_dependencies = @opts.get(:project_dependencies, true)
         target = @opts.get :target
 
-        trace "creating NON-SYMBOL package for #{proj.name}, targeting #{target} [nugets pack: task]"
+        trace "creating NON-SYMBOL package for '#{proj.name}', targeting '#{target}' [nugets pack: task]"
         nuspec = Albacore::NugetModel::Package.from_xxproj proj, 
           symbols:        false,
           verify_files:   true,
@@ -285,7 +285,7 @@ module Albacore
         trace { "nuspec: #{nuspec.to_s} [nugets pack: task]" }
 
         if @opts.get(:symbols)
-          trace { "creating SYMBOL package for #{proj.name} [nugets pack: task]" }
+          trace { "creating SYMBOL package for '#{proj.name}' [nugets pack: task]" }
           nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
             symbols:        true,
             verify_files:   true,
