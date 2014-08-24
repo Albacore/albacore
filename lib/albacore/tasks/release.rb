@@ -3,6 +3,29 @@ require 'map'
 
 module Albacore
   module Tasks
+    # The published message on a finished release
+    #
+    class ReleaseData
+      # The semver that was released
+      #
+      attr_reader :semver
+
+      # The enumerable thing of artifacts that were created from the release
+      #
+      attr_reader :artifacts
+
+      # Create a new ReleaseData object with a semver (XSemVer::SemVer instance)
+      # and a list of artifacts
+      #
+      def initialize semver, artifacts
+        raise ArgumentError, 'missing "semver" argument' unless semver
+        raise ArgumentError, 'missing "artifacts" argument' unless artifacts
+        raise ArgumentError, '"artifacts" should respond to #each' unless artifacts.respond_to? :each
+        @semver = semver
+        @artifacts = artifacts
+      end
+    end
+
     # Inspiration from: https://github.com/bundler/bundler/blob/master/lib/bundler/gem_helper.rb
     #
     class Releases
@@ -28,8 +51,12 @@ module Albacore
         end
       end
 
+      # Installs the rake tasks under the 'release' namespace with a named task
+      # (given as the first parameter to the c'tor) that calls all subtasks.
+      #
       def install
         namespace :release do
+          desc 'ensure the tree is not dirty'
           task :guard_clean => @opts.get(:depend_on) do
             guard_clean
           end
