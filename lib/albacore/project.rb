@@ -17,7 +17,7 @@ module Albacore
     attr_reader :proj_path_base, :proj_filename, :proj_xml_node
     
     def initialize proj_path
-      raise ArgumentError, 'project path does not exist' unless File.exists? proj_path
+      raise ArgumentError, 'project path does not exist' unless File.exists? proj_path.to_s
       proj_path = proj_path.to_s unless proj_path.is_a? String
       @proj_xml_node = Nokogiri.XML(open(proj_path))
       @proj_path_base, @proj_filename = File.split proj_path
