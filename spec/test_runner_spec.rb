@@ -18,6 +18,9 @@ describe ::Albacore::TestRunner::Config do
   it do
     should respond_to :exe=
   end
+  it do
+    should respond_to :native_exe
+  end
 end
 describe ::Albacore::TestRunner::Config do
   subject do
@@ -26,10 +29,15 @@ describe ::Albacore::TestRunner::Config do
 
   before :each do
     subject.add_parameter '/TestResults=/b/c/d/e.xml'
+    subject.native_exe
   end
 
   it 'should have the appropriate parameter in #opts.get(:parameters)' do
     subject.opts.get(:parameters).should include('/TestResults=/b/c/d/e.xml')
+  end
+  
+  it 'should have clr_command=false' do
+    expect(subject.opts.get(:clr_command)).to be false
   end
 end
 
