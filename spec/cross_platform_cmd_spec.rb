@@ -86,7 +86,7 @@ end
             /Command failed with status \(127\) - number 127 in particular means that the operating system could not find the executable:\n  nonexistent/)
         end
         let(:cwd) { File.dirname(__FILE__) }
-        let(:runtime) { "/usr/bin/mono" }
+        let(:runtime) { 'mono' }
         it "should fail with RuntimeError if status is not zero" do
           expect { 
             if ::Rake::Win32.windows?
