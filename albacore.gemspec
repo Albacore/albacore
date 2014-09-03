@@ -21,13 +21,13 @@ EOF
 
   s.rubyforge_project = 'albacore'
 
-  s.add_dependency 'rake', '>10' # this gem builds on rake
-  s.add_dependency 'map', '~>6.5' # https://github.com/ahoward/map for options handling
+  s.add_dependency 'rake', '~> 10' # this gem builds on rake
+  s.add_dependency 'map', '~> 6.5' # https://github.com/ahoward/map for options handling
   s.add_dependency 'nokogiri', '~> 1.5' # used to manipulate and read *proj files
   s.add_dependency 'semver2', '~> 3.4'
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2'
-  s.add_development_dependency 'rspec', '>= 2.13'
+  s.add_development_dependency 'rspec', '~> 2.13'
 
   s.files         = `git ls-files`.split("\n").concat(Dir.glob('./resources/**'))
   s.test_files    = `git ls-files -- spec/*`.split("\n")
