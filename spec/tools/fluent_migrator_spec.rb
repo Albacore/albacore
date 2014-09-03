@@ -15,6 +15,12 @@ describe Albacore::Tools::FluentMigrator::MigrateCmdFactory, "when constructing"
   end
 end
 
+module VerifyInterceptor
+  # don't throw if it doesn't exist
+  def verify_exists
+  end
+end
+
 describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
 
   def cmd *args
@@ -25,6 +31,7 @@ describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
     @logger.debug "calling new with #{opts.inspect}"
     c = Albacore::Tools::FluentMigrator::Cmd.new opts
     c.extend ShInterceptor
+    c.extend VerifyInterceptor
     c
   end
 

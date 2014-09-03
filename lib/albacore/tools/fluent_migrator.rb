@@ -6,6 +6,9 @@ require 'albacore/logging'
 
 module Albacore::Tools
   module FluentMigrator
+    class MissingFluentMigratorExe < ::StandardError
+    end
+
     class Cmd
       include ::Albacore::CrossPlatformCmd
 
@@ -59,21 +62,31 @@ module Albacore::Tools
           @parameters.push opts.get(:task_override)
         end
 
-        opts.get(:extras).each{|e| @parameters.push e}
+        opts.get(:extras).each{ |e| @parameters.push e}
 
-        trace "configured Albacore::FluentMigrator::Cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}"
+        trace { "configured Albacore::FluentMigrator::Cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}" }
+        prepare_verify @executable, opts
 
         mono_command
       end
 
       def execute
-        Dir.chdir (opts.get(:work_dir, '.')) do
-          raise "Missing FluentMigrator at #{@executable}" unless File.exists? @executable
-        end
+        verify_exists
         system @executable, @parameters, :work_dir => opts.get(:work_dir)
       end
 
       private
+      def prepare_verify exe, opts
+        Dir.chdir(opts.get(:work_dir) || '.') do
+          @failed_verify = "Missing FluentMigrator at #{@failed_ver}" unless File.exists? exe
+        end
+      end
+
+      def verify_exists
+        if @failed_verify
+          raise MissingFluentMigratorExe, @failed_verify
+        end
+      end
 
       def agree txt, default
         reply = default ? "[Y/n]" : "[y/N]"
