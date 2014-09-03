@@ -67,7 +67,7 @@ module Albacore::Tools
       end
 
       def execute
-        Dir.chdir (opt.get(:work_dir, '.')) do
+        Dir.chdir (opts.get(:work_dir, '.')) do
           raise "Missing FluentMigrator at #{@executable}" unless File.exists? @executable
         end
         system @executable, @parameters, :work_dir => opts.get(:work_dir)
