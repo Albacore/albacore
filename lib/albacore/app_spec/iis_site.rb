@@ -1,4 +1,5 @@
 require 'albacore/app_spec'
+require 'albacore/app_spec/defaults'
 
 module Albacore
   # In the case of building an IIS site we expect the site to have been
