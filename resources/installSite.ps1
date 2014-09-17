@@ -4,10 +4,6 @@ Function Install-Site(
     # Folder where all your websites are located
     [string] $WebSiteRootFolder = "C:\WebSites",
 
-    # Where the source files are -- without any trailing slash or otherwise --
-    # just the name, please.
-    [string] $CurrentPath = $(Get-Location).Path,
-
     # What domain name the site should bind to
     [string] $HostHeader,
 
@@ -18,9 +14,8 @@ Function Install-Site(
     [string] $SiteName
 ) {
 
-    # relative to chocolatey
-    $parentDir = Split-Path -Parent $CurrentPath
-    # get sites content folder
+    $scriptDir = Split-Path -Parent $MyInvocation.PSCommandPath
+    $parentDir = Split-Path -Parent $scriptDir
     $source = Join-Path $parentDir "contents\*"
 
     #site folder
@@ -55,3 +50,4 @@ Function Install-Site(
             -ApplicationPool $siteAppPool -PhysicalPath $siteInstallLocation
     }
 }
+
