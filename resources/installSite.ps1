@@ -30,7 +30,7 @@ Function Install-Site(
     $siteAppPool = "$SiteName-pool"
 
     #check if the site is already present (determines update or install)
-    $isPresent = Get-Website -name $siteName 
+    $isPresent = Get-Website -name $siteName
 
     if($isPresent){
         # Upgrade the current package
