@@ -6,7 +6,7 @@ Function Install-Site(
 
     # Where the source files are -- without any trailing slash or otherwise --
     # just the name, please.
-    [string] $SourceDirectory = "contents",
+    [string] $CurrentPath = $(Get-Location).Path,
 
     # What domain name the site should bind to
     [string] $HostHeader,
@@ -17,6 +17,12 @@ Function Install-Site(
     # Name of site that you're setting up
     [string] $SiteName
 ) {
+
+    # relative to chocolatey
+    $parentDir = Split-Path -Parent $CurrentPath
+    # get sites content folder
+    $source = Join-Path $parentDir "contents\*"
+
     #site folder
     $siteInstallLocation = "$WebSiteRootFolder\$SiteName"
 
@@ -24,7 +30,7 @@ Function Install-Site(
     $siteAppPool = "$SiteName-pool"
 
     #check if the site is already present (determines update or install)
-    $isPresent = Get-Website -name $siteName 
+    $isPresent = Get-Website -name $siteName
 
     if($isPresent){
         # Upgrade the current package
@@ -39,7 +45,7 @@ Function Install-Site(
         new-item $siteInstallLocation -ItemType directory -Force
 
         # Copy site files to site folder
-        Copy-Item "$SourceDirectory\*" -Recurse $siteInstallLocation -Force
+        Copy-Item $source -Recurse $siteInstallLocation -Force
 
         # Create application pool
         New-WebAppPool -Name $siteAppPool -Force
