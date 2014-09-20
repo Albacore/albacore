@@ -29,8 +29,9 @@ Function Install-Site(
 
     if($isPresent){
         # Upgrade the current package
-        Write-Host "$SiteName will be updated"
-        Copy-Item "$SourceDirectory\*" -Recurse $siteInstallLocation -Force
+        Write-Host -ForegroundColor Yellow "$SiteName will be updated"
+        Copy-Item "$source" -Recurse $siteInstallLocation -Force
+        Write-Host -ForegroundColor Green "$SiteName is updated"
     } else {
         # Install a clean version of the package
 
