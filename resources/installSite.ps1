@@ -28,10 +28,19 @@ Function Install-Site(
     $isPresent = Get-Website -name $siteName
 
     if($isPresent){
-        # Upgrade the current package
-        Write-Host -ForegroundColor Yellow "$SiteName will be updated"
-        Copy-Item "$source" -Recurse $siteInstallLocation -Force
-        Write-Host -ForegroundColor Green "$SiteName is updated"
+         try{
+            # Upgrade the current package
+            Write-Host -ForegroundColor Yellow "$SiteName will be updated"
+            Write-Host -ForegroundColor Yellow "stopping $siteAppPool"
+            Stop-WebAppPool $siteAppPool
+            Write-Host -ForegroundColor Yellow "successfullty stopped $siteAppPool"
+            Copy-Item "$source" -Recurse $siteInstallLocation -Force
+            Write-Host -ForegroundColor Green "$SiteName is updated"
+        } finally { 
+            Write-Host -ForegroundColor Green "starting $siteAppPool"
+            Start-WebAppPool $siteAppPool
+            Write-Host -ForegroundColor Green "successfully $siteAppPool"
+        }
     } else {
         # Install a clean version of the package
 
