@@ -138,6 +138,14 @@ Successfully created package '/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.s
 EXAMPLE_OUTPUT
   end
 
+  let :sample3 do
+<<EXAMPLE_OUTPUT
+Attempting to build package from 'MyNuget.Package.nuspec'.
+Successfully created package '/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha3.nupkg'.
+Successfully created package '/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha3.symbols.nupkg'.
+EXAMPLE_OUTPUT
+  end
+
   it "should match sample1 with last nupkg mentioned" do
     match = subject.send(:get_nuget_path_of) { sample1 }
     match.should eq('Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
@@ -146,6 +154,11 @@ EXAMPLE_OUTPUT
   it 'should match sample2 with last nupkg mentioned' do
     match = subject.send(:get_nuget_path_of) { sample2 }
     match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.symbols.nupkg')
+  end
+
+  it 'should match sample3 with last nupkg mentioned' do
+    match = subject.send(:get_nuget_path_of) { sample3 }
+    match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha3.symbols.nupkg')
   end
 end
 
