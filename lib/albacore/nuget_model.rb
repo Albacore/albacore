@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'map'
 require 'albacore/logging'
 require 'albacore/project'
