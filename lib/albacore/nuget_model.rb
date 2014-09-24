@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 require 'map'
 require 'albacore/logging'
 require 'albacore/project'
@@ -304,7 +305,7 @@ end})
         "NugetModel::Package(files: #{@files.map(&:to_s)}, metadata: #{ @metadata.to_s })"
       end
 
-      # gimme some logging lööve
+      # gimme some logging looove
       self.extend Logging
 
       # read the nuget specification from a nuspec file
