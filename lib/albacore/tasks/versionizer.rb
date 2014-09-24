@@ -58,7 +58,7 @@ module Albacore
       end
 
       def self.format_nuget semver
-        if semver.prerelease
+        if semver.prerelease and not semver.prerelease.empty?
           "#{semver.major}.#{semver.minor}.#{semver.patch}-#{semver.prerelease.gsub(/\W/, '')}"
         else
           semver.format '%M.%m.%p'
