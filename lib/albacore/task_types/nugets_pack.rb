@@ -74,7 +74,7 @@ module Albacore
         trace "Got symbols return value: '#{out}', matched: '#{$1}'" if $1
         return $1 if $1
 
-        out.match /Successfully created package '([:\s\w\\\/\d\.]+\.nupkg)'./i if out.respond_to? :match
+        out.match /Successfully created package '([:\s\w\\\/\d\.\-]+\.nupkg)'./i if out.respond_to? :match
         trace "Got NOT-symbols return value: '#{out}', matched: '#{$1}'"
 
         unless $1
