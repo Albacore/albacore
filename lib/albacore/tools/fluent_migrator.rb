@@ -21,6 +21,7 @@ module Albacore::Tools
         opts = opts.apply :extras        => [],
                           :silent        => ENV.fetch('MIGRATE_SILENT', teamcity?),
                           :conn          => ENV['CONN'],
+                          :timeout       => 200,
                           :direction     => 'migrate:up',
                           :dll           => ENV.fetch('MIGRATE_DLL','src/migrations/Migrations/bin/Debug/Migrations.dll'),
                           :db            => ENV.fetch('MIGRATE_DB', 'SqlServer2008'),
@@ -53,7 +54,7 @@ module Albacore::Tools
         raise ArgumentError, 'cannot execute with empty connection string' if nil_or_white conn
         raise ArgumentError, 'cannot execute with no dll file specified' if nil_or_white(opts.get(:dll))
 
-        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn} --timeout=200]
+        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn} --timeout=#{opts.get(:timeout)}]
 
         unless opts.get :task_override
           @parameters.push '--task'
