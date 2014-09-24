@@ -107,7 +107,8 @@ module Albacore
         debug 'waiting for process completion'
         _, status = Process.wait2 @pid
 
-        return block.call(status.success? && inmem.string, status, inmem.string)
+        ret_str = inmem.string.encode 'utf-8', invalid: :replace, undef: :replace, replace: ''
+        return block.call(status.success? && ret_str, status, ret_str)
       end
     end  
 

@@ -71,7 +71,7 @@ module Albacore
 
       # regexpes the package path from the output
       def get_nuget_path_of
-        out = yield.encode 'utf-8', undef: :replace
+        out = yield
         out.match /Successfully created package '([:\s\w\\\/\d\.\-]+\.symbols\.nupkg)'./iu if out.respond_to? :match
         trace "Got symbols return value: '#{out}', matched: '#{$1}'" if $1
         return $1 if $1
