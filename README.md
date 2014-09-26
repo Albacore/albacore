@@ -126,7 +126,7 @@ nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
   p.out     = 'build/pkg'
-  p.exe     = 'buildsupport/NuGet.exe'
+  p.exe     = 'tools/NuGet.exe'
   p.with_metadata do |m|
     m.description = 'A cool nuget'
     m.authors = 'Henrik'
