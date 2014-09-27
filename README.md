@@ -159,6 +159,10 @@ You can now run:
 
     bundle exec rake
 
+You can continue reading about the available task-types in [the wiki][wiki].
+
+If you're upgrading from v1.0, there's an article [there for you][upgrade-v1.0]
+
 ## Contributing
 
  1. Create a feature branch with your change:
@@ -181,3 +185,5 @@ Document your code with
 writing it: it's much easier to write the documentation together with the code
 than afterwards.
 
+ [wiki]: https://github.com/Albacore/albacore/wiki
+ [upgrade-v1.0]: https://github.com/Albacore/albacore/wiki/Upgrading-from-v1.0
