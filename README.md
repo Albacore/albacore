@@ -61,7 +61,7 @@ built and that it works well on your continous integration server.
 Now you can bundle the dependencies, effectively freezing all gem dependencies
 that your build depends on.
 
-    bundle install
+    bundle
     git add Gemfile
     git add Gemfile.lock
     git commit -m 'Installed Albacore'
@@ -70,18 +70,7 @@ Now you are ready to continue reading below for your first Rakefile.
 
 ### Installing Ruby on Windows
 
-Install [Chocolatey](http://chocolatey.org) by, in a command prompt, running:
-
-    @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('http://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%systemdrive%\chocolatey\bin
-
-Then start a new powershell, cygwin or mingw32 shell. You can now install the
-Ruby framework:
-
-    cinst ruby.devkit
-
-Now, restart your shell or reload its path variable. You now have rake
-installed. Now you can install Albacore, the collection of tasktypes, tasks and
-extension points aimed to make your life as a .Net developer easier:
+First install Ruby from http://rubyinstaller.org/downloads/ - e.g. 2.1.3.
 
     gem install bundler
 
