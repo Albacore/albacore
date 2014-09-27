@@ -51,7 +51,7 @@ Ruby' first. Albacore works on both Ruby 1.9.3 and 2.x.
 First create `Gemfile` with these contents:
 
     source 'https://rubygems.org'
-    gem 'albacore', '2.0.0'
+    gem 'albacore', '~> 2.0.0'
 
 When setting up your build you need to ensure it is reproducible.  Bundler
 allows you to lock down the few gems that Albacore depend on to their specific
@@ -62,19 +62,45 @@ Now you can bundle the dependencies, effectively freezing all gem dependencies
 that your build depends on.
 
     bundle
-    git add Gemfile
-    git add Gemfile.lock
+    git add Gemfile*
     git commit -m 'Installed Albacore'
 
 Now you are ready to continue reading below for your first Rakefile.
 
 ### Installing Ruby on Windows
 
-First install Ruby from http://rubyinstaller.org/downloads/ - e.g. 2.1.3.
+First install Ruby from http://rubyinstaller.org/downloads/ - e.g. [v2.1.3
+32-bits](http://dl.bintray.com/oneclick/rubyinstaller/rubyinstaller-2.1.3.exe?direct)
+which is the latest version, at time of writing.
+
+Second, install Ruby DevKit, or you won't be able to install nokogiri. Download
+it [lower down on the same
+page](http://cdn.rubyinstaller.org/archives/devkits/DevKit-mingw64-32-4.7.2-20130224-1151-sfx.exe),
+open a console:
+
+``` bash
+cd \DevKit
+ruby dk.rb init
+ruby dk.rb install
+```
+
+Now close that console and open a new console, and run:
 
     gem install bundler
 
-Continue below with your first Rakefile.
+This gives you a working ruby installation. Continue below with your first
+Rakefile.
+
+### Installing Ruby on OS X
+
+``` bash
+brew install rbenv ruby-build
+rbenv install 2.1.3
+gem install bundler
+```
+
+Done. Ensure `brew doctor` is clean enough and that `ruby --version` outputs the
+expected version.
 
 ## Creating Your First Rakefile
 
