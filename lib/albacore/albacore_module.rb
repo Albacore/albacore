@@ -13,6 +13,16 @@ module Albacore
       @application ||= Albacore::Application.new
     end
 
+    # Name of default Rakefile, used by Cli
+    def rakefile
+      'Rakefile'
+    end
+
+    # Name of the default Gemfile, used by Cli
+    def gemfile
+      'Gemfile'
+    end
+
     # set the application -- good for testing
     # the infrastructure of albacore by resetting the
     # state after each test

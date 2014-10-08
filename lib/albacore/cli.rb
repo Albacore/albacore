@@ -1,4 +1,6 @@
 require 'albacore/version'
+require 'albacore/cross_platform_cmd'
+require 'albacore/cli_dsl'
 
 module Albacore
   class Cli
@@ -7,7 +9,6 @@ module Albacore
     def initialize args
       # Run a semver command. Raise a CommandError if the command does not exist.
       # Expects an array of commands, such as ARGV.
-      def initialize(*args)
       @args = args
       run_command(@args.shift || :help)
     end
@@ -33,60 +34,72 @@ PLEASE READ https://github.com/Albacore/albacore/wiki/Albacore-binary
 
     # Create a new Rakefile file if the file does not exist.
     command :initialize, :init do
-      if File.exist? 'Rakefile'
-        puts 'Rakefile already exists'
+      files = [Albacore.rakefile, Albacore.gemfile]
+      if files.any? { |file| File.exist? file }
+        puts "One of #{files.inspect} already exists"
       else
-        File.open 'Gemfile', 'w+' do |io|
+        File.open Albacore.gemfile, 'w+' do |io|
           io.puts <<-DATA
 source 'https://rubygems.org'
-gem 'albacore', '~> #{Albacore.version}'
+gem 'albacore', '~> #{Albacore::VERSION}'
+          DATA
+        end
+        Albacore::CrossPlatformCmd.system 'bundle'
+        File.open Albacore.rakefile, 'w+' do |io|
+          io.puts <<-DATA
+require 'bundler/setup'
+
+require 'albacore'
+require 'albacore/tasks/versionizer'
+require 'albacore/ext/teamcity'
+
+Albacore::Tasks::Versionizer.new :versioning
+
+desc 'Perform fast build (warn: doesn\\'t d/l deps)'
+build :quick_build do |b|
+  b.logging = 'detailed'
+  b.sln     = 'src/MyProj.sln'
+end
+
+desc 'restore all nugets as per the packages.config files'
+nugets_restore :restore do |p|
+  p.out = 'src/packages'
+  p.exe = 'tools/NuGet.exe'
+end
+
+desc 'Perform full build'
+build :build => [:versioning, :restore] do |b|
+  b.sln = 'src/MyProj.sln'
+  # alt: b.file = 'src/MyProj.sln'
+end
+
+directory 'build/pkg'
+
+desc 'package nugets - finds all projects and package them'
+nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
+  p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
+    exclude(/Tests/)
+  p.out     = 'build/pkg'
+  p.exe     = 'tools/NuGet.exe'
+  p.with_metadata do |m|
+    m.description = 'A cool nuget'
+    m.authors = 'Henrik'
+    m.version = ENV['NUGET_VERSION']
+  end
+  p.with_package do |p|
+    p.add_file 'file/relative/to/proj', 'lib/net40'
+  end
+end
+
+task :default => :create_nugets
           DATA
         end
       end
     end
-  end
-end
 
-module Albacore
-  module CliDSL
-
-    def self.included(klass)
-      klass.extend ClassMethods
-      klass.send :include, InstanceMethods
-    end
-
-    class CommandError < StandardError
-    end
-
-    module InstanceMethods
-      # Calls an instance method defined via the ::command class method.
-      # Raises CommandError if the command does not exist.
-      def run_command(command)
-        method_name = "#{self.class.command_prefix}#{command}"
-        if self.class.method_defined?(method_name)
-          send method_name
-        else
-          raise CommandError, "invalid command #{command}"
-        end
-      end
-    end
-
-    module ClassMethods
-      # Defines an instance method based on the first command name.
-      # The method executes the code of the given block.
-      # Aliases methods for any subsequent command names.
-      def command(*command_names, &block)
-        method_name = "#{command_prefix}#{command_names.shift}"
-        define_method method_name, &block
-        command_names.each do |c|
-          alias_method "#{command_prefix}#{c}", method_name
-        end
-      end
-
-      # The prefix for any instance method defined by the ::command method.
-      def command_prefix
-        :_run_
-      end
+    # Output instructions for using the semvar command.
+    command :help do
+      puts help_text
     end
   end
 end
