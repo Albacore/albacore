@@ -38,7 +38,7 @@ PLEASE READ https://github.com/Albacore/albacore/wiki/Albacore-binary
       if files.any? { |file| File.exist? file }
         puts "One of #{files.inspect} already exists"
       else
-        Albacore::CrossPlatformCmd.system 'semver init'
+        Albacore::CrossPlatformCmd.system 'semver init' unless ENV['TEST']
         File.open Albacore.gemfile, 'w+' do |io|
           io.puts <<-DATA
 source 'https://rubygems.org'

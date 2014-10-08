@@ -6,8 +6,10 @@ describe Albacore::Cli do
     # Output to a file that doesn't conflict with the project's Rakefile file.
     @test_rake = 'Test_Rakefile'
     @test_gem = 'Test_Gemfile'
+    @test_semver = 'Test_Semver'
     Albacore.stub(:rakefile).and_return @test_rake
     Albacore.stub(:gemfile).and_return @test_gem
+    Albacore.stub(:semver_file).and_return @test_semver
 
     # Capture the output that would typically appear in the console.
     @original_stdout = $stdout
