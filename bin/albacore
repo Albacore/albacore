@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'albacore/cli'
+
+begin
+  Albacore::Cli.new *ARGV
+rescue Albacore::Cli::CommandError => e
+  puts e.message
+  puts "run '#{$0} help' for more info"
+  exit 1
+end

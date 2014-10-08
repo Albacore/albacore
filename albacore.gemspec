@@ -32,5 +32,5 @@ EOF
   s.files         = `git ls-files`.split("\n").concat(Dir.glob('./resources/**'))
   s.test_files    = `git ls-files -- spec/*`.split("\n")
   # s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
-  s.require_paths = ['lib']
+  s.require_paths = %w|bin lib|
 end
