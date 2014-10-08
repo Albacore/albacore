@@ -34,10 +34,11 @@ PLEASE READ https://github.com/Albacore/albacore/wiki/Albacore-binary
 
     # Create a new Rakefile file if the file does not exist.
     command :initialize, :init do
-      files = [Albacore.rakefile, Albacore.gemfile]
+      files = [Albacore.rakefile, Albacore.gemfile, Albacore.semver_file]
       if files.any? { |file| File.exist? file }
         puts "One of #{files.inspect} already exists"
       else
+        Albacore::CrossPlatformCmd.system 'semver init'
         File.open Albacore.gemfile, 'w+' do |io|
           io.puts <<-DATA
 source 'https://rubygems.org'

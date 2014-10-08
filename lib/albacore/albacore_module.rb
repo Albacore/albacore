@@ -23,6 +23,11 @@ module Albacore
       'Gemfile'
     end
 
+    # Name of the default .semver file, used by Cli
+    def semver_file
+      '.semver'
+    end
+
     # set the application -- good for testing
     # the infrastructure of albacore by resetting the
     # state after each test
