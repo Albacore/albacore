@@ -43,6 +43,14 @@ the above task types, but there's also [very
 extensive](http://rubydoc.info/gems/albacore/2.0.0/frames) documentation in the
 code, as well as hundreds of unit tests written in a easy-to-read rspec syntax.
 
+## Quickstart TLDR; SHOW ME THE CODE!
+
+    gem install albacore
+    albacore init
+
+Now you have the initial setup and can run `bundle exec rake`. But please read
+below:
+
 ## Getting Started
 
 Follow along for a quick intro, but if on Windows, see the section 'Installing
