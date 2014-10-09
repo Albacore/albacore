@@ -58,7 +58,7 @@ module Albacore
         system @executable, @parameters, :work_dir => @work_dir, :output => false
       end
     end
-    
+
     # Public: Configure 'nuget.exe install' -- nuget restore.
     #
     # work_dir - optional
@@ -71,6 +71,7 @@ module Albacore
 
       OFFICIAL_REPO = 'https://nuget.org/api/v2/'
 
+      # Create a new Config object
       def initialize
         @include_official = false
         @list_spec = File.join '**', 'packages.config'
@@ -78,9 +79,22 @@ module Albacore
 
       # the output directory passed to nuget when restoring the nugets
       attr_writer :out
-    
+
       # nuget source, when other than MSFT source
-      attr_accessor :source
+      def source
+        @source
+      end
+
+      # set the nuget source
+      def source= val
+        if val.is_a? String
+          debug { 'you used a plain string as source, naming it after its md5 digest' }
+          md5 = Digest::MD5.hexdigest val
+          @source = OpenStruct.new(:name => val, :uri => val)
+        else
+          @source = val
+        end
+      end
 
       # specifies the list specification to load 'packages.config' files
       # from.
@@ -105,7 +119,7 @@ module Albacore
       def exclude_version
         add_parameter "-ExcludeVersion"
       end
-      
+
       def has_credentials?
         username && password && source
       end
