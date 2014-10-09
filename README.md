@@ -1,4 +1,5 @@
 # Albacore v2.0
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Albacore/albacore?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Version     ](https://img.shields.io/gem/v/albacore.svg?style=flat)](https://rubygems.org/gems/albacore)
 [![Build Status](http://img.shields.io/travis/Albacore/albacore/master.svg?style=flat)](http://travis-ci.org/Albacore/albacore)
