@@ -19,6 +19,7 @@ describe Albacore::NugetsRestore::Config, 'when setting #source' do
     subject.source = 'hello'
     expect(subject.source).not_to be_a String
     expect(subject.source).to be_a OpenStruct
+    expect(subject.source.name).to eq(Digest::MD5.hexdigest('hello'))
   end
   it 'should allow setting an OpenStruct' do
     subject.source = OpenStruct.new :name => 'a', :uri => 'https://example.com/nugetfeed.svc'

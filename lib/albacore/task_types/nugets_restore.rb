@@ -90,7 +90,7 @@ module Albacore
         if val.is_a? String
           debug { 'you used a plain string as source, naming it after its md5 digest' }
           md5 = Digest::MD5.hexdigest val
-          @source = OpenStruct.new(:name => val, :uri => val)
+          @source = OpenStruct.new(:name => md5, :uri => val)
         else
           @source = val
         end
