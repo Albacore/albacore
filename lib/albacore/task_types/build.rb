@@ -184,9 +184,21 @@ module Albacore
 
       def heuristic_executable
         if ::Rake::Win32.windows?
+          require 'win32/registry'
           trace 'build tasktype finding msbuild.exe'
-          %w{v4.0.30319 v4.0 v3.5 v2.0}.collect { |fw_ver|
-            msb = File.join ENV['WINDIR'], 'Microsoft.NET', 'Framework', fw_ver, 'msbuild.exe'
+ 
+          #Get msbuild path from registry
+          %w{12.0 4.0 3.5 2.0}.collect { |msbuid_ver|
+            msb = :something_nonexistent
+            key = "SOFTWARE\\Microsoft\\MSBuild\\#{msbuid_ver}"
+            begin
+              Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
+                  msb = reg['MSBuildOverrideTasksPath']
+              end
+            rescue
+              trace "failed to open HKLM\\#{key}"
+            end
+ 
             CrossPlatformCmd.which(msb) ? msb : nil
           }.compact.first
         else
