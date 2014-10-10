@@ -192,7 +192,7 @@ module Albacore
             key = "SOFTWARE\\Microsoft\\MSBuild\\#{msbuild_ver}"
             begin
               Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
-                  msb = reg['MSBuildOverrideTasksPath']
+                  msb = "#{reg['MSBuildOverrideTasksPath']}\msbuild.exe"
               end
             rescue
               trace "failed to open HKLM\\#{key}"
