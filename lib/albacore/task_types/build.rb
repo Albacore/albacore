@@ -187,10 +187,9 @@ module Albacore
           require 'win32/registry'
           trace 'build tasktype finding msbuild.exe'
  
-          #Get msbuild path from registry
-          %w{12.0 4.0 3.5 2.0}.collect { |msbuid_ver|
+          %w{12.0 4.0 3.5 2.0}.collect { |msbuild_ver|
             msb = :something_nonexistent
-            key = "SOFTWARE\\Microsoft\\MSBuild\\#{msbuid_ver}"
+            key = "SOFTWARE\\Microsoft\\MSBuild\\#{msbuild_ver}"
             begin
               Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
                   msb = reg['MSBuildOverrideTasksPath']
