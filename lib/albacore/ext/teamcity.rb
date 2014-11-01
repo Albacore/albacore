@@ -1,4 +1,6 @@
 require 'albacore'
+require 'net/http'
+require 'uri'
 
 module Albacore
   module Ext
@@ -46,6 +48,17 @@ module Albacore
         Albacore.subscribe :finish_progress do |p|
           # tell teamcity of our progress
           finish_progress p.message
+        end
+        Albacore.subscribe :release do |r|
+          ::Albacore.puts 'Pinning build'
+          # https://stackoverflow.com/questions/12681908/is-it-possible-to-automate-the-teamcity-pin-functionality-on-a-run-custom-build
+          uri = URI.parse("%teamcity.serverUrl%/httpAuth/app/rest/builds/id:%teamcity.build.id%/pin -u 'TCuser:TCpass'")
+          # curl -v -H "Content-Type:text/plain" -d "Deliverable" %teamcity.serverUrl%/httpAuth/app/rest/builds/id:%teamcity.build.id%/tags -u "TCuser:TCpass"
+          http = Net::HTTP.new uri.host, uri.port
+          put = Net::HTTP::Put.new uri.request_uri
+          #request["Content-Type"] = "application/json"
+          response = http.request put
+          ::Albacore.puts "Done, server replied #{response.code}"
         end
       end
 
