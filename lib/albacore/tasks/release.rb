@@ -125,7 +125,7 @@ module Albacore
       def guard_pkg
         exe = @opts.get(:nuget_exe)
         (! packages.empty?) or raise('You must have built your packages, use "depend_on: :nuget_pkg"')
-        (! File.exists?(exe)) or raise("You don't have a NuGet.exe file to push with, expected path: #{exe}")
+        (File.exists?(exe)) or raise("You don't have a NuGet.exe file to push with, expected path: #{exe}")
 
       end
 
