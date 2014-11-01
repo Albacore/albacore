@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# encoding: utf-8
 
 require 'rake'
 require 'albacore/paths'
@@ -116,7 +116,7 @@ module Albacore
       end
 
       # Pass the parameters that you specify to the console logger, which displays build information in the console window. You can specify the following parameters:
-      # * PerformanceSummary. Show the time that’s spent in tasks, targets, and projects.
+      # * PerformanceSummary. Show the time that's spent in tasks, targets and projects.
       # * Summary. Show the error and warning summary at the end.
       # * NoSummary. Don't show the error and warning summary at the end.
       # * ErrorsOnly. Show only errors.

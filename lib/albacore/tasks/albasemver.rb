@@ -26,9 +26,9 @@ module Albacore
     end
     class Config
       include Logging
-      
+
       attr_accessor :tag
-      
+
       def initialize
         begin
           @semver = SemVer.find

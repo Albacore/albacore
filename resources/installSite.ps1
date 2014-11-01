@@ -4,10 +4,6 @@ Function Install-Site(
     # Folder where all your websites are located
     [string] $WebSiteRootFolder = "C:\WebSites",
 
-    # Where the source files are -- without any trailing slash or otherwise --
-    # just the name, please.
-    [string] $SourceDirectory = "contents",
-
     # What domain name the site should bind to
     [string] $HostHeader,
 
@@ -17,6 +13,11 @@ Function Install-Site(
     # Name of site that you're setting up
     [string] $SiteName
 ) {
+
+    $scriptDir = Split-Path -Parent $MyInvocation.PSCommandPath
+    $parentDir = Split-Path -Parent $scriptDir
+    $source = Join-Path $parentDir "contents\*"
+
     #site folder
     $siteInstallLocation = "$WebSiteRootFolder\$SiteName"
 
@@ -24,12 +25,22 @@ Function Install-Site(
     $siteAppPool = "$SiteName-pool"
 
     #check if the site is already present (determines update or install)
-    $isPresent = Get-Website -name $siteName 
+    $isPresent = Get-Website -name $siteName
 
     if($isPresent){
-        # Upgrade the current package
-        Write-Host "$SiteName will be updated"
-        Copy-Item "$SourceDirectory\*" -Recurse $siteInstallLocation -Force
+         try{
+            # Upgrade the current package
+            Write-Host -ForegroundColor Yellow "$SiteName will be updated"
+            Write-Host -ForegroundColor Yellow "stopping $siteAppPool"
+            Stop-WebAppPool $siteAppPool
+            Write-Host -ForegroundColor Yellow "successfullty stopped $siteAppPool"
+            Copy-Item "$source" -Recurse $siteInstallLocation -Force
+            Write-Host -ForegroundColor Green "$SiteName is updated"
+        } finally { 
+            Write-Host -ForegroundColor Green "starting $siteAppPool"
+            Start-WebAppPool $siteAppPool
+            Write-Host -ForegroundColor Green "successfully $siteAppPool"
+        }
     } else {
         # Install a clean version of the package
 
@@ -39,7 +50,7 @@ Function Install-Site(
         new-item $siteInstallLocation -ItemType directory -Force
 
         # Copy site files to site folder
-        Copy-Item "$SourceDirectory\*" -Recurse $siteInstallLocation -Force
+        Copy-Item $source -Recurse $siteInstallLocation -Force
 
         # Create application pool
         New-WebAppPool -Name $siteAppPool -Force
@@ -49,3 +60,4 @@ Function Install-Site(
             -ApplicationPool $siteAppPool -PhysicalPath $siteInstallLocation
     }
 }
+

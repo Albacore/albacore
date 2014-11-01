@@ -6,6 +6,9 @@ require 'albacore/logging'
 
 module Albacore::Tools
   module FluentMigrator
+    class MissingFluentMigratorExe < ::StandardError
+    end
+
     class Cmd
       include ::Albacore::CrossPlatformCmd
 
@@ -18,6 +21,7 @@ module Albacore::Tools
         opts = opts.apply :extras        => [],
                           :silent        => ENV.fetch('MIGRATE_SILENT', teamcity?),
                           :conn          => ENV['CONN'],
+                          :timeout       => 200,
                           :direction     => 'migrate:up',
                           :dll           => ENV.fetch('MIGRATE_DLL','src/migrations/Migrations/bin/Debug/Migrations.dll'),
                           :db            => ENV.fetch('MIGRATE_DB', 'SqlServer2008'),
@@ -50,7 +54,7 @@ module Albacore::Tools
         raise ArgumentError, 'cannot execute with empty connection string' if nil_or_white conn
         raise ArgumentError, 'cannot execute with no dll file specified' if nil_or_white(opts.get(:dll))
 
-        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn} --timeout=200]
+        @parameters = %W[-a #{opts.get(:dll)} -db #{opts.get(:db)} -conn #{conn} --timeout=#{opts.get(:timeout)}]
 
         unless opts.get :task_override
           @parameters.push '--task'
@@ -59,18 +63,31 @@ module Albacore::Tools
           @parameters.push opts.get(:task_override)
         end
 
-        opts.get(:extras).each{|e| @parameters.push e}
+        opts.get(:extras).each{ |e| @parameters.push e}
 
-        trace "configured Albacore::FluentMigrator::Cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}"
+        trace { "configured Albacore::FluentMigrator::Cmd with exe: '#{@executable}', params: #{@parameters.join(' ')}" }
+        prepare_verify @executable, opts
 
         mono_command
       end
 
       def execute
+        verify_exists
         system @executable, @parameters, :work_dir => opts.get(:work_dir)
       end
 
       private
+      def prepare_verify exe, opts
+        Dir.chdir(opts.get(:work_dir) || '.') do
+          @failed_verify = "Missing FluentMigrator at #{@failed_ver}" unless File.exists? exe
+        end
+      end
+
+      def verify_exists
+        if @failed_verify
+          raise MissingFluentMigratorExe, @failed_verify
+        end
+      end
 
       def agree txt, default
         reply = default ? "[Y/n]" : "[y/N]"

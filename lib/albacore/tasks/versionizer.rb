@@ -24,7 +24,7 @@ module Albacore
         ver = XSemVer::SemVer.find
         ver.patch = (ENV['BUILD_NUMBER'] || ver.patch).to_i
         version_data = versions(ver, &method(:commit_data))
-        
+
         Albacore.subscribe :build_version do |data|
           ENV['BUILD_VERSION']  = data.build_version
           ENV['NUGET_VERSION']  = data.nuget_version
@@ -52,9 +52,17 @@ module Albacore
           # extensible number w/ git hash
           :build_version  => semver.format("%M.%m.%p%s") + ".#{yield[0]}",
 
-          # nuget (not full semver 2.0.0-rc.1 support) see http://nuget.codeplex.com/workitem/1796
-          :nuget_version  => semver.format("%M.%m.%p%s")
+          # nuget (not full semver 2.0.0 support) see http://nuget.codeplex.com/workitem/1796
+          :nuget_version  => format_nuget(semver)
         }
+      end
+
+      def self.format_nuget semver
+        if semver.prerelease and not semver.prerelease.empty?
+          "#{semver.major}.#{semver.minor}.#{semver.patch}-#{semver.prerelease.gsub(/\W/, '')}"
+        else
+          semver.format '%M.%m.%p'
+        end
       end
 
       # load the commit data

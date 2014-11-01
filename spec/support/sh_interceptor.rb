@@ -51,7 +51,8 @@ module ShInterceptor
     @executable = args[0] || ''
     @parameters = args[1..-1].flatten || []
     @system_calls = system_calls + 1
-    add_invocation(OpenStruct.new({ :executable => @executable, :parameters => @parameters, :options => @options}))
+    add_invocation(OpenStruct.new({ :executable => @executable, :parameters => @parameters, :options => @options }))
+    "".force_encoding 'utf-8' # expecting string output in utf-8 (hopefully)
   end
 
   # gets the invocations given to #system, with readers:

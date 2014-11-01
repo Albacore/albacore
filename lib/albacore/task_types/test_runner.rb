@@ -18,23 +18,33 @@ module Albacore
       # constructor, no parameters
       def initialize
         @copy_local = false
+        @clr_command = true
         @files = []
       end
 
-      # gets the configured options
+      # Gets the configured options from the test runner configuration.
+      #
       def opts
         Map.new(
-          :files      => files,
-          :copy_local => @copy_local,
-          :exe        => @exe,
-          :parameters => @parameters)
+          :files       => files,
+          :copy_local  => @copy_local,
+          :exe         => @exe,
+          :parameters  => @parameters,
+          :clr_command => @clr_command)
       end
 
-      # mark that it should be possible to copy the test files local
+      # Mark that it should be possible to copy the test files local
       # -- this is great if you are running a VM and the host disk is
       # mapped as a network drive, which crashes some test runners
       def copy_local
         @copy_local = true
+      end
+
+      # Call this on the confiuguration if you don't want 'mono' prefixed to the
+      # exe path on non-windows systems.
+      #
+      def native_exe
+        @clr_command = false
       end
 
       private
@@ -52,9 +62,10 @@ module Albacore
 
       # expects both parameters and executable to be relative to the
       # work_dir parameter
-      def initialize work_dir, executable, parameters, file
+      def initialize work_dir, executable, parameters, file, clr_command = true
         @work_dir, @executable = work_dir, executable
         @parameters = parameters.to_a.unshift(file)
+        @clr_command = clr_command
       end
 
       def execute
@@ -62,7 +73,7 @@ module Albacore
         system @executable,
           @parameters,
           :work_dir    => @work_dir,
-          :clr_command => true
+          :clr_command => @clr_command
       end
     end
 
@@ -86,7 +97,10 @@ module Albacore
       def execute_tests_for dll
         handle_directory dll, @opts.get(:exe) do |dir, exe|
           filename = File.basename dll
-          cmd = Albacore::TestRunner::Cmd.new dir, exe, @opts.get(:parameters, []), filename
+          cmd = Albacore::TestRunner::Cmd.new dir,
+                                              exe, @opts.get(:parameters, []),
+                                              filename,
+                                              @opts.get(:clr_command)
           cmd.execute
         end
       end

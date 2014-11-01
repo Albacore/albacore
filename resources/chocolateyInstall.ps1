@@ -26,7 +26,11 @@ Function System([string] $Command, [Switch] $Silent) {
 }
 
 Function Get-ServiceVersion([string] $ServiceExePath) {
-    (ls $ServiceExePath | Select-Object -First 1).VersionInfo.FileVersion.ToString()
+    try{
+        (ls $ServiceExePath | Select-Object -First 1).VersionInfo.FileVersion.ToString()
+    } catch {
+        throw (New-Object System.InvalidOperationException "$ServiceExeName is missing a fileversion, did you add a assembly version to it?")
+    }
 }
 
 Function Copy-WithBackup([string] $Source, [string] $Target, [string] $ServiceExePath) {

@@ -13,7 +13,7 @@ module Albacore
 
     # the standard IO error output
     attr_reader :output_err
-    
+
     # initialize a new albacore application with a given log IO object
     def initialize log = STDOUT, output = STDOUT, output_err = STDERR
       raise ArgumentError, "log must not be nil" unless log
@@ -36,7 +36,7 @@ module Albacore
     def puts *args
       @output.puts *args 
     end
-    
+
     # write a line to stderr
     def err *args
       @output_err.puts *args

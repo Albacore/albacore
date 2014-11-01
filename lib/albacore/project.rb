@@ -15,13 +15,15 @@ module Albacore
     include Logging
 
     attr_reader :proj_path_base, :proj_filename, :proj_xml_node
-    
+
     def initialize proj_path
+      raise ArgumentError, 'project path does not exist' unless File.exists? proj_path.to_s
       proj_path = proj_path.to_s unless proj_path.is_a? String
       @proj_xml_node = Nokogiri.XML(open(proj_path))
       @proj_path_base, @proj_filename = File.split proj_path
+      sanity_checks
     end
-    
+
     # get the project name specified in the project file
     def name
       prop = read_property 'Name' || asmname
@@ -171,6 +173,9 @@ module Albacore
     end
 
     private
+    def sanity_checks
+      warn { "project '#{@proj_filename}' has no name" } unless name
+    end
 
     def read_property prop_name
       txt = @proj_xml_node.css("Project PropertyGroup #{prop_name}").inner_text

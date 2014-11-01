@@ -17,7 +17,7 @@ describe 'adding versionizer to a class' do
   end
 end
 
-describe 'finding build versions' do
+describe 'finding build special versions' do
   subject do
     ver = XSemVer::SemVer.new(1, 2, 3, 'deadbeef')
     ::Albacore::Tasks::Versionizer.versions ver do
@@ -54,11 +54,42 @@ describe 'finding build versions' do
   end
 
   it 'should return a nuget_version' do
-    subject[:nuget_version].should_not be_nil
+    expect(subject[:nuget_version]).to_not be nil
   end
 
   it 'should return a proper semver nuget version' do
-    subject[:nuget_version].should eq('1.2.3-deadbeef')
+    expect(subject[:nuget_version]).to eq '1.2.3-deadbeef'
   end
 end
 
+describe 'finding build versions' do
+  subject do
+    ver = XSemVer::SemVer.new(1, 2, 3, 'alpha.1-wasabi')
+    ::Albacore::Tasks::Versionizer.versions ver do
+      ['123456', '2014-02-27 16:55:55']
+    end
+  end
+
+  it 'should return a nuget_version' do
+    expect(subject[:nuget_version]).to_not be nil
+  end
+
+  it 'should not return the proper semver 2.0 format' do
+    # nuget doesn't support semver 2.0
+    expect(subject[:nuget_version]).to eq '1.2.3-alpha1wasabi'
+  end
+end
+
+describe 'finding build special versions' do
+  subject do
+    ver = XSemVer::SemVer.new(1, 2, 3)
+    ::Albacore::Tasks::Versionizer.versions ver do
+      ['123456', '2014-02-27 16:55:55']
+    end
+  end
+
+  it 'should not return the proper semver 2.0 format' do
+    # nuget doesn't support semver 2.0
+    expect(subject[:nuget_version]).to eq '1.2.3'
+  end
+end

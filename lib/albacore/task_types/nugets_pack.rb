@@ -1,6 +1,8 @@
+# encoding: utf-8
+
 require 'rake'
 require 'nokogiri'
-require 'fileutils'        
+require 'fileutils'
 require 'albacore'
 require 'albacore/paths'
 require 'albacore/cmd_config'
@@ -70,12 +72,28 @@ module Albacore
       # regexpes the package path from the output
       def get_nuget_path_of
         out = yield
-        out.match /Successfully created package '([:\s\w\\\/\d\.]+\.symbols\.nupkg)'./i if out.respond_to? :match
+        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.symbols\.nupkg)'./iu if out.respond_to? :match
         trace "Got symbols return value: '#{out}', matched: '#{$1}'" if $1
         return $1 if $1
 
-        out.match /Successfully created package '([:\s\w\\\/\d\.]+\.nupkg)'./i if out.respond_to? :match
+        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.nupkg)'./iu if out.respond_to? :match
         trace "Got NOT-symbols return value: '#{out}', matched: '#{$1}'"
+
+        unless $1
+          args = ARGV.inject("") { |state, arg| state + " " + '"' + arg + '"' }
+          warn do
+            %{Couldn't match package, please run
+
+     bundle exec rake DEBUG=true #{args} --trace
+
+and report a bug to albacore with the full output. Here's the nuget process output:
+--- START OUTPUT ---
+#{out}
+--- END OUTPUT ---
+}
+          end
+        end
+
         $1
       end
 
@@ -269,7 +287,7 @@ module Albacore
         project_dependencies = @opts.get(:project_dependencies, true)
         target = @opts.get :target
 
-        trace "creating NON-SYMBOL package for #{proj.name}, targeting #{target} [nugets pack: task]"
+        trace "creating NON-SYMBOL package for '#{proj.name}', targeting '#{target}' [nugets pack: task]"
         nuspec = Albacore::NugetModel::Package.from_xxproj proj, 
           symbols:        false,
           verify_files:   true,
@@ -285,7 +303,7 @@ module Albacore
         trace { "nuspec: #{nuspec.to_s} [nugets pack: task]" }
 
         if @opts.get(:symbols)
-          trace { "creating SYMBOL package for #{proj.name} [nugets pack: task]" }
+          trace { "creating SYMBOL package for '#{proj.name}' [nugets pack: task]" }
           nuspec_symbols = Albacore::NugetModel::Package.from_xxproj proj,
             symbols:        true,
             verify_files:   true,
@@ -381,7 +399,7 @@ module Albacore
           raise
         end
       end
-      
+
       def execute
         version = read_version_from_nuspec
         filename = File.basename(@nuspec, File.extname(@nuspec))

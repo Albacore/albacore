@@ -10,6 +10,7 @@ RSpec.configure do |config|
     ::Albacore.set_application(::Albacore::Application.new(@logout, @output))
     ::Albacore.log_level = Logger::DEBUG
     @logger = ::Albacore.application.logger
+    ENV['TEST'] = 'true'
   end
 end
 

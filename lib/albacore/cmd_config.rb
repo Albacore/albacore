@@ -19,14 +19,14 @@ module Albacore
 
     # the working directory for this command
     attr_path_accessor :work_dir
-    
+
     # TODO: move towards opts for all task types rather than
     # reading these public properties.
 
     # field field denoting the path of the executable that should be on the path
     # specified in the work_dir parameter.
     attr_path_accessor :exe
-    
+
     # TODO: move towards opts for all task types rather than
     # reading these public properties.
 
@@ -34,12 +34,12 @@ module Albacore
     def parameters
       @parameters ||= Set.new
     end
-    
+
     # add a parameter to the list of parameters to pass to the executable
     def add_parameter param
       parameters.add param
     end
-    
+
     # helper method that joins the path segments with
     # respect to the work_dir.
     private
@@ -48,7 +48,7 @@ module Albacore
       segments.unshift work_dir
       File.join segments
     end
-    
+
     # helper method that changes directory to the work directory
     # and then yields to the block
     def in_work_dir
@@ -60,7 +60,7 @@ module Albacore
       else
         trace "not in work dir, because it is nil."
         yield
-      end     
+      end
     end
   end
 end
