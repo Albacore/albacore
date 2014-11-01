@@ -1,3 +1,4 @@
+require 'rake'
 require 'albacore/dsl'
 require 'map'
 
@@ -28,19 +29,20 @@ module Albacore
 
     # Inspiration from: https://github.com/bundler/bundler/blob/master/lib/bundler/gem_helper.rb
     #
-    class Releases
-      include ::Albacore::DSL if defined? ::Albacore::DSL
-      
-      def initialize name = :release, semver = nil, opts = {}
-        @name = name
-        @opts = Map.apply(opts,
-          pkg_dir: 'build/pkg',
-          nuget_exe: 'tools/NuGet.exe',
-          nuget_source: 'https://www.nuget.org/api/v2/package',
-          clr_command: true,
-          depend_on: :versioning)
+    class Release
+      include ::Rake::DSL
+      include ::Albacore::DSL
 
-        raise ArgumentError, 'missing :api_key from opts' unless @opts.get :api_key
+      def initialize name = :release, opts = {}
+        @name = name
+        @opts = Map.new(opts).apply \
+          pkg_dir:      'build/pkg',
+          nuget_exe:    'tools/NuGet.exe',
+          nuget_source: 'https://www.nuget.org/api/v2/package',
+          clr_command:  true,
+          depend_on:    :versioning,
+          semver:       nil
+        semver = @opts.get :semver
 
         unless semver
           ::Albacore.subscribe :build_version do |data|
@@ -49,6 +51,8 @@ module Albacore
         else
           @semver = semver
         end
+
+        install
       end
 
       # Installs the rake tasks under the 'release' namespace with a named task
@@ -73,7 +77,7 @@ module Albacore
           end
         end
 
-        desc 'release current packages'
+        desc 'release current package(s)'
         task @name => [:'release:guard_clean', :'release:scm_write', :'release:nuget_push']
       end
 
@@ -84,9 +88,12 @@ module Albacore
       end
 
       def nuget_push package
-        system @opts.get(:nuget_exe),
-               %W|push #{package} #{@opts.get :api_key} -Source #{@opts.get :nuget_source}|,
-               clr_command: @opts.get(:clr_command)
+        exe     = @opts.get :nuget_exe
+        api_key = @opts.get :api_key
+        params = %W|push #{package}|
+        params << api_key if api_key
+        params << %W|-Source #{@opts.get :nuget_source}|
+        system exe, params, clr_command: @opts.get(:clr_command)
       end
 
       def git_push
