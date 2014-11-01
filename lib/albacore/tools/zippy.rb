@@ -45,9 +45,9 @@ class Zippy
           zipfile.add(file.sub(@input_dir + '/', ''), file)
         end
       end
-	end
   end
-  
+  end
+
   private
   def in_progress msg, &block
     Albacore.publish :start_progress, OpenStruct.new(:message => msg)

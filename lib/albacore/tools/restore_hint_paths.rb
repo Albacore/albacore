@@ -17,7 +17,7 @@ module Albacore::Tools
       @package, @ref = package, ref
     end
   end
-  
+
   module RestoreHintPaths
     class Config
       attr_accessor :asmname_to_package
@@ -42,7 +42,7 @@ module Albacore::Tools
           proj.save unless @config.dry_run
         end
       end
-      
+
       private
       def find_projs_in_need ext
         map_file_list FileList["./src/**/*.#{ext}proj"]

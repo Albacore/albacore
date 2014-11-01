@@ -6,7 +6,7 @@ module Albacore
     # this means that you can use all things available in the cross platform
     # cmd from within albacore
     include Albacore::CrossPlatformCmd
-    
+
     private
 
     # a rake task type for outputting assembly versions
@@ -61,7 +61,7 @@ module Albacore
         end
       end
     end
-    
+
     # pack nugets
     def nugets_pack *args, &block
       require 'albacore/task_types/nugets_pack'
