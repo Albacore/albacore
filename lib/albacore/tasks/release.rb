@@ -124,6 +124,8 @@ module Albacore
 
       def guard_pkg
         (! packages.empty?) or raise('You must have built your packages, use "depend_on: :nuget_pkg"')
+        (! File.exists?(@opts.get(:nuget_exe)) or raise('You don't have a NuGet.exe file to push with')
+
       end
 
       def clean?
