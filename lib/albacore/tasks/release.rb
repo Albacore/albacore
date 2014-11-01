@@ -60,9 +60,12 @@ module Albacore
       #
       def install
         namespace :release do
-          desc 'ensure the tree is not dirty'
           task :guard_clean => @opts.get(:depend_on) do
             guard_clean
+          end
+
+          task :guard_pkg => @opts.get(:depend_on) do
+            guard_pkg
           end
 
           task :scm_write => @opts.get(:depend_on) do
@@ -70,7 +73,6 @@ module Albacore
           end
 
           task :nuget_push => @opts.get(:depend_on) do
-            packages = Dir.glob "#{@opts.get :pkg_dir}/*.#{@semver.format "%M.%m.%p"}.nupkg"
             packages.each do |package|
               nuget_push package
             end
@@ -78,7 +80,7 @@ module Albacore
         end
 
         desc 'release current package(s)'
-        task @name => [:'release:guard_clean', :'release:scm_write', :'release:nuget_push']
+        task @name => [:'release:guard_clean', :'release:guard_pkg', :'release:scm_write', :'release:nuget_push']
       end
 
       protected
@@ -120,6 +122,10 @@ module Albacore
         clean? && committed? or raise("There are files that need to be committed first.")
       end
 
+      def guard_pkg
+        (! packages.empty?) or raise('You must have built your packages, use "depend_on: :nuget_pkg"')
+      end
+
       def clean?
         run('git diff --exit-code', silent: true)[1] == 0
       end
@@ -140,6 +146,12 @@ module Albacore
 
       def version_tag
         @semver.to_s
+      end
+
+      def packages
+        # only read packages once
+        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{@semver.format "%M.%m.%p"}.nupkg"
+        @packages
       end
 
       def gem_push?
