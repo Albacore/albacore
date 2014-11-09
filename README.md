@@ -34,10 +34,7 @@ make their life easier.
    your company!
  - Transparent publish of artifacts to TeamCity with the TC extension
  - Unit tested, high quality Ruby code
- - Actively developed by Henrik Feldt, Software Architect at
-   [Intelliplan](http://intelliplan.se) - there's someone looking after the
-   code. We're active and taking pull requests - an open source project is not a
-   single-person game, but it's nice to have some stability.
+ - Actively developed by [@haf](https://github.com/haf)
 
 The [wiki](https://github.com/Albacore/albacore/wiki) is the main reference for
 the above task types, but there's also [very
