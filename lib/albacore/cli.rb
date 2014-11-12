@@ -24,12 +24,18 @@ module Albacore
       <<-HELP
 albacore commands
 -----------------
+Albacore v#{Albacore::VERSION}
 
 init[ialze]                        # initialize a new Rakefile with defaults
 help                               # display this help
+version                            # display only the version of albacore
 
 PLEASE READ https://github.com/Albacore/albacore/wiki/Albacore-binary
       HELP
+    end
+
+    command :version do
+      puts "v#{Albacore::VERSION}"
     end
 
     # Create a new Rakefile file if the file does not exist.
