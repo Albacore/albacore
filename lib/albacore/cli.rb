@@ -57,25 +57,45 @@ gem 'albacore', '~> #{Albacore::VERSION}'
 require 'bundler/setup'
 
 require 'albacore'
+# require 'albacore/tasks/releases'
 require 'albacore/tasks/versionizer'
 require 'albacore/ext/teamcity'
 
+Configuration = 'Release'
+
 Albacore::Tasks::Versionizer.new :versioning
 
+desc 'create assembly infos'
+asmver_files :assembly_info do |a|
+  a.files = FileList['**/*proj'] # optional, will find all projects recursively by default
+
+  a.attributes assembly_description: 'TODO',
+               assembly_configuration: Configuration,
+               assembly_company: 'Foretag AB',
+               assembly_copyright: "(c) #{Time.now.year} by John Doe",
+               assembly_version: ENV['LONG_VERSION'],
+               assembly_file_version: ENV['LONG_VERSION'],
+               assembly_informational_version: ENV['BUILD_VERSION']
+end
+
 desc 'Perform fast build (warn: doesn\\'t d/l deps)'
-build :quick_build do |b|
+build :quick_compile do |b|
   b.logging = 'detailed'
   b.sln     = 'src/MyProj.sln'
 end
 
+task :paket_bootstrap do
+  system 'tools/paket.bootstrapper.exe', clr_command: true unless \
+    File.exists? 'tools/paket.exe'
+end
+
 desc 'restore all nugets as per the packages.config files'
-nugets_restore :restore do |p|
-  p.out = 'src/packages'
-  p.exe = 'tools/NuGet.exe'
+task :restore => :paket_bootstrap do
+  system 'tools/paket.exe', 'restore', clr_command: true
 end
 
 desc 'Perform full build'
-build :build => [:versioning, :restore] do |b|
+build :compile => [:versioning, :restore, :assembly_info] do |b|
   b.sln = 'src/MyProj.sln'
   # alt: b.file = 'src/MyProj.sln'
 end
@@ -83,22 +103,41 @@ end
 directory 'build/pkg'
 
 desc 'package nugets - finds all projects and package them'
-nugets_pack :create_nugets => ['build/pkg', :versioning, :build] do |p|
+nugets_pack :create_nugets => ['build/pkg', :versioning, :compile] do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
   p.out     = 'build/pkg'
   p.exe     = 'tools/NuGet.exe'
   p.with_metadata do |m|
-    m.description = 'A cool nuget'
-    m.authors = 'Henrik'
-    m.version = ENV['NUGET_VERSION']
-  end
-  p.with_package do |p|
-    p.add_file 'file/relative/to/proj', 'lib/net40'
+    # m.id          = 'MyProj'
+    m.title       = 'TODO'
+    m.description = 'TODO'
+    m.authors     = 'John Doe, Foretag AB'
+    m.project_url = 'http://example.com'
+    m.tags        = ''
+    m.version     = ENV['NUGET_VERSION']
   end
 end
 
-task :default => :create_nugets
+namespace :tests do
+  #task :unit do
+  #  system "src/MyProj.Tests/bin/\#{Configuration}"/MyProj.Tests.exe"
+  #end
+end
+
+# task :tests => :'tests:unit'
+
+task :default => :create_nugets #, :tests ]
+
+#task :ensure_nuget_key do
+#  raise 'missing env NUGET_KEY value' unless ENV['NUGET_KEY']
+#end
+
+#Albacore::Tasks::Release.new :release,
+#                             pkg_dir: 'build/pkg',
+#                             depend_on: [:create_nugets, :ensure_nuget_key],
+#                             nuget_exe: 'packages/NuGet.CommandLine/tools/NuGet.exe',
+#                             api_key: ENV['NUGET_KEY']
           DATA
         end
       end
