@@ -39,7 +39,7 @@ end
 
 desc 'Perform full build'
 build :compile => [:versioning, :restore, :assembly_info] do |b|
-  b.sln = 'src/MyProj.sln'
+  b.sln = 'src/Hylla.sln'
 end
 
 directory 'build/pkg'
@@ -49,9 +49,8 @@ nugets_pack :create_nugets => ['build/pkg', :versioning, :compile] do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
   p.out     = 'build/pkg'
-  p.exe     = 'tools/NuGet.exe'
+  p.exe     = 'packages/NuGet.CommandLine/tools/NuGet.exe'
   p.with_metadata do |m|
-    # m.id          = 'MyProj'
     m.title       = 'TODO'
     m.description = 'TODO'
     m.authors     = 'John Doe, Foretag AB'
