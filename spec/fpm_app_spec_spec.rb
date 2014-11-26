@@ -89,8 +89,14 @@ describe ::Albacore::FpmAppSpec, 'when generating command from valid AppSpec' do
     expect(flags['--license']).to eq 'MIT'
   end
 
-  it 'should generate command "look in this directory" flag' do
-    expect(flags['-C']).to eq '/a/b'
+  if ::Rake::Win32.windows?
+    it 'should generate command "look in this directory" flag' do
+      expect(flags['-C']).should match  /^.:\/a\/b$/
+    end
+  else
+    it 'should generate command "look in this directory" flag' do
+      expect(flags['-C']).to eq '/a/b'
+    end
   end
 
   it 'should generate command depends' do
