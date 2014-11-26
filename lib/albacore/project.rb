@@ -94,15 +94,15 @@ module Albacore
       # should always be there
       @proj_xml_node.css("Project Reference")
     end
-    
+
     def faulty_refs
       find_refs.to_a.keep_if{ |r| r.children.css("HintPath").empty? }
     end
-    
+
     def has_faulty_refs?
       faulty_refs.any?
     end
-    
+
     def has_packages_config?
       File.exists? package_config
     end
@@ -151,23 +151,23 @@ module Albacore
         guess
       end
     end
-    
+
     # get the path of the project file
     def path
       File.join @proj_path_base, @proj_filename
     end
-    
+
     # save the xml
     def save(output = nil)
       output = path unless output
       File.open(output, 'w') { |f| @proj_xml_node.write_xml_to f }
     end
-    
+
     # get the path of 'packages.config'
     def package_config
       File.join @proj_path_base, 'packages.config'
     end
-    
+
     def to_s
       path
     end
