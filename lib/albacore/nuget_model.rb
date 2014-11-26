@@ -52,7 +52,7 @@ end})
 
       # REQUIRED: gets or sets the version of this package
       nuspec_field :version
-      
+
       # The human-friendly title of the package displayed in the Manage NuGet
       # Packages dialog. If none is specified, the ID is used instead.
       nuspec_field :title
@@ -358,8 +358,10 @@ end})
         package.metadata.authors = proj.authors if proj.authors
 
         if opts.get :nuget_dependencies
+          trace "adding nuget dependencies for #{proj.name}"
           # add declared packages as dependencies
           proj.declared_packages.each do |p|
+            debug "adding package dependency: #{proj.name} => #{p.id} at #{p.version} [nuget model: package]"
             package.metadata.add_dependency p.id, p.version
           end
         end
@@ -378,7 +380,7 @@ end})
         output = get_output_path proj, opts
         target_lib = %W[lib #{opts.get(:dotnet_version)}].join(Albacore::Paths.separator)
 
-        if opts.get :symbols 
+        if opts.get :symbols
           compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
 
           debug "add compiled files: #{compile_files} [nuget model: package]"

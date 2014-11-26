@@ -111,6 +111,10 @@ module Albacore
       File.exists? paket_deps
     end
 
+    def has_paket_refs?
+      File.exists? paket_refs
+    end
+
     def declared_packages
       return nuget_packages || paket_packages || []
     end
@@ -166,9 +170,14 @@ module Albacore
       File.join @proj_path_base, 'packages.config'
     end
 
-    # Get the full path of 'paket.references'
+    # Get the full path of 'paket.dependencies'
     def paket_deps
       File.join @proj_path_base, 'paket.dependencies'
+    end
+
+    # Get the full path of 'paket.references'
+    def paket_refs
+      File.join @proj_path_base, 'paket.references'
     end
 
     # Gets the path of the project file
@@ -190,21 +199,47 @@ module Albacore
 
     end
 
-    def paket_packages
-      return nil unless has_paket_deps?
-      info { "extracting paket dependencies from '#{to_s}' and paket.dependencies in its folder" }
-      File.open 'paket.lock', 'r' do |io|
+    def all_paket_deps
+      return @all_paket_deps if @all_paket_deps
+      arr = File.open('paket.lock', 'r') do |io|
         io.readlines.map(&:chomp).map do |line|
           if (m = line.match /^\s+(?<id>[\w\.]+) \((?<ver>[\.\d\w]+)\)$/i)
-            debug { "found package #{m[:id]}" }
             ver = Albacore::SemVer.parse(m[:ver], '%M.%m.%p', false)
             OpenStruct.new(:id               => m[:id],
                            :version          => m[:ver],
                            :target_framework => 'net40',
                            :semver           => ver)
           end
-        end.compact
+        end.compact.map { |package| [package.id, package] }
       end
+      @all_paket_deps = Hash[arr]
+    end
+
+    def paket_packages
+      return nil unless has_paket_deps? || has_paket_refs?
+      info { "extracting paket dependencies from '#{to_s}' and 'paket.{dependencies,references}' in its folder" }
+
+      all_refs = []
+
+      if has_paket_refs?
+        File.open paket_refs, 'r' do |io|
+          io.readlines.map(&:chomp).each do |line|
+            debug { "found referenced package '#{line}' [project paket_packages]" }
+            all_refs << all_paket_deps[line]
+          end
+        end
+      end
+
+      if has_paket_deps?
+        File.open paket_deps, 'r' do |io|
+          io.readlines.map(&:chomp).each do |line|
+            debug { "found dependent package '#{line}' [project paket_packages]" }
+            all_refs << all_paket_deps[line]
+          end
+        end
+      end
+
+      all_refs
     end
 
     def sanity_checks
