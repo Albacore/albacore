@@ -88,7 +88,7 @@ module Albacore
     def output_dll conf
       Paths.join(output_path(conf) || fallback_output_path, "#{asmname}.dll")
     end
-    
+
     # find the NodeList reference list
     def find_refs
       # should always be there
@@ -107,16 +107,12 @@ module Albacore
       File.exists? package_config
     end
 
+    def has_paket_deps?
+      File.exists? paket_deps
+    end
+
     def declared_packages
-      return [] unless has_packages_config?
-      doc = Nokogiri.XML(open(package_config))
-      doc.xpath("//packages/package").collect { |p|
-        OpenStruct.new(:id => p[:id], 
-          :version => p[:version], 
-          :target_framework => p[:targetFramework],
-          :semver => Albacore::SemVer.parse(p[:version], '%M.%m.%p', false)
-        )
-      }
+      return nuget_packages || paket_packages || []
     end
 
     def declared_projects
@@ -143,10 +139,12 @@ module Albacore
       }.flatten
     end
 
+    # Find all packages that have been declared and can be found in ./src/packages.
+    # This is mostly useful if you have that repository structure.
     # returns enumerable Package
     def find_packages
       declared_packages.collect do |package|
-        guess = ::Albacore::PackageRepo.new('./src/packages').find_latest package.id
+        guess = ::Albacore::PackageRepo.new(%w|./packages ./src/packages|).find_latest package.id
         debug "#{name}: guess: #{guess} [albacore: project]"
         guess
       end
@@ -163,16 +161,52 @@ module Albacore
       File.open(output, 'w') { |f| @proj_xml_node.write_xml_to f }
     end
 
-    # get the path of 'packages.config'
+    # get the full path of 'packages.config'
     def package_config
       File.join @proj_path_base, 'packages.config'
     end
 
+    # Get the full path of 'paket.references'
+    def paket_deps
+      File.join @proj_path_base, 'paket.dependencies'
+    end
+
+    # Gets the path of the project file
     def to_s
       path
     end
 
     private
+    def nuget_packages
+      return nil unless has_packages_config?
+      doc = Nokogiri.XML(open(package_config))
+      doc.xpath("//packages/package").collect { |p|
+        OpenStruct.new(:id               => p[:id],
+                       :version          => p[:version],
+                       :target_framework => p[:targetFramework],
+                       :semver           => Albacore::SemVer.parse(p[:version], '%M.%m.%p', false)
+        )
+      }
+
+    end
+
+    def paket_packages
+      return nil unless has_paket_deps?
+      info { "extracting paket dependencies from '#{to_s}' and paket.dependencies in its folder" }
+      File.open 'paket.lock', 'r' do |io|
+        io.readlines.map(&:chomp).map do |line|
+          if (m = line.match /^\s+(?<id>[\w\.]+) \((?<ver>[\.\d\w]+)\)$/i)
+            debug { "found package #{m[:id]}" }
+            ver = Albacore::SemVer.parse(m[:ver], '%M.%m.%p', false)
+            OpenStruct.new(:id               => m[:id],
+                           :version          => m[:ver],
+                           :target_framework => 'net40',
+                           :semver           => ver)
+          end
+        end.compact
+      end
+    end
+
     def sanity_checks
       warn { "project '#{@proj_filename}' has no name" } unless name
     end

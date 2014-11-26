@@ -1,6 +1,7 @@
 require 'albacore/version'
 require 'albacore/cross_platform_cmd'
 require 'albacore/cli_dsl'
+require 'open-uri'
 
 module Albacore
   class Cli
@@ -40,20 +41,69 @@ PLEASE READ https://github.com/Albacore/albacore/wiki/Albacore-binary
 
     # Create a new Rakefile file if the file does not exist.
     command :initialize, :init do
-      files = [Albacore.rakefile, Albacore.gemfile, Albacore.semver_file]
+      files = [Albacore.rakefile, Albacore.semver_file]
       if files.any? { |file| File.exist? file }
         puts "One of #{files.inspect} already exists"
       else
-        Albacore::CrossPlatformCmd.system 'semver init' unless ENV['TEST']
+        write_semver! unless ENV['TEST']
+        write_gemfile
+        bundle!
+        write_gitignore
+        write_rakefile!
+        download_paket unless ENV['TEST']
+      end
+    end
+
+    # Output instructions for using the semvar command.
+    command :help do
+      puts help_text
+    end
+
+    private
+    def write_semver!
+      Albacore::CrossPlatformCmd.system 'semver init'
+    end
+
+    def write_gemfile
+      unless File.exists? Albacore.gemfile
         File.open Albacore.gemfile, 'w+' do |io|
           io.puts <<-DATA
 source 'https://rubygems.org'
 gem 'albacore', '~> #{Albacore::VERSION}'
           DATA
         end
-        Albacore::CrossPlatformCmd.system 'bundle'
-        File.open Albacore.rakefile, 'w+' do |io|
-          io.puts <<-DATA
+      end
+    end
+
+    def bundle!
+      Albacore::CrossPlatformCmd.system 'bundle'
+    end
+
+    def write_gitignore
+      unless File.exists? '.gitignore'
+        File.open '.gitignore', 'w+' do |io|
+          io.puts %{
+paket.exe
+bin/
+obj/
+.DS_Store
+*.db
+*.suo
+*.userprefs
+AssemblyVersionInfo.cs
+AssemblyVersionInfo.fs
+AssemblyVersionInfo.vb
+}
+        end
+      end
+    end
+
+    def write_rakefile!
+      # guesses:
+      sln = Dir.glob('**/*.sln').first || 'MyProj.sln'
+
+      File.open Albacore.rakefile, 'w+' do |io|
+        io.puts <<-DATA
 require 'bundler/setup'
 
 require 'albacore'
@@ -81,12 +131,12 @@ end
 desc 'Perform fast build (warn: doesn\\'t d/l deps)'
 build :quick_compile do |b|
   b.logging = 'detailed'
-  b.sln     = 'src/MyProj.sln'
+  b.sln     = '#{sln}'
 end
 
 task :paket_bootstrap do
-  system 'tools/paket.bootstrapper.exe', clr_command: true unless \
-    File.exists? 'tools/paket.exe'
+system 'tools/paket.bootstrapper.exe', clr_command: true unless \
+  File.exists? 'tools/paket.exe'
 end
 
 desc 'restore all nugets as per the packages.config files'
@@ -96,8 +146,7 @@ end
 
 desc 'Perform full build'
 build :compile => [:versioning, :restore, :assembly_info] do |b|
-  b.sln = 'src/MyProj.sln'
-  # alt: b.file = 'src/MyProj.sln'
+  b.sln     = '#{sln}'
 end
 
 directory 'build/pkg'
@@ -107,7 +156,7 @@ nugets_pack :create_nugets => ['build/pkg', :versioning, :compile] do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
   p.out     = 'build/pkg'
-  p.exe     = 'tools/NuGet.exe'
+  p.exe     = 'packages/NuGet.CommandLine/tools/NuGet.exe'
   p.with_metadata do |m|
     # m.id          = 'MyProj'
     m.title       = 'TODO'
@@ -138,14 +187,22 @@ task :default => :create_nugets #, :tests ]
 #                             depend_on: [:create_nugets, :ensure_nuget_key],
 #                             nuget_exe: 'packages/NuGet.CommandLine/tools/NuGet.exe',
 #                             api_key: ENV['NUGET_KEY']
-          DATA
+        DATA
+      end
+
+      def download_paket
+        download_tool 'https://github.com/fsprojects/Paket/releases/download/0.16.2/paket.bootstrapper.exe', 'paket.bootstrapper.exe' unless File.exists? './tools/paket.bootstrapper.exe'
+      end
+
+      def download_tool uri, file_name
+        target = "./tools/#{file_name}"
+
+        File.open(target, "wb") do |saved_file|
+          open(uri, "rb") do |read_file|
+            saved_file.write(read_file.read)
+          end
         end
       end
-    end
-
-    # Output instructions for using the semvar command.
-    command :help do
-      puts help_text
     end
   end
 end
