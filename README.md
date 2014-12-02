@@ -75,8 +75,8 @@ Now you are ready to continue reading below for your first Rakefile.
 
 ### Installing Ruby on Windows
 
-First install Ruby from http://rubyinstaller.org/downloads/ - e.g. [v2.1.3
-32-bits](http://dl.bintray.com/oneclick/rubyinstaller/rubyinstaller-2.1.3.exe?direct)
+First install Ruby **32 bits** from http://rubyinstaller.org/downloads/ - e.g. [v2.1.5
+32-bits](http://dl.bintray.com/oneclick/rubyinstaller/rubyinstaller-2.1.5.exe?direct)
 which is the latest version, at time of writing.
 
 Second, install Ruby DevKit, or you won't be able to install nokogiri. Download
@@ -97,7 +97,7 @@ Now close that console and open a new console, and run:
 This gives you a working ruby installation. Continue below with your first
 Rakefile.
 
-You can also try [chocolatey](https://chocolatey.org/packages/ruby) and [ruby2.devkit](https://chocolatey.org/packages/ruby2.devkit).
+You can also try chocolatey [`ruby`](https://chocolatey.org/packages/ruby) and [`ruby2.devkit`](https://chocolatey.org/packages/ruby2.devkit) packages.
 
 ### Installing Ruby on OS X
 
