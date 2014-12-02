@@ -97,6 +97,8 @@ Now close that console and open a new console, and run:
 This gives you a working ruby installation. Continue below with your first
 Rakefile.
 
+You can also try [chocolatey](https://chocolatey.org/packages/ruby) and [ruby2.devkit](https://chocolatey.org/packages/ruby2.devkit).
+
 ### Installing Ruby on OS X
 
 ``` bash
