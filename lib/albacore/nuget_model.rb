@@ -43,7 +43,7 @@ end})
 %{def #{sym}= val
   @#{sym} = val
   @set_fields.add? :#{sym}
-end})                      
+end})
         end 
       end
 
@@ -353,7 +353,8 @@ end})
 
         version = opts.get :version
         package = Package.new
-        package.metadata.id = proj.name if proj.name
+        package.metadata.id      = proj.name if proj.name
+        package.metadata.title   = proj.name if proj.name
         package.metadata.version = version if version
         package.metadata.authors = proj.authors if proj.authors
 

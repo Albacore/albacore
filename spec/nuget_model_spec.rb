@@ -4,7 +4,7 @@ require 'albacore/paths'
 require 'albacore/nuget_model'
 
 describe Albacore::NugetModel::Metadata do
-  [:id, :version, :authors, :description, :summary, :language, :project_url, :license_url, :release_notes, :owners, :require_license_acceptance, :copyright, :tags, :dependencies, :framework_assemblies].each do |prop|
+  [:id, :version, :authors, :title, :description, :summary, :language, :project_url, :license_url, :release_notes, :owners, :require_license_acceptance, :copyright, :tags, :dependencies, :framework_assemblies].each do |prop|
     it "responds to :#{prop}" do
       subject.should respond_to(prop)
     end
@@ -99,7 +99,7 @@ XML
   end
 
   let :parser do
-    io = StringIO.new xml    
+    io = StringIO.new xml
     Nokogiri::XML(io)
   end
   let :ns do
@@ -172,6 +172,10 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
 
   it "should find Authors element" do
     m.authors.should eq "Henrik Feldt"
+  end
+
+  it 'should have the same title as <Name />' do
+    expect(m.title).to eq 'Project'
   end
 
   describe "when including files" do
