@@ -133,7 +133,7 @@ XML
 
   # on Windows this fails due to replacement of path separators (by design)
   unless ::Albacore.windows?
-    it "should generate the same (semantic) XML as above" do
+    it 'should generate the same (semantic) XML as above' do
       Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
     end
   end
@@ -278,7 +278,7 @@ describe "creating nuget (not symbols) from dependent proj file" do
       :version        => '2.3.0',
       :configuration  => 'Debug'
   end
-  
+
   include_context 'package_metadata_dsl'
 
   # from fsproj
@@ -309,7 +309,8 @@ describe "creating nuget on dependent proj file" do
 
   let :projfile do
     curr = File.dirname(__FILE__)
-    File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
+    File.join curr, "testdata", "TestingDependencies", "Sample.Commands",
+              "Sample.Commands.fsproj"
   end 
 
   let :opts do
@@ -321,11 +322,11 @@ describe "creating nuget on dependent proj file" do
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile, opts
   end
-  
+
   include_context 'package_metadata_dsl'
 
   describe 'without project_dependencies' do
-    # just as the opts in the main describe says...
+    # just as the opts in the main describe says
     has_not_dep 'Sample.Core'
     has_dep 'Magnum', '2.1.0'
     has_dep 'MassTransit', '2.8.0'
@@ -333,6 +334,25 @@ describe "creating nuget on dependent proj file" do
     has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
     has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
     has_not_file 'Library.fs'
+  end
+
+  describe 'with project_dependencies' do
+
+    let :opts do
+      { project_dependencies: true,
+        known_projects:       %w[Sample.Core],
+        version:             '2.3.0' }
+    end
+
+    # just as the opts in the main describe says
+    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Magnum', '2.1.0'
+    has_dep 'MassTransit', '2.8.0'
+    has_dep 'Newtonsoft.Json', '5.0.6'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_not_file 'Library.fs'
+
   end
 
   describe 'without nuget_dependencies' do

@@ -371,10 +371,10 @@ end})
           # add declared projects as dependencies
           proj.
             declared_projects.
-            keep_if { |p| opts.get(:known_projects).include? p.name }.
+            keep_if { |p| opts.get(:known_projects).include? p.id }.
             each do |p|
-            debug "adding project dependency: #{proj.name} => #{p.name} at #{version} [nuget model: package]"
-            package.metadata.add_dependency p.name, version
+            debug "adding project dependency: #{proj.id} => #{p.id} at #{version} [nuget model: package]"
+            package.metadata.add_dependency p.id, version
           end
         end
 

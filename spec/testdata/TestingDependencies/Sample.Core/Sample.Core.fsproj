@@ -10,7 +10,8 @@
     <RootNamespace>Sample.Core</RootNamespace>
     <AssemblyName>Sample.Core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Sample.Core</Name>
+    <Name>Sample.Core is the Greatest</Name>
+    <Id>Sample.Core</Id>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
