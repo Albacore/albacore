@@ -12,7 +12,7 @@ project_path: spec/testdata/Project/Project.fsproj
 
   %w|title description uri category version license dir_path to_s|.map { |w| :"#{w}" }.each do |s|
     it "should respond to ##{s}" do
-      subject.should respond_to s
+      expect(subject).to respond_to s
     end
 
     it "should be possible to always call ##{s}" do
@@ -25,43 +25,43 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should have correct title' do
-    subject.title.should eq 'superapp.now'
+    expect(subject.title).to eq 'superapp.now'
   end
 
   it 'should have nil license' do
-    subject.license.should be_nil
+    expect(subject.license).to be_nil
   end
 
   it 'should have nil description' do
-    subject.description.should be_nil
+    expect(subject.description).to be_nil
   end
 
   it 'should never have nil uri, since we\'re in the albacore git repo and it defaults to the current repo' do
-    subject.uri.should include 'albacore.git' unless teamcity? # teamcity doesn't keep git folder
+    expect(subject.uri).to include 'albacore.git' unless teamcity? # teamcity doesn't keep git folder
   end
 
   it 'should have "apps" category, since it\'s not specified anywhere' do
-    subject.category.should eq 'apps'
+    expect(subject.category).to eq 'apps'
   end
 
   it 'should have a nil version' do
-    subject.version.should eq('1.0.0')
+    expect(subject.version).to eq('1.0.0')
   end
 
   it 'should have non-nil #bin_folder' do
-    subject.bin_folder.should_not be_nil
+    expect(subject.bin_folder).to_not be_nil
   end
 
   it 'should have non-nil #conf_folder' do
-    subject.conf_folder.should_not be_nil
+    expect(subject.conf_folder).to_not be_nil
   end
 
   it 'should have non-nil #contents' do
-    subject.contents.should_not be_nil
+    expect(subject.contents).to_not be_nil
   end
 
   it 'should have a #contents that responds to #each' do
-    subject.contents.should respond_to :each
+    expect(subject.contents).to respond_to :each
   end
 end
 
@@ -73,8 +73,6 @@ title: superapp.now
 project_path: spec/testdata/Project/Project.fsproj
 }
   end
-
-  # TODO: create a spike that actually works and document what is required here  
 end
 
 describe ::Albacore::AppSpec, 'when getting version from semver' do
@@ -88,7 +86,7 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should take version from the semver first' do
-    subject.version.should eq '1.2.3'
+    expect(subject.version).to eq '1.2.3'
   end
 end
 
@@ -103,7 +101,7 @@ project_path: spec/testdata/Project/Project.fsproj
   end
 
   it 'should take version from the semver first' do
-    subject.version.should eq '4.5.6'
+    expect(subject.version).to eq '4.5.6'
   end
 end
 
@@ -136,15 +134,15 @@ describe ::Albacore::AppSpec, 'when fetching ALL data from Project.fsproj' do
   it 'should find the directory of the project' do
     # this also means it found a project and successfully parsed its project
     # definition
-    subject.proj.proj_path_base.should include File.dirname(project_path)
+    expect(subject.proj.proj_path_base).to include File.dirname(project_path)
   end
 
   it 'should have the title' do
-    subject.title.should eq 'project'
-    subject.title_raw.should eq 'Project'
+    expect(subject.title).to eq 'project'
+    expect(subject.title_raw).to eq 'Project'
   end
 
   it 'should have no license' do
-    subject.license.should be_nil
+    expect(subject.license).to be_nil
   end
 end
