@@ -208,7 +208,7 @@ end})
         str = str.split('_').inject([]){ |buffer,e| buffer.push(buffer.empty? ? e : e.capitalize) }.join
         :"#{str}"
       end
-      
+
       def self.underscore str
         str.gsub(/::/, '/').
           gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').

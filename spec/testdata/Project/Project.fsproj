@@ -10,7 +10,7 @@
     <RootNamespace>Project</RootNamespace>
     <AssemblyName>Project</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <Id>Project</Id>
+    <Name>Project</Name>
     <Authors>Henrik Feldt</Authors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

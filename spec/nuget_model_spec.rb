@@ -168,11 +168,11 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
   include_context 'package_metadata_dsl'
 
   it "should find Name element" do
-    m.id.should eq 'Project'
+    expect(m.id).to eq 'Project'
   end
 
   it "should not find Version element" do
-    m.version.should eq nil
+    expect(m.version).to eq nil
   end
 
   it "should find Authors element" do
