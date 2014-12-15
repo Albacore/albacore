@@ -353,7 +353,7 @@ end})
 
         version = opts.get :version
         package = Package.new
-        package.metadata.id      = proj.name if proj.name
+        package.metadata.id      = proj.id if proj.id
         package.metadata.title   = proj.name if proj.name
         package.metadata.version = version if version
         package.metadata.authors = proj.authors if proj.authors

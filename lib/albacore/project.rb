@@ -24,7 +24,14 @@ module Albacore
       sanity_checks
     end
 
-    # get the project name specified in the project file
+    # Get the project id specified in the project file. Defaults to #name.
+    def id
+      read_property 'Id' || name
+    end
+
+    # Get the project name specified in the project file. This is the same as
+    # the title of the nuspec and, if Id is not specified, also the id of the
+    # nuspec.
     def name
       prop = read_property 'Name' || asmname
       prop || asmname

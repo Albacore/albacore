@@ -4,7 +4,10 @@ require 'albacore/paths'
 require 'albacore/nuget_model'
 
 describe Albacore::NugetModel::Metadata do
-  [:id, :version, :authors, :title, :description, :summary, :language, :project_url, :license_url, :release_notes, :owners, :require_license_acceptance, :copyright, :tags, :dependencies, :framework_assemblies].each do |prop|
+  [ :id, :version, :authors, :title, :description, :summary, :language,
+    :project_url, :license_url, :release_notes, :owners,
+    :require_license_acceptance, :copyright, :tags, :dependencies,
+    :framework_assemblies ].each do |prop|
     it "responds to :#{prop}" do
       subject.should respond_to(prop)
     end
@@ -18,13 +21,13 @@ describe Albacore::NugetModel::Metadata do
       subject.dependencies['DepId']
     end
     it "should contain the dependency version" do
-      dep.version.should eq('=> 3.4.5')
+      expect(dep.version).to eq '=> 3.4.5'
     end
     it "should contain the dependency id" do
-      dep.id.should eq('DepId')
+      expect(dep.id).to eq 'DepId'
     end
     it "should contain only one dependency" do
-      subject.dependencies.length.should eq(1)
+      expect(subject.dependencies.length).to eq 1
     end
   end
 
@@ -102,11 +105,12 @@ XML
     io = StringIO.new xml
     Nokogiri::XML(io)
   end
+
   let :ns do
     { ng: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' }
   end
+
   subject do
-    #puts "parser: #{parser}"
     package = Albacore::NugetModel::Package.from_xml xml
     #puts "node: #{package.inspect}"
     #puts "node meta: #{package.metadata.inspect}"
@@ -155,7 +159,8 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project", "Project.fsproj"
-  end 
+  end
+
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile
   end
@@ -171,7 +176,7 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
   end
 
   it "should find Authors element" do
-    m.authors.should eq "Henrik Feldt"
+    expect(m.authors).to eq "Henrik Feldt"
   end
 
   it 'should have the same title as <Name />' do
@@ -189,6 +194,35 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     has_file 'Library1.fs', 'src/Library1.fs'
     has_file 'bin/Debug/Project.dll', 'lib/net40'
     has_file 'bin/Debug/Project.pdb', 'lib/net40'
+  end
+end
+
+describe "when reading xml from a fsproj file into Project/Metadata (with Id different form Name)" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project", "ProjectWithTitle.fsproj"
+  end 
+
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile
+  end
+
+  include_context 'package_metadata_dsl'
+
+  it "should find Name element" do
+    expect(m.id).to eq 'Project'
+  end
+
+  it "should not find Version element" do
+    expect(m.version).to be_nil
+  end
+
+  it "should find Authors element" do
+    expect(m.authors).to eq "Henrik Feldt"
+  end
+
+  it 'should use the Name tag here, too' do
+    expect(m.title).to eq 'Project for Glorious Success'
   end
 end
 
