@@ -119,7 +119,6 @@ project_path: path/not/existent/proj.fsproj}, nil
 title: my.project}, nil
     }.to raise_error(ArgumentError)
   end
-  
 end
 
 describe ::Albacore::AppSpec, 'when fetching ALL data from Project.fsproj' do

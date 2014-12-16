@@ -66,7 +66,7 @@ module Albacore
       trace { "didn't have a valid project_path, trying to find first project at #{descriptor_path.inspect}" }
       dir = File.dirname descriptor_path
       abs_dir = File.expand_path dir
-      Dir.glob(File.join(abs_dir, '*proj')).first
+      Dir.glob(File.join(abs_dir, '*proj')).sort.first
     end
 
     # path of the *.appspec
