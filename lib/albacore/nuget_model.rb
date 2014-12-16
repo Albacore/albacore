@@ -359,10 +359,10 @@ end})
         package.metadata.authors = proj.authors if proj.authors
 
         if opts.get :nuget_dependencies
-          trace "adding nuget dependencies for #{proj.name}"
+          trace "adding nuget dependencies for id #{proj.id}"
           # add declared packages as dependencies
           proj.declared_packages.each do |p|
-            debug "adding package dependency: #{proj.name} => #{p.id} at #{p.version} [nuget model: package]"
+            debug "adding package dependency: #{proj.id} => #{p.id} at #{p.version} [nuget model: package]"
             package.metadata.add_dependency p.id, p.version
           end
         end
@@ -409,7 +409,7 @@ end})
           package.files.each do |file|
             file_path = File.expand_path file.src, proj.proj_path_base
             unless File.exists? file_path
-              info "while building nuspec for proj: #{proj.name}, file: #{file_path} => #{file.target} not found, removing from nuspec [nuget model: package]"
+              info "while building nuspec for proj id: #{proj.id}, file: #{file_path} => #{file.target} not found, removing from nuspec [nuget model: package]"
               package.remove_file file.src
               trace { "files: #{package.files.map { |f| f.src }.inspect} [nuget model: package]" }
             end

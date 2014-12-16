@@ -12,6 +12,15 @@ describe Albacore::Project, "when loading packages.config" do
   let :nlog do
     subject.declared_packages.find { |p| p.id == 'NLog' }
   end
+
+  it 'should have a guid' do
+    subject.guid.should match /^[A-F0-9]{8}(?:-[A-F0-9]{4}){3}-[A-F0-9]{12}$/i
+  end
+
+  it 'assumption: can gsub("[\{\}]", "")' do
+    expect('{a}'.gsub(/[\{\}]/, '')).to eq 'a'
+  end
+
   it 'should have an OutputPath' do
     subject.output_path('Debug').should_not be_nil
   end

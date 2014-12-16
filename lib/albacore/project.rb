@@ -24,9 +24,18 @@ module Albacore
       sanity_checks
     end
 
+    # Get the project GUID without '{' or '}' characters.
+    def guid
+      guid_raw.gsub /[\{\}]/, ''
+    end
+
+    # Get the project GUID as it is in the project file.
+    def guid_raw
+      read_property 'ProjectGuid'
+    end
+
     # Get the project id specified in the project file. Defaults to #name.
     def id
-      debug { "Id: #{read_property('Id')}" }
       (read_property 'Id') || name
     end
 
@@ -34,7 +43,6 @@ module Albacore
     # the title of the nuspec and, if Id is not specified, also the id of the
     # nuspec.
     def name
-      debug { "Name: #{read_property('Name')}" }
       (read_property 'Name') || asmname
     end
 
@@ -128,10 +136,12 @@ module Albacore
     end
 
     def declared_projects
-      @proj_xml_node.css("ProjectReference").collect do |proj|
-        debug "#{name}: found project reference: #{proj.css("Name").inner_text} [albacore: project]"
-        Project.new(File.join(@proj_path_base, Albacore::Paths.normalise_slashes(proj['Include'])))
-        #OpenStruct.new :name => proj.inner_text
+      @proj_xml_node.css("ProjectReference").collect do |proj_ref|
+        debug do
+          ref_name = proj_ref.css("Name").inner_text
+          "found project reference: #{name} => #{ref_name} [albacore: project]"
+        end
+        Project.new(File.join(@proj_path_base, Albacore::Paths.normalise_slashes(proj_ref['Include'])))
       end
     end
 

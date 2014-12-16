@@ -245,8 +245,9 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       private
 
+      # Computes the known *Ids* of the projects; as Name = Title when creating nugets.
       def compute_knowns
-        Set.new(@files.map { |f| Albacore::Project.new f }.map { |p| p.name })
+        Set.new(@files.map { |f| Albacore::Project.new f }.map { |p| p.id })
       end
 
       def generate_nuspec p, knowns
