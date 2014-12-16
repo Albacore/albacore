@@ -221,7 +221,7 @@ module Albacore
       return @all_paket_deps if @all_paket_deps
       arr = File.open('paket.lock', 'r') do |io|
         io.readlines.map(&:chomp).map do |line|
-          if (m = line.match /^\s+(?<id>[\w\.]+) \((?<ver>[\.\d\w]+)\)$/i)
+          if (m = line.match /^\s*(?<id>[\w\-\.]+) \((?<ver>[\.\d\w]+)\)$/i)
             ver = Albacore::SemVer.parse(m[:ver], '%M.%m.%p', false)
             OpenStruct.new(:id               => m[:id],
                            :version          => m[:ver],
@@ -235,29 +235,36 @@ module Albacore
 
     def paket_packages
       return nil unless has_paket_deps? || has_paket_refs?
-      info { "extracting paket dependencies from '#{to_s}' and 'paket.{dependencies,references}' in its folder" }
-
+      info { "extracting paket dependencies from '#{to_s}' and 'paket.{dependencies,references}' in its folder [project: paket_package]" }
       all_refs = []
 
       if has_paket_refs?
         File.open paket_refs, 'r' do |io|
-          io.readlines.map(&:chomp).each do |line|
-            debug { "found referenced package '#{line}' [project paket_packages]" }
-            all_refs << all_paket_deps[line]
+          io.readlines.map(&:chomp).compact.each do |line|
+            paket_package_by_id! line, all_refs, 'referenced'
           end
         end
       end
 
       if has_paket_deps?
         File.open paket_deps, 'r' do |io|
-          io.readlines.map(&:chomp).each do |line|
-            debug { "found dependent package '#{line}' [project paket_packages]" }
-            all_refs << all_paket_deps[line]
+          io.readlines.map(&:chomp).compact.each do |line|
+            paket_package_by_id! line, all_refs, 'dependent'
           end
         end
       end
 
       all_refs
+    end
+
+    def paket_package_by_id! id, arr, ref_type
+      pkg = all_paket_deps[id]
+      if pkg
+        debug { "found #{ref_type} package '#{id}' [project: paket_packages]" }
+        arr << pkg
+      else
+        warn { "found #{ref_type} package '#{id}' not in paket.lock [project: paket_packages]" }
+      end
     end
 
     def sanity_checks
