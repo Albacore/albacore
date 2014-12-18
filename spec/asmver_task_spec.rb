@@ -28,5 +28,15 @@ describe ::Albacore::Asmver::Config, 'when setting attributes and out' do
   it 'should write AssemblyVersion' do
     strio.string.should include('[<assembly: AssemblyVersion("0.1.2")>]')
   end
+  it 'should allow changing attributes' do
+    expect(subject).to respond_to :change_attributes
+  end
+
+  it 'should allow getting and setting attributes' do
+    subject.change_attributes do |as|
+      as[:a_key] = '123'
+    end
+    expect(subject.change_attributes { |a| a[:a_key] }).to eq '123'
+  end
 end
 

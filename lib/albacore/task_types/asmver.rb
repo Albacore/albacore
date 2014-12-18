@@ -65,19 +65,24 @@ module Albacore
         @file_path, @namespace, @attributes = file_path, namespace, attributes
       end
 
-      # the hash of attributes to write to the assembly info file
+      # Call with to get the opportunity to change the attributes hash
+      def change_attributes &block
+        yield @attributes if block
+      end
+
+      # Give the hash of attributes to write to the assembly info file
       def attributes attrs
         @attributes = attrs
       end
-      
+
       def opts
         raise Error, "#file_path is not set" unless (file_path or out)
         ns   = @namespace || '' # defaults to empty namespace if not set.
         lang = lang_for file_path
         m = Map.new attributes: @attributes,
-          namespace: ns,
-          file_path: @file_path,
-          language:  lang
+                    namespace: ns,
+                    file_path: @file_path,
+                    language:  lang
         m[:out] = @out if @out
         m
       end
@@ -87,6 +92,7 @@ module Albacore
       end
 
       private
+
       def lang_for path
         mk = lambda { |lang| "Albacore::Asmver::#{lang}".split('::').inject(Object) { |o, c| o.const_get c }.new }
         case File.extname path
@@ -97,6 +103,7 @@ module Albacore
         end
       end
     end
+
     class Task
       include Logging
       def initialize opts
