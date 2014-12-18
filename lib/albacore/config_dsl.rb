@@ -44,11 +44,11 @@ end})
 %{def #{sym}= val
   @#{sym} = ::Albacore::Paths.normalise_slashes val
   __on_#{sym} @#{sym}
-end})                      
+end})
         self.class_eval(
 %{def #{sym}
   @#{sym}
-end})                      
+end})
       end 
     end
   end

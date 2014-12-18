@@ -31,7 +31,12 @@ describe ::Albacore::Asmver::Config, 'when setting attributes and out' do
   it 'should allow changing attributes' do
     expect(subject).to respond_to :change_attributes
   end
-
+  it 'should allow reading namespace' do
+    expect(subject.namespace).to eq 'Hello.World'
+  end
+  it 'should allow reading file_path' do
+    expect(subject.file_path).to eq 'Version.fs'
+  end
   it 'should allow getting and setting attributes' do
     subject.change_attributes do |as|
       as[:a_key] = '123'

@@ -55,7 +55,7 @@ module Albacore
       attr_path_accessor :file_path
 
       # the namespace to output into the version file
-      attr_writer :namespace
+      attr_accessor :namespace
 
       # (optional) output stream
       attr_writer :out
