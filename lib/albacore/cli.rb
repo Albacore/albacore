@@ -93,6 +93,7 @@ obj/
 AssemblyVersionInfo.cs
 AssemblyVersionInfo.fs
 AssemblyVersionInfo.vb
+build/
 }
         end
       end
