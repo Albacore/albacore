@@ -112,7 +112,7 @@ require 'albacore'
 require 'albacore/tasks/versionizer'
 require 'albacore/ext/teamcity'
 
-Configuration = 'Release'
+Configuration = ENV['CONFIGURATION'] || 'Release'
 
 Albacore::Tasks::Versionizer.new :versioning
 
@@ -131,6 +131,7 @@ end
 
 desc 'Perform fast build (warn: doesn\\'t d/l deps)'
 build :quick_compile do |b|
+  b.prop 'Configuration', Configuration
   b.logging = 'detailed'
   b.sln     = '#{sln}'
 end
@@ -147,7 +148,8 @@ end
 
 desc 'Perform full build'
 build :compile => [:versioning, :restore, :assembly_info] do |b|
-  b.sln     = '#{sln}'
+  b.prop 'Configuration', Configuration
+  b.sln = '#{sln}'
 end
 
 directory 'build/pkg'
