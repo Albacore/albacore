@@ -107,7 +107,7 @@ AssemblyVersionInfo.vb
 require 'bundler/setup'
 
 require 'albacore'
-# require 'albacore/tasks/releases'
+# require 'albacore/tasks/release'
 require 'albacore/tasks/versionizer'
 require 'albacore/ext/teamcity'
 
@@ -170,7 +170,7 @@ end
 
 namespace :tests do
   #task :unit do
-  #  system "src/MyProj.Tests/bin/\#{Configuration}"/MyProj.Tests.exe"
+  #  system "src/MyProj.Tests/bin/\#{Configuration}/MyProj.Tests.exe", clr_command: true
   #end
 end
 
