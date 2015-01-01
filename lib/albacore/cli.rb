@@ -201,6 +201,7 @@ task :default => :create_nugets #, :tests ]
       def download_tool uri, file_name
         target = "./tools/#{file_name}"
 
+        Dir.mkdir './tools' unless Dir.exists? './tools'
         File.open(target, "wb") do |saved_file|
           open(uri, "rb") do |read_file|
             saved_file.write(read_file.read)
