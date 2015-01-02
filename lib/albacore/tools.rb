@@ -9,9 +9,10 @@ module Albacore::Tools
               sort { |a, b| a <=> b }.
               map { |_, tag| tag }
     last_tag = tags[-1]
-    second_last_tag = tags[-2] || `git rev-list --max-parents=0 HEAD`
-    logs = `git log --pretty=format:%s #{second_last_tag}..`.split(/\n/)
-    "Release Notes for #{last_tag}:
+    # second_last_tag = tags[-2] || `git rev-list --max-parents=0 HEAD`
+    # logs = `git log --pretty=format:%s #{second_last_tag}..`.split(/\n/)
+    logs = `git log --pretty=format:%s #{last_tag}..`.split(/\n/)
+    "Release Notes:
 #{logs.inject('') { |state, line| state + "\n * #{line}" }}"
   end
 end
