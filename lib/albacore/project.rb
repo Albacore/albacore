@@ -54,6 +54,11 @@ module Albacore
       read_property 'AssemblyName'
     end
 
+    # Get the root namespace of the project
+    def namespace
+      read_property 'RootNamespace'
+    end
+
     # gets the version from the project file
     def version
       read_property 'Version'

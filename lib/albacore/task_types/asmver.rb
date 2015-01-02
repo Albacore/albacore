@@ -18,8 +18,17 @@ module Albacore
       # list of xxproj files to iterate over
       attr_writer :files
 
+      def initialize
+        @usings = []
+      end
+
       def attributes attrs
         @attributes = attrs
+      end
+
+      def using ns
+        debug { "adding namespace #{ns} [Asmver::MultipleFilesConfig using]" }
+        @usings << ns
       end
 
       # block should have signature: Project -> AsmVer::Config -> AsmVer::Config
@@ -42,9 +51,14 @@ module Albacore
             file_path = "#{proj.proj_path_base}/AssemblyVersionInfo.#{ext}"
             cfg = Albacore::Asmver::Config.new file_path, proj.asmname, attrs
             cfg = @handle_config.call(proj, cfg) if @handle_config
+            cfg.usings = @usings.clone
             cfg
           }
       end
+    end
+
+    # Raised when the configuration is missing where to write the file.
+    class MissingOutputError < StandardError
     end
 
     class Config
@@ -58,11 +72,15 @@ module Albacore
       attr_accessor :namespace
 
       # (optional) output stream
-      attr_writer :out
+      attr_accessor :out
+
+      # the array-like thing of using namespaces
+      attr_accessor :usings
 
       # creates a new config with some pre-existing data
       def initialize file_path = nil, namespace = nil, attributes = nil
         @file_path, @namespace, @attributes = file_path, namespace, attributes
+        @usings = []
       end
 
       # Call with to get the opportunity to change the attributes hash
@@ -75,15 +93,21 @@ module Albacore
         @attributes = attrs
       end
 
+      def using ns
+        debug { "adding namespace #{ns} [Asmver::Config using]" }
+        usings << ns
+      end
+
       def opts
-        raise Error, "#file_path is not set" unless (file_path or out)
+        raise MissingOutputError, "#file_path or #out is not set" unless (file_path or out)
         ns   = @namespace || '' # defaults to empty namespace if not set.
         lang = lang_for file_path
         m = Map.new attributes: @attributes,
                     namespace: ns,
                     file_path: @file_path,
-                    language:  lang
-        m[:out] = @out if @out
+                    language:  lang,
+                    usings: usings
+        m[:out] = out if out
         m
       end
 

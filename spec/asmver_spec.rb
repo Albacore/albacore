@@ -1,7 +1,35 @@
+require 'albacore/task_types/asmver'
 require 'albacore/task_types/asmver/engine'
 require 'albacore/task_types/asmver/file_generator'
 
 include Albacore::Asmver
+
+describe Albacore::Asmver::Config, 'when misconfigured' do
+  subject do
+    Albacore::Asmver::Config.new
+  end
+  it 'should throw MissingOutputError by default' do
+    expect(lambda { subject.opts }).to raise_error MissingOutputError
+  end
+end
+
+describe Albacore::Asmver::Config do
+  subject do
+    Albacore::Asmver::Config.new 'A.fs'
+  end
+
+  it 'should have a namespace that\' RW' do
+    subject.namespace = 'smirk'
+    subject.namespace = subject.namespace + 'smirk'
+    expect(subject.namespace).to eq 'smirksmirk'
+  end
+
+  it 'can add a #using' do
+    subject.out = StringIO.new
+    subject.using 'System'
+    expect(subject.opts.get(:usings)).to include('System')
+  end
+end
 
 %w|Fs Vb Cpp Cs|.each do |lang|
   require "albacore/task_types/asmver/#{lang.downcase}"
@@ -152,42 +180,82 @@ describe FileGenerator, 'when generating F# file' do
   let :generated do
     @out.string
   end
+
   it 'should include namespace' do
-    generated.should =~ /namespace My\.Fs\.Ns(\r\n?|\n)/
+    expect(generated).to match /namespace My\.Fs\.Ns(\r\n?|\n)/
   end
+
   it 'should open System.Reflection' do
-    generated.should =~ /open System\.Reflection/
+    expect(generated).to match /open System\.Reflection/
   end
+
   it 'should open System.Runtime.CompilerServices' do
-    generated.should =~ /open System\.Runtime\.CompilerServices/
+    expect(generated).to match /open System\.Runtime\.CompilerServices/
   end
+
   it 'should open System.Runtime.InteropServices' do
-    generated.should =~ /open System\.Runtime\.InteropServices/
+    expect(generated).to match /open System\.Runtime\.InteropServices/
   end
+
   it 'should generate the ComVisible attribute' do
-    generated.should include('[<assembly: ComVisible(false)>]')
+    expect(generated).to include('[<assembly: ComVisible(false)>]')
   end
+
   it 'should generate the AssemblyTitle attribute' do
-    generated.should include('[<assembly: AssemblyTitle("My.Ns")>]')
+    expect(generated).to include('[<assembly: AssemblyTitle("My.Ns")>]')
   end
+
   it 'should generate the AssemblyVersion attribute' do
-    generated.should include('[<assembly: AssemblyVersion("0.1.2")>]')
+    expect(generated).to include('[<assembly: AssemblyVersion("0.1.2")>]')
   end
+
   it 'should generate the CustomThing attribute' do
-    generated.should include('[<assembly: CustomThing("a", "b", "c")>]')
+    expect(generated).to include('[<assembly: CustomThing("a", "b", "c")>]')
   end
+
   it 'should generate the NamedThing attribute' do
-    generated.should include('[<assembly: NamedThing(b = 3, c = "hi")>]')
+    expect(generated).to include('[<assembly: NamedThing(b = 3, c = "hi")>]')
   end
+
   it 'should generate the CLSCompliant attribute' do
-    generated.should include('[<assembly: CLSCompliant(true)>]')
+    expect(generated).to include('[<assembly: CLSCompliant(true)>]')
   end
+
   it 'should end with ()\n' do
-    generated.should =~ /\(\)(\r\n?|\n)$/m
+    expect(generated).to match /\(\)(\r\n?|\n)$/m
   end
 end
 
-describe FileGenerator do
+describe FileGenerator, 'when given extra "usings"' do
+  before :all do
+    @out = StringIO.new
+    subject = FileGenerator.new Fs.new, '', usings: ['System']
+    subject.generate @out, assembly_title: 'My.Asm'
+  end
+
+  let :generated do
+    @out.string
+  end
+
+  it 'should open System' do
+    expect(generated).to match /open System/
+  end
+
+  it 'should open System.Reflection' do
+    expect(generated).to match /open System\.Reflection/
+  end
+
+  it 'should open System.Runtime.CompilerServices' do
+    expect(generated).to match /open System\.Runtime\.CompilerServices/
+  end
+
+  it 'should open System.Runtime.InteropServices' do
+    expect(generated).to match /open System\.Runtime\.InteropServices/
+  end
+
+end
+
+describe FileGenerator, 'when it should generate NO NAMESPACE' do
   before :all do
     @out = StringIO.new
     subject = FileGenerator.new(Cs.new, '', {})
@@ -202,6 +270,6 @@ describe FileGenerator do
     @out.string
   end
   it 'should not include \'namespace\'' do
-    generated.should_not include('namespace')
+    expect(generated).to_not include('namespace')
   end
 end

@@ -70,25 +70,28 @@ describe Albacore::Project, "when reading project file" do
 
   describe 'public API' do
     it do
-      subject.should respond_to(:name)
+      expect(subject).to respond_to :name
     end
     it do
-      subject.should respond_to(:asmname)
+      expect(subject).to respond_to :asmname
     end
     it do
-      subject.should respond_to(:version)
+      expect(subject).to respond_to :namespace
     end
     it do
-      subject.should respond_to(:authors)
+      expect(subject).to respond_to :version
+    end
+    it do
+      expect(subject).to respond_to :authors
     end
     it 'should have five referenced assemblies' do
-      subject.find_refs.length.should eq(5)
+      expect(subject.find_refs.length).to eq 5
     end
     it 'knows about referenced packages' do
-      subject.should respond_to(:declared_packages)
+      expect(subject).to respond_to :declared_packages
     end
     it 'knows about referenced projects' do
-      subject.should respond_to(:declared_projects)
+      expect(subject).to respond_to :declared_projects
     end
     it 'should have three referenced packages' do
       expected = %w|Intelliplan.Util Newtonsoft.Json NLog|

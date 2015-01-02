@@ -30,8 +30,8 @@ System.Runtime.InteropServices|
         # after namespace My.Ns.Here
         out << "\n"
 
-        # open all namespaces to use .Net attributes
-        @opts.get(:usings) { DEFAULT_USINGS }.each do |ns|
+        # open all namespaces to use .Net attributes, concat with your custom attrs
+        [ DEFAULT_USINGS, (@opts.get(:usings) || [])].flatten.each do |ns|
           out << @engine.build_using_statement(ns)
           out << "\n"
         end
