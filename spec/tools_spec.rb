@@ -5,7 +5,7 @@ describe 'when calling Tools#git_release_notes' do
     Albacore::Tools.git_release_notes
   end
   it 'should start with "Release Notes"...' do
-    expect(subject).to match /Release Notes for /
+    expect(subject).to match /Release Notes/
   end
 end
 
