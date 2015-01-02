@@ -146,7 +146,8 @@ describe FileGenerator, 'when generating F# file' do
       assembly_title: 'My.Ns',
       assembly_version: '0.1.2',
       custom_thing: %w|a b c|,
-      named_thing: { :b => 3, :c => 'hi' }
+      named_thing: { :b => 3, :c => 'hi' },
+      CLSCompliant: true
   end
   let :generated do
     @out.string
@@ -177,6 +178,9 @@ describe FileGenerator, 'when generating F# file' do
   end
   it 'should generate the NamedThing attribute' do
     generated.should include('[<assembly: NamedThing(b = 3, c = "hi")>]')
+  end
+  it 'should generate the CLSCompliant attribute' do
+    generated.should include('[<assembly: CLSCompliant(true)>]')
   end
   it 'should end with ()\n' do
     generated.should =~ /\(\)(\r\n?|\n)$/m
