@@ -1,3 +1,4 @@
+require 'albacore/tools'
 require 'albacore/app_spec'
 require 'albacore/errors/invalid_app_spec_error'
 require 'map'
@@ -66,18 +67,6 @@ module Albacore
       end
     end
 
-    def git_release_notes
-      tags = `git tag`.split(/\n/).
-                map { |tag| [ ::XSemVer::SemVer.parse_rubygems(tag), tag ] }.
-                sort { |a, b| a <=> b }.
-                map { |_, tag| tag }
-      last_tag = tags[-1]
-      second_last_tag = tags[-2] || `git rev-list --max-parents=0 HEAD`
-      logs = `git log --pretty=format:%s #{second_last_tag}..`.split(/\n/)
-      "Release Notes for #{last_tag}:
-#{logs.inject('') { |state, line| state + "\n * #{line}" }}"
-    end
-
     def create_nuspec app_spec
       require 'albacore/nuget_model'
       p = Albacore::NugetModel::Package.new
@@ -88,7 +77,7 @@ module Albacore
         m.authors       = app_spec.authors
         m.owners        = app_spec.owners
         m.description   = app_spec.description || app_spec.title_raw
-        m.release_notes = app_spec.release_notes || git_release_notes
+        m.release_notes = app_spec.release_notes || Albacore::Tools.git_release_notes
         m.summary       = app_spec.summary
         m.language      = app_spec.language
         m.project_url   = app_spec.project_url || 'https://haf.se'

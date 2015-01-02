@@ -4,6 +4,7 @@ require 'map'
 require 'albacore/logging'
 require 'albacore/project'
 require 'albacore/paths'
+require 'albacore/tools'
 
 module Albacore
   module NugetModel
@@ -357,6 +358,7 @@ end})
         package.metadata.title   = proj.name if proj.name
         package.metadata.version = version if version
         package.metadata.authors = proj.authors if proj.authors
+        package.metadata.release_notes = Albacore::Tools.git_release_notes
 
         if opts.get :nuget_dependencies
           trace "adding nuget dependencies for id #{proj.id}"
@@ -418,13 +420,13 @@ end})
 
         package
       end
+
       def self.get_output_path proj, opts
         try = proj.try_output_path(opts.get(:configuration))
         return try if try
         warn 'using fallback output path'
         proj.fallback_output_path
       end
-
     end
   end
 end
