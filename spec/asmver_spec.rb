@@ -13,7 +13,7 @@ include Albacore::Asmver
 
     %w|build_attribute build_named_parameters build_positional_parameters build_using_statement build_comment namespace_end namespace_start|.each do |m|
       it "should have a public API ##{m.to_s}" do
-        should respond_to(:"#{m}")
+        expect(subject).to respond_to :"#{m}"
       end
     end
 

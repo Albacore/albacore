@@ -2,7 +2,7 @@ module Albacore::Asmver
   class Engine
     def build_attribute attr_name, attr_data
       attribute = "#{@start_token}assembly: #{format_attribute_name attr_name}("
-      
+
       unless attr_data.nil?
         if attr_data.is_a? Hash
           # Only named parameters
@@ -22,10 +22,10 @@ module Albacore::Asmver
           attribute << "#{format_value attr_data}"
         end
       end
-      
+
       attribute << ")#{@end_token}"
     end
-    
+
     def build_named_parameters data
       params = []
       data.each_pair do |k, v|
@@ -33,7 +33,7 @@ module Albacore::Asmver
       end
       params.join ", "
     end
-    
+
     def build_positional_parameters data
       data.flatten.map{ |a| format_value a }.join(", ")
     end
@@ -84,7 +84,7 @@ module Albacore::Asmver
         v.to_s
       end
     end
-    
+
     # For namespaces
 
     def namespace_start namespace

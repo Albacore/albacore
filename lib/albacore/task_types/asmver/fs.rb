@@ -9,7 +9,7 @@ module Albacore::Asmver
       @assignment  = "="
       @statement_terminator  = ""
     end
-    
+
     def build_attribute_re(attr_name)
       /^\[\<assembly: #{attr_name}(.+)/
     end

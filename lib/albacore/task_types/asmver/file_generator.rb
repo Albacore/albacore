@@ -18,7 +18,7 @@ System.Runtime.InteropServices|
       @ns     = ns
       @opts   = Map.new opts
     end
-    
+
     def generate out, attrs = {}
       trace { "generating file with attributes: #{attrs} [file_generator #generate]" }
 
@@ -36,7 +36,7 @@ System.Runtime.InteropServices|
           out << "\n"
         end
 
-        warn { 'no attributes have been given to [file_generator #generate]' } if attrs.empty?
+        warn 'no attributes have been given to [file_generator #generate]' if attrs.empty?
 
         # write all attributes
         attrs.each do |name, data|
