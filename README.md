@@ -103,7 +103,7 @@ You can also try chocolatey [`ruby`](https://chocolatey.org/packages/ruby) and [
 
 ``` bash
 brew install rbenv ruby-build
-rbenv install 2.1.3
+rbenv install 2.2.0
 gem install bundler
 ```
 
