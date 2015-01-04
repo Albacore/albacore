@@ -186,24 +186,23 @@ module Albacore
         if ::Rake::Win32.windows?
           require 'win32/registry'
           trace 'build tasktype finding msbuild.exe'
- 
           %w{12.0 4.0 3.5 2.0}.collect { |msbuild_ver|
-            msb = :something_nonexistent
-            key = "SOFTWARE\\Microsoft\\MSBuild\\#{msbuild_ver}"
+            msb = "msbuild_not_found"
+            key = "SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\#{msbuild_ver}"
             begin
               Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
-                  msb = "#{reg['MSBuildOverrideTasksPath']}\msbuild.exe"
+                  msb = "#{reg['MSBuildToolsPath']}\\msbuild.exe"
               end
             rescue
-              trace "failed to open HKLM\\#{key}"
+              error "failed to open HKLM\\#{key}\\MSBuildToolsPath"
             end
- 
             CrossPlatformCmd.which(msb) ? msb : nil
           }.compact.first
         else
           nil
         end
       end
+
     end
     class Task
       def initialize command_line
