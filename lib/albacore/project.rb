@@ -157,7 +157,7 @@ module Albacore
           'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
           debug "#{name}: #included_files looking at '#{f}' [albacore: project]"
           link = f.elements.select{ |el| el.name == 'Link' }.map { |el| el.content }.first
-          OpenStruct.new(:include => f[:Include], 
+          OpenStruct.new(
             :item_name => item_name.downcase,
             :link      => link,
             :include   => f['Include']
