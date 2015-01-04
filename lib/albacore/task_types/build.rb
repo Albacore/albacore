@@ -184,15 +184,25 @@ module Albacore
 
       def heuristic_executable
         if ::Rake::Win32.windows?
+          require 'win32/registry'
           trace 'build tasktype finding msbuild.exe'
-          %w{v4.0.30319 v4.0 v3.5 v2.0}.collect { |fw_ver|
-            msb = File.join ENV['WINDIR'], 'Microsoft.NET', 'Framework', fw_ver, 'msbuild.exe'
+          %w{12.0 4.0 3.5 2.0}.collect { |msbuild_ver|
+            msb = "msbuild_not_found"
+            key = "SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\#{msbuild_ver}"
+            begin
+              Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
+                  msb = "#{reg['MSBuildToolsPath']}\\msbuild.exe"
+              end
+            rescue
+              error "failed to open HKLM\\#{key}\\MSBuildToolsPath"
+            end
             CrossPlatformCmd.which(msb) ? msb : nil
           }.compact.first
         else
           nil
         end
       end
+
     end
     class Task
       def initialize command_line
