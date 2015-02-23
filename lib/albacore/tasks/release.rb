@@ -153,7 +153,7 @@ module Albacore
 
       def packages
         # only read packages once
-        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{@semver.format "%M.%m.%p"}.nupkg"
+        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{@semver.format "%M.%m.%p%s"}.nupkg"
         @packages
       end
 
