@@ -46,7 +46,7 @@ code, as well as hundreds of unit tests written in a easy-to-read rspec syntax.
     gem install albacore
     albacore init
 
-Now you have the initial setup and can run `bundle exec rake`. But please read
+Now you have the initial setup and can run `bundle exec rake`. ([nokogiri error?](#error)) But please read
 below:
 
 ## Getting Started
@@ -195,3 +195,9 @@ than afterwards.
 
  [wiki]: https://github.com/Albacore/albacore/wiki
  [upgrade-v1.0]: https://github.com/Albacore/albacore/wiki/Upgrading-from-v1.0
+
+### Error
+
+#### CentOS 6/7
+
+If you get a problem installing nokogiri, you have two choices: `yum install epel-release && yum install ruby rubygems-nokogiri && gem install albacore` which loads nokogiri from epel, or you could do: `yum install ruby gcc ruby-devel zlib-devel  libxslt-devel libxml2-devel && gem install nokogiri` which lets rubygems compile nokogiri.
