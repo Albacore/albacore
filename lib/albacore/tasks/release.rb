@@ -1,5 +1,6 @@
 require 'rake'
 require 'albacore/dsl'
+require 'albacore/tasks/versionizer'
 require 'map'
 
 module Albacore
@@ -153,7 +154,8 @@ module Albacore
 
       def packages
         # only read packages once
-        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{@semver.format "%M.%m.%p%s"}.nupkg"
+        ver = Albacore::Tasks::Versionizer.format_nuget @semver
+        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{ver}.nupkg"
         @packages
       end
 
