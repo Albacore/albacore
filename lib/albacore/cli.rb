@@ -86,6 +86,7 @@ gem 'albacore', '~> #{Albacore::VERSION}'
 paket.exe
 bin/
 obj/
+packages/
 .DS_Store
 *.db
 *.suo
