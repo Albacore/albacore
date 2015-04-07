@@ -225,15 +225,7 @@ module Albacore
     def all_paket_deps
       return @all_paket_deps if @all_paket_deps
       arr = File.open('paket.lock', 'r') do |io|
-        io.readlines.map(&:chomp).map do |line|
-          if (m = line.match /^\s*(?<id>[\w\-\.]+) \((?<ver>[\.\d\w]+)\)$/i)
-            ver = Albacore::SemVer.parse(m[:ver], '%M.%m.%p', false)
-            OpenStruct.new(:id               => m[:id],
-                           :version          => m[:ver],
-                           :target_framework => 'net40',
-                           :semver           => ver)
-          end
-        end.compact.map { |package| [package.id, package] }
+        Albacore::Paket.parse_paket_lock(io.readlines.map(&:chomp))
       end
       @all_paket_deps = Hash[arr]
     end
