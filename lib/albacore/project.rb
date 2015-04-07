@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'albacore/logging'
 require 'albacore/semver'
 require 'albacore/package_repo'
+require 'albacore/paket'
 
 module Albacore
 
