@@ -1,7 +1,6 @@
 require 'albacore/paket'
 
 describe Albacore::Paket do
-  include Albacore::Paket
   let :file do
     %{NUGET
   remote: https://www.nuget.org/api/v2
@@ -22,7 +21,7 @@ describe Albacore::Paket do
   end
   describe 'parsing paket.lock file' do
     let :references do
-      Hash[parse_paket_lock(file.split(/\n|\r\n/))]
+      Hash[subject.parse_paket_lock(file.split(/\n|\r\n/))]
     end
     it 'has FParsec' do
       expect(references['FParsec'].version).to eq '1.0.1'
