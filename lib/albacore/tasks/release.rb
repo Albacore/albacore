@@ -60,7 +60,13 @@ module Albacore
       # (given as the first parameter to the c'tor) that calls all subtasks.
       #
       def install
-        namespace :release do
+        namespace :"#{@name}" do
+          task :info => @opts.get(:depend_on) do
+            debug do
+              "Releasing to #{@opts.get :nuget_source} with task #{@name}"
+            end
+          end
+
           task :guard_clean => @opts.get(:depend_on) do
             guard_clean
           end
@@ -81,7 +87,7 @@ module Albacore
         end
 
         desc 'release current package(s)'
-        task @name => [:'release:guard_clean', :'release:guard_pkg', :'release:scm_write', :'release:nuget_push']
+        task @name => %W|info guard_clean guard_pkg scm_write nuget_push|.map { |n| :"#{@name}:#{n}" }
       end
 
       protected
