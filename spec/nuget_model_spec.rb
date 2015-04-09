@@ -67,6 +67,37 @@ describe Albacore::NugetModel::Package, "when doing some xml generation" do
   end
 end
 
+describe Albacore::NugetModel::Package, "when doing paket template generation" do
+  let :metadata do
+    md = Albacore::NuGetModel::Metadata.new
+    md.id = 'MyExamplePackage'
+    md.title = 'My Example Package'
+    md.title 
+    md.add_
+  end
+  let :expected do
+    %{type file
+id MyExamplePackage
+title My Example Package
+version 1.0.3
+authors Henrik Feldt
+owners Henrik Feldt
+summary If there was a man, or a woman, who would withstand.
+description
+  Wowowow
+files
+  bin/Release => lib
+releaseNotes
+  These are my notes, to those who come after me.
+
+   - Item 1
+   - Item 2
+dependencies
+  FSharp.Core >= 4.3.1
+}
+  end
+end
+
 describe Albacore::NugetModel::Package, "from XML" do
   let :dir do
     File.basename(__FILE__)
