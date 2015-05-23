@@ -4,11 +4,11 @@ require 'albacore/semver'
 module Albacore
   module Paket
     def self.parse_line line
-      if (m = line.match /^\s*(?<id>[\w\-\.]+) \((?<ver>[\.\d\w\-]+)\)$/i)
+      if (m = line.match /^\s*(?<id>[\w\-\.]+) \((?<ver>[\.\d\w\-]+)\)( - framework: >= (?<tf>\w+))?$/i)
         ver = Albacore::SemVer.parse(m[:ver], '%M.%m.%p', false)
         OpenStruct.new(:id               => m[:id],
                        :version          => m[:ver],
-                       :target_framework => 'net40',
+                       :target_framework => m[:tf] || 'net40',
                        :semver           => ver)
       end
     end
