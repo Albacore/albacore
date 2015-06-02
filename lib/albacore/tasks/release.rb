@@ -131,7 +131,8 @@ module Albacore
 
       def guard_pkg
         exe = @opts.get(:nuget_exe)
-        (! packages.empty?) or raise('You must have built your packages, use "depend_on: :nuget_pkg"')
+        (! packages.empty?) or \
+          raise("You must have built your packages for version #{nuget_version}, use 'depend_on: :nuget_pkg'")
         (File.exists?(exe)) or raise("You don't have a NuGet.exe file to push with, expected path: #{exe}")
 
       end
@@ -158,10 +159,15 @@ module Albacore
         @semver.to_s
       end
 
+      def nuget_version
+        Albacore::Tasks::Versionizer.format_nuget @semver
+      end
+
       def packages
         # only read packages once
-        ver = Albacore::Tasks::Versionizer.format_nuget @semver
-        @packages ||= Dir.glob "#{@opts.get :pkg_dir}/*.#{ver}.nupkg"
+        path = "#{@opts.get :pkg_dir}/*.#{nuget_version}.nupkg"
+        debug { "[release] looking for packages in #{path}, version #{@semver}" }
+        @packages ||= Dir.glob path
         @packages
       end
 

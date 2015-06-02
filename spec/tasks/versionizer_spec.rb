@@ -78,6 +78,14 @@ describe 'finding build versions' do
     # nuget doesn't support semver 2.0
     expect(subject[:nuget_version]).to eq '1.2.3-alpha1wasabi'
   end
+
+  it 'should format nuget properly' do
+    ver = XSemVer::SemVer.new(0, 29, 0, 'alpha')
+    versions = ::Albacore::Tasks::Versionizer.versions ver do
+      ['123456', '2014-02-27 16:55:55']
+    end
+    expect(versions[:nuget_version]).to eq '0.29.0-alpha'
+  end
 end
 
 describe 'finding build special versions' do
