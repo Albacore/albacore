@@ -51,7 +51,7 @@ module Albacore
     #
     # system(cmd, [args array], Hash(opts), block|ok,status|)
     #  ok => false if bad exit code, or the output otherwise
-    # 
+    #
     # options are passed as the last argument
     #
     # options:
@@ -110,7 +110,7 @@ module Albacore
         ret_str = inmem.string.encode 'utf-8', invalid: :replace, undef: :replace, replace: ''
         return block.call(status.success? && ret_str, status, ret_str)
       end
-    end  
+    end
 
     def stop
       if pid
@@ -162,7 +162,7 @@ module Albacore
         return block.call($? == 0 && lines, $?, lines)
       end
     end
-    
+
     # shell ignore exit code
     # returns:
     #  [ok, status]
@@ -193,15 +193,16 @@ module Albacore
       parameters = []
       parameters << Paths.normalise_slashes(file) if dir == '.'
       parameters << Paths.normalise_slashes("#{dir}:#{file}") unless dir == '.'
+      parameters << '2> nul' if ::Rake::Win32.windows?
       cmd, parameters = Paths.normalise cmd, parameters
+      cmd = "#{cmd} #{parameters.join(' ')}"
 
-      trace { "#{cmd} #{parameters.join(' ')} [cross_platform_cmd #which]" }
+      trace { "#{cmd} [cross_platform_cmd #which]" }
 
-      null = ::Rake::Win32.windows? ? "NUL" : "/dev/null"
-      res = IO.popen([cmd, *parameters]) do |io|
+      res = IO.popen(cmd) do |io|
         io.read.chomp
       end
-      
+
       unless $? == 0
         nil
       else
@@ -211,7 +212,7 @@ module Albacore
       trace "which/where returned #{$?}: #{e} [cross_platform_cmd #which]"
       nil
     end
-    
+
     def chdir wd, &block
       return block.call if wd.nil?
       Dir.chdir wd do
@@ -221,14 +222,14 @@ module Albacore
         return res
       end
     end
-    
+
     private
 
     def prepare_command cmd, clr_command = false, &block
       cmd = cmd.unshift 'mono' if clr_command && ! ::Albacore.windows?
       pars = cmd[1..-1].flatten
       raise ArgumentError, "arguments 1..-1 must be an array" unless pars.is_a? Array
-      exe, pars = ::Albacore::Paths.normalise cmd[0], pars 
+      exe, pars = ::Albacore::Paths.normalise cmd[0], pars
       printable = %Q{#{exe} #{pars.join(' ')}}
       handler = block_given? ? block : handler_with_message(printable)
       [exe, pars, printable, handler]
@@ -244,7 +245,7 @@ module Albacore
     rescue Errno::ENOENT => e
       rescue_block.call(nil, PseudoStatus.new(127), e.to_s)
     rescue IOError => e # rescue for JRuby
-      rescue_block.call(nil, PseudoStatus.new(127), e.to_s) 
+      rescue_block.call(nil, PseudoStatus.new(127), e.to_s)
     end
 
 
@@ -267,7 +268,7 @@ module Albacore
       else
         %{Command failed with status (#{status.exitstatus}):
   #{cmd}}
-      end 
+      end
     end
 
     # shuffle the executable to be a parameter to
