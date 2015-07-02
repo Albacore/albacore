@@ -50,13 +50,13 @@ end
         subject.build_attribute 'AssemblyVersion', '0.2.3'
       end
       it 'should contain the name AssemblyVersion' do
-        version.should include('AssemblyVersion')
+        expect(version).to include('AssemblyVersion')
       end
       it 'should contain the version 0.2.3' do
-        version.should include('0.2.3')
+        expect(version).to include('0.2.3')
       end
       it 'should include the "assembly:" string' do
-        version.should include('assembly: ')
+        expect(version).to include('assembly: ')
       end
     end
 
@@ -65,7 +65,7 @@ end
         subject.build_using_statement 'System.Runtime.CompilerServices'
       end
       it 'should contain the namespace System.Runtime.CompilerServices' do
-        using.should =~ /System.{1,2}Runtime.{1,2}CompilerServices/
+        expect(using).to match(/System.{1,2}Runtime.{1,2}CompilerServices/)
       end
     end
 
@@ -74,7 +74,7 @@ end
         subject.build_named_parameters milk_cows: true, birds_fly: false, hungry_server: 'sad server'
       end
       it 'should include the parameter names' do
-        plist.should =~ /milk_cows .{1,2} true. birds_fly .{1,2} false. hungry_server .{1,2} "sad server"/
+        expect(plist).to match(/milk_cows .{1,2} true. birds_fly .{1,2} false. hungry_server .{1,2} "sad server"/)
       end
     end
 
@@ -83,7 +83,7 @@ end
         subject.build_positional_parameters ((%w|a b c hello|) << false)
       end
       it 'should include the positional parameters' do
-        plist.should eq('"a", "b", "c", "hello", false')
+        expect(plist).to eq('"a", "b", "c", "hello", false')
       end
     end
 
@@ -102,7 +102,7 @@ end
         }[lang]
       end
       it 'should include the correct syntax for single line comment' do
-        comment.should =~ expected
+        expect(comment).to match(expected)
       end
     end
 
@@ -130,7 +130,7 @@ on many lines}
         }[lang]
       end
       it 'should build the multiline comment' do
-        comment.should eq(expected)
+        expect(comment).to eq(expected)
       end
     end
 
@@ -149,7 +149,7 @@ on many lines}
         }[lang]
       end
       it 'should include the correct syntax for single line comment' do
-        ns.should =~ expected
+        expect(ns).to match(expected)
       end
     end
   end
@@ -158,7 +158,7 @@ end
 describe FileGenerator do
   subject do FileGenerator.new(Fs.new, 'MyNamespace.Here', {}) end
   it do
-    subject.should respond_to(:generate)
+    expect(subject).to respond_to(:generate)
   end
   it 'can be constructed with empty namespace' do
     FileGenerator.new(Fs.new, '', {})

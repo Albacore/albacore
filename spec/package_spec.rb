@@ -14,12 +14,12 @@ describe ::Albacore::Package do
     should respond_to :to_s
   end
   it 'has id' do
-    subject.id.should eq 'NLog'
+    expect(subject.id).to eq 'NLog'
   end 
   it 'has path' do
-    subject.path.should eq 'path/to/asm.dll'
+    expect(subject.path).to eq 'path/to/asm.dll'
   end
   it 'formats with #to_s' do
-    subject.to_s.should eq 'Package[path/to/asm.dll]'
+    expect(subject.to_s).to eq 'Package[path/to/asm.dll]'
   end
 end
