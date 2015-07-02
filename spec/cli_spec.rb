@@ -7,9 +7,9 @@ describe Albacore::Cli do
     @test_rake = 'Test_Rakefile'
     @test_gem = 'Test_Gemfile'
     @test_semver = 'Test_Semver'
-    Albacore.stub(:rakefile).and_return @test_rake
-    Albacore.stub(:gemfile).and_return @test_gem
-    Albacore.stub(:semver_file).and_return @test_semver
+    allow(Albacore).to receive(:rakefile).and_return @test_rake
+    allow(Albacore).to receive(:gemfile).and_return @test_gem
+    allow(Albacore).to receive(:semver_file).and_return @test_semver
 
     # Capture the output that would typically appear in the console.
     @original_stdout = $stdout
@@ -42,7 +42,7 @@ describe Albacore::Cli do
         end
         it 'outputs a warning message' do
           described_class.new [command]
-          @output.string.should match /One of \[.*\] already exists\n/
+          expect(@output.string).to match /One of \[.*\] already exists\n/
         end
         it "does not overwrite the existing file" do
           expect {

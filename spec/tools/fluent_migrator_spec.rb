@@ -60,10 +60,10 @@ describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
     let (:c) { cmd :task_override => '--toversion=4' }
     include_context 'executing command'
     it 'does not contain --task' do
-      subject.should_not include('--task')
+      expect(subject).to_not include('--task')
     end
     it 'includes --toversion=4' do
-      subject.should include('--toversion=4')
+      expect(subject).to include('--toversion=4')
     end
   end
 
@@ -73,7 +73,7 @@ describe Albacore::Tools::FluentMigrator::Cmd, "when calling #execute" do
     include_context 'executing command'
     it 'should contain extras' do
       extras.
-        each { |e| subject.should include(e) }
+        each { |e| expect(subject).to include(e) }
     end
   end
 

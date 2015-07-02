@@ -14,39 +14,39 @@ describe Paths.method(:join), 'when joining path segments' do
   end
 
   it 'should return id' do
-    subject.call('abc').to_s.should eq('abc')
+    expect(subject.call('abc').to_s).to eq('abc')
   end 
 
   it 'should return with proper separator' do
-    sample.to_s.should eq('a' + s + 'b' + s + 'c')
+    expect(sample.to_s).to eq('a' + s + 'b' + s + 'c')
   end
 
   it 'should be joinable' do
-    sample.join('d').to_s.should include(s)
+    expect(sample.join('d').to_s).to include(s)
   end
 
   it 'should be +-able' do
-    (sample + 'd').to_s.should include(s)
+    expect((sample + 'd').to_s).to include(s)
   end
 
   it 'can join with *' do
-    subject.call('a').join('*/').to_s.should eq('a' + s + '*' + s)
+    expect(subject.call('a').join('*/').to_s).to eq('a' + s + '*' + s)
   end
 
   it 'accepts multiple paths' do
-    subject.call('a', 'b', 'c').to_s.should eq(abc)
+    expect(subject.call('a', 'b', 'c').to_s).to eq(abc)
   end
 
   it 'returns something accepting multiple paths' do
-    subject.call('a', 'b', 'c').join('d', 'e').to_s.should eq(abc + s + 'd' + s + 'e')
+    expect(subject.call('a', 'b', 'c').join('d', 'e').to_s).to eq(abc + s + 'd' + s + 'e')
   end
 
   it 'should be presentable in "unix" style' do
-    sample.as_unix.to_s.should_not include('\\')
+    expect(sample.as_unix.to_s).to_not include('\\')
   end
 
   it 'should handle joining on a type like itself' do
-    sample.join(sample).to_s.should eq(abc + s + abc)
+    expect(sample.join(sample).to_s).to eq(abc + s + abc)
     sample.join(sample, sample)
   end
 
@@ -56,28 +56,28 @@ describe Paths.method(:join), 'when joining path segments' do
 
   it 'should handle joining with a Pathname' do
     pending "don't know why not working" if Albacore.windows?
-    (sample.join Pathname.new('x')).should eq(Paths::PathnameWrap.new(abc + s + 'x'))
+    expect((sample.join Pathname.new('x'))).to eq(Paths::PathnameWrap.new(abc + s + 'x'))
   end
 
   it 'should handle +-ing with a Pathname' do
     pending "don't know why not working" if Albacore.windows?
-    (sample + Pathname.new('x')).should eq(Paths::PathnameWrap.new(abc + s + 'x'))
+    expect((sample + Pathname.new('x'))).to eq(Paths::PathnameWrap.new(abc + s + 'x'))
   end
 
   it do
-    sample.should respond_to(:hash)
+    expect(sample).to respond_to(:hash)
   end
 
   it do
-    sample.should respond_to(:eql?)
+    expect(sample).to respond_to(:eql?)
   end
   
   it 'joins with identity' do
-    subject.call(Paths::PathnameWrap.new(abc)).to_s.should eq(abc)
+    expect(subject.call(Paths::PathnameWrap.new(abc)).to_s).to eq(abc)
   end
 
   it 'joins with others' do
-    sample.join(Paths::PathnameWrap.new(abc)).to_s.should eq(abc + s + abc)
+    expect(sample.join(Paths::PathnameWrap.new(abc)).to_s).to eq(abc + s + abc)
   end
 end
 
@@ -87,31 +87,31 @@ describe Paths.method(:join_str), 'when joining path segments' do
   end
 
   it 'id' do
-    subject.call('.').should eq('.')
+    expect(subject.call('.')).to eq('.')
   end
 
   it 'id slash' do
-    subject.call('.', '/').should eq(s)
+    expect(subject.call('.', '/')).to eq(s)
   end
 
   it 'id slash win' do
-    subject.call('.', '\\').should eq(s)
+    expect(subject.call('.', '\\')).to eq(s)
   end
 
   it 'id slash with root' do
-    subject.call('.', '/', '/b').should eq(s + 'b')
+    expect(subject.call('.', '/', '/b')).to eq(s + 'b')
   end
 
   it 'id slash with root win' do
-    subject.call('.', '\\', '\\b').should eq(s + 'b')
+    expect(subject.call('.', '\\', '\\b')).to eq(s + 'b')
   end
 
   it 'id double slash' do
-    subject.call('.', 'b/', 'c/').should eq('b' + s + 'c' + s)
+    expect(subject.call('.', 'b/', 'c/')).to eq('b' + s + 'c' + s)
   end
 
   it 'id double slash win' do
-    subject.call('.', 'b\\', 'c\\').should eq('b' + s + 'c' + s)
+    expect(subject.call('.', 'b\\', 'c\\')).to eq('b' + s + 'c' + s)
   end
 end
 

@@ -8,4 +8,7 @@ end
 # needed to do development and read the version of albacore
 gem 'nokogiri', '~>1.5'
 
+gem 'guard'
+gem 'guard-rspec'
+
 gemspec

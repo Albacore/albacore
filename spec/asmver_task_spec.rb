@@ -20,13 +20,13 @@ describe ::Albacore::Asmver::Config, 'when setting attributes and out' do
     @task.execute
   end
   it 'should write namespace' do
-    strio.string.should include('namespace Hello.World')
+    expect(strio.string).to include('namespace Hello.World')
   end
   it 'should write Guid("...")' do
-    strio.string.should include('[<assembly: Guid("b766f4f3-3f4e-49d0-a451-9c152059ae81")>]')
+    expect(strio.string).to include('[<assembly: Guid("b766f4f3-3f4e-49d0-a451-9c152059ae81")>]')
   end
   it 'should write AssemblyVersion' do
-    strio.string.should include('[<assembly: AssemblyVersion("0.1.2")>]')
+    expect(strio.string).to include('[<assembly: AssemblyVersion("0.1.2")>]')
   end
   it 'should allow changing attributes' do
     expect(subject).to respond_to :change_attributes

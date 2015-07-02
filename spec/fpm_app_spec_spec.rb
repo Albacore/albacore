@@ -24,21 +24,15 @@ describe ::Albacore::FpmAppSpec, 'public API' do
     ::Albacore::FpmAppSpec.new spec
   end
 
-  it do
-    should respond_to :filename
-  end
+  it { is_expected.to respond_to :filename }
 
   it 'should know resulting filename' do
-    subject.filename.should eq('my.app-5.6.7-1.x86_64.rpm')
+    expect(subject.filename).to eq('my.app-5.6.7-1.x86_64.rpm')
   end
 
-  it do
-    should respond_to :generate
-  end
+  it { is_expected.to respond_to :generate }
 
-  it do
-    should respond_to :generate_flags
-  end
+  it { is_expected.to respond_to :generate_flags }
 end
 
 
@@ -91,7 +85,7 @@ describe ::Albacore::FpmAppSpec, 'when generating command from valid AppSpec' do
 
   if ::Albacore.windows?
     it 'should generate command "look in this directory" flag' do
-      expect(flags['-C']).should match  /^.:\/a\/b$/
+      expect(flags['-C']).to match  /^.:\/a\/b$/
     end
   else
     it 'should generate command "look in this directory" flag' do

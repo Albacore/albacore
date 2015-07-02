@@ -5,19 +5,19 @@ require 'albacore/errors/command_failed_error'
 
 describe Albacore::CrossPlatformCmd.method(:which), "what happens when calling #which" do
   it "should be callable" do
-    subject.should respond_to(:call)
+    expect(subject).to respond_to(:call)
   end
   it "should return a non-null path" do
-    subject.call("ruby").should_not be_empty
+    expect(subject.call("ruby")).to_not be_empty
   end
   it "should return nil if nothing was found" do
-    subject.call("notlikelyonsystem").should be_nil
+    expect(subject.call("notlikelyonsystem")).to be_nil
   end
 end
 
 describe Albacore::CrossPlatformCmd.method(:prepare_command) do
   it 'should be callable' do
-    subject.should respond_to(:call)
+    expect(subject).to respond_to(:call)
   end
   before :each do
     # noteworthy: escape spaces with backslash!
@@ -29,38 +29,38 @@ describe Albacore::CrossPlatformCmd.method(:prepare_command) do
       printable: @printable,
       handler:   @handler
     }.each do |kv|
-      kv[1].should_not be_nil
+      expect(kv[1]).to_not be_nil
     end
   end
   if Albacore.windows? then
     it 'should not include mono' do
-      @exe.should_not include('mono')
+      expect(@exe).to_not include('mono')
     end
 
     it 'should return first param correctly' do
-      @pars[0].should eq('Hello')
+      expect(@pars[0]).to eq('Hello')
     end
     it 'should return second param correctly' do
-      @pars[1].should eq('World')
+      expect(@pars[1]).to eq('World')
     end
     it 'should return third param correctly' do
-      @pars[2].should eq('Goodbye World')
+      expect(@pars[2]).to eq('Goodbye World')
     end
   else
     it 'should include mono' do
-      @exe.should include('mono')
+      expect(@exe).to include('mono')
     end
     it 'should return first param as "echo"' do
-      @pars[0].should eq('echo')
+      expect(@pars[0]).to eq('echo')
     end
     it 'should return second param as "Hello"' do
-      @pars[1].should eq('Hello')
+      expect(@pars[1]).to eq('Hello')
     end
     it 'should return third param as "World"' do
-      @pars[2].should eq('World')
+      expect(@pars[2]).to eq('World')
     end
     it 'should return fourth param as "Goodbye World"' do
-      @pars[3].should eq('Goodbye World')
+      expect(@pars[3]).to eq('Goodbye World')
     end
   end
 end
@@ -69,10 +69,10 @@ end
   describe Albacore::CrossPlatformCmd.method(method), "##{method}" do
     describe 'its positive modes' do
       it "should be callable" do
-        subject.should respond_to(:call)
+        expect(subject).to respond_to(:call)
       end
       it "doesn't crash everything when called" do
-        subject.call("whoami").should_not be_nil
+        expect(subject.call("whoami")).to_not be_nil
       end
     end
     unless method == :shie
@@ -108,7 +108,7 @@ end
         # #system => \r\n$ on windows
         # #sh => \n$ on windows/powershell
         # #shie => \n$ on windows/powershell
-        res.should include("this is a test")
+        expect(res).to include("this is a test")
       end
     end
   end
