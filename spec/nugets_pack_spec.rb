@@ -87,17 +87,17 @@ describe Cmd, "when calling #execute" do
   describe "first invocation" do
     include_context 'pack_config'
     it "should run the correct executable" do
-      subject.mono_command(0).should eq('NuGet.exe')
+      expect(subject.mono_command(0)).to eq('NuGet.exe')
     end
     it "should include the correct parameters" do
-      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
+      expect(subject.mono_parameters(0)).to eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
     end
   end
 
   describe "second invocation" do
     include_context 'pack_config'
     it "should include -Symbols" do
-      subject.mono_parameters(1).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} -Symbols ./spec/testdata/example.symbols.nuspec])
+      expect(subject.mono_parameters(1)).to eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} -Symbols ./spec/testdata/example.symbols.nuspec])
     end
   end
 
@@ -109,10 +109,10 @@ describe Cmd, "when calling #execute" do
       cmd
     end
     it 'should not include -Symbols'  do
-      subject.mono_parameters(0).should eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
+      expect(subject.mono_parameters(0)).to eq(%W[Pack -OutputDirectory #{path 'spec/testdata/pkg'} ./spec/testdata/example.nuspec])
     end
     it 'should not have a second invocation' do
-      subject.invocations.length.should eq(1)
+      expect(subject.invocations.length).to eq(1)
     end
   end
 end
@@ -164,27 +164,27 @@ EXAMPLE_OUTPUT
 
   it "should match sample1 with last nupkg mentioned" do
     match = subject.send(:get_nuget_path_of) { sample1 }
-    match.should eq('Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
+    expect(match).to eq('Y:\\Shared\\build\\pkg\\MyNuget.Package.1.0.0.symbols.nupkg')
   end
 
   it 'should match sample2 with last nupkg mentioned' do
     match = subject.send(:get_nuget_path_of) { sample2 }
-    match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.symbols.nupkg')
+    expect(match).to eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0.symbols.nupkg')
   end
 
   it 'should match sample3 with last nupkg mentioned' do
     match = subject.send(:get_nuget_path_of) { sample3 }
-    match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha3.symbols.nupkg')
+    expect(match).to eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha3.symbols.nupkg')
   end
 
   it 'should match sample4 with last nupkg mentioned' do
     match = subject.send(:get_nuget_path_of) { sample4 }
-    match.should eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha.nupkg')
+    expect(match).to eq('/home/xyz/Shared/build/pkg/MyNuget.Package.1.0.0-alpha.nupkg')
   end
 
   it 'should match sample5 despite non-ASCII' do
     match = subject.send(:get_nuget_path_of) { sample5 }
-    match.should eq('/home/xyz/Shared/build/pkg/Fröken.1.0.0-alpha.nupkg')
+    expect(match).to eq('/home/xyz/Shared/build/pkg/Fröken.1.0.0-alpha.nupkg')
   end
 end
 
@@ -227,7 +227,7 @@ describe ProjectTask do
   include_context 'package_metadata_dsl'
 
   it 'sanity: should have config with target=mono32' do
-    config.opts().get(:target).should eq('mono32')
+    expect(config.opts().get(:target)).to eq('mono32')
   end
 
   let :projfile do
@@ -252,7 +252,7 @@ describe ProjectTask, "when testing public interface" do
     ProjectTask.new(Map.new(:files => [projfile]))
   end
   it "rejects .nuspec files" do
-    ProjectTask.accept?('some.nuspec').should eq false
+    expect(ProjectTask.accept?('some.nuspec')).to eq false
   end
 end
 
@@ -273,20 +273,20 @@ describe ProjectTask, "creating nuget from proj file" do
   describe 'when generating symbols' do
     include_context 'pack_config'
     it 'should have generated a nuspec' do
-      cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+      expect(cmdo[:cmd].mono_parameters(0)[-1]).to include('Sample.Nuget.nuspec')
     end
     it 'should have generated a symbol nuspec' do
-      cmdo[:cmd].mono_parameters(1)[-1].should include('Sample.Nuget.symbols.nuspec')
+      expect(cmdo[:cmd].mono_parameters(1)[-1]).to include('Sample.Nuget.symbols.nuspec')
     end
   end
 
   describe 'when not generating symbols' do
     include_context 'pack_config no symbols'
     it 'should have generated a nuspec' do
-      cmdo[:cmd].mono_parameters(0)[-1].should include('Sample.Nuget.nuspec')
+      expect(cmdo[:cmd].mono_parameters(0)[-1]).to include('Sample.Nuget.nuspec')
     end
     it 'should have done no further calls' do
-      cmdo[:cmd].invocations.length.should eq(1)
+      expect(cmdo[:cmd].invocations.length).to eq(1)
     end
     it 'should have no further invocations' do
       begin

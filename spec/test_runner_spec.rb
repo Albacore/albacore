@@ -33,7 +33,7 @@ describe ::Albacore::TestRunner::Config do
   end
 
   it 'should have the appropriate parameter in #opts.get(:parameters)' do
-    subject.opts.get(:parameters).should include('/TestResults=/b/c/d/e.xml')
+    expect(subject.opts.get(:parameters)).to include('/TestResults=/b/c/d/e.xml')
   end
   
   it 'should have clr_command=false' do
@@ -55,11 +55,11 @@ describe 'the order of which parameters are passed', ::Albacore::TestRunner::Con
   end
 
   it 'should first pass the flags' do
-    params.first.should eq('/TestResults=abc.xml')
+    expect(params.first).to eq('/TestResults=abc.xml')
   end
 
   it 'should pass the file as a :files' do
-    subject.opts.get(:files).should eq(['a/b/c/file.dll'])
+    expect(subject.opts.get(:files)).to eq(['a/b/c/file.dll'])
   end
 end
 
@@ -73,12 +73,12 @@ describe ::Albacore::TestRunner::Cmd do
 
   it 'should include the parameters when executing' do
     # the intersection of actual parameters with expected should eq expected
-    (subject.parameters - (subject.parameters - %w|params go here|)).
-      should eq(%w|params go here|)
+    expect(subject.parameters - (subject.parameters - %w|params go here|)).
+      to eq(%w|params go here|)
   end
 
   it 'should give the full path when executing' do
-    (subject.parameters - %w|params go here|).should eq(%w|a/b/c/lib.tests.dll|)
+    expect((subject.parameters - %w|params go here|)).to eq(%w|a/b/c/lib.tests.dll|)
   end
 end
 
@@ -103,8 +103,8 @@ describe ::Albacore::TestRunner::Task do
     given = hash.first[0]
     expected = hash.first[1]
     subject.send(:handle_directory, given[0], given[1]) do |dir, exe|
-      dir.should eq(expected[0])
-      exe.should eq(expected[1])
+      expect(dir).to eq(expected[0])
+      expect(exe).to eq(expected[1])
     end
 
   end
@@ -119,9 +119,9 @@ describe ::Albacore::TestRunner::Task do
 
   it 'should handle negative dirs by getting current dir name' do
     subject.send(:handle_directory, '../d.dll', 'e.exe') do |dir, exe|
-      dir.should eq('..')
+      expect(dir).to eq('..')
       # at this point, the exe file is just a dir in
-      exe.should =~ /\w+\/e\.exe/
+      expect(exe).to match /\w+\/e\.exe/
     end
   end
 end

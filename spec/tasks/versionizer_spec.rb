@@ -26,31 +26,31 @@ describe 'finding build special versions' do
   end
 
   it 'should return a hash' do
-    subject.should be_a(Hash)
+    expect(subject).to be_a(Hash)
   end
 
   it 'should return the correct build number' do
-    subject[:build_number].should eq(3)
+    expect(subject[:build_number]).to eq(3)
   end
 
   it 'should return the same semver' do
-    subject[:semver].should eq(::XSemVer::SemVer.new(1, 2, 3, 'deadbeef'))
+    expect(subject[:semver]).to eq(::XSemVer::SemVer.new(1, 2, 3, 'deadbeef'))
   end
 
   it 'should return the correct long_version' do
-    subject[:long_version].should eq('1.2.3.0')
+    expect(subject[:long_version]).to eq('1.2.3.0')
   end
 
   it 'should return the correct formal_version' do
-    subject[:formal_version].should eq('1.2.3')
+    expect(subject[:formal_version]).to eq('1.2.3')
   end
 
   it 'should return a build_version' do
-    subject[:build_version].should_not be_nil
+    expect(subject[:build_version]).to_not be_nil
   end
 
   it 'should return a build_version with correct hash/special substring' do
-    subject[:build_version].should eq('1.2.3-deadbeef.123456')
+    expect(subject[:build_version]).to eq('1.2.3-deadbeef.123456')
   end
 
   it 'should return a nuget_version' do

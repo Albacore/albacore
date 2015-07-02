@@ -9,7 +9,7 @@ describe Albacore::NugetModel::Metadata do
     :require_license_acceptance, :copyright, :tags, :dependencies,
     :framework_assemblies ].each do |prop|
     it "responds to :#{prop}" do
-      subject.should respond_to(prop)
+      expect(subject).to respond_to(prop)
     end
   end
 
@@ -39,31 +39,31 @@ describe Albacore::NugetModel::Metadata do
       subject.framework_assemblies.first[1]
     end
     it "should contain the dependency id" do
-      dep.id.should eq('System.Transactions')
+      expect(dep.id).to eq('System.Transactions')
     end
     it "should contain the dependency version" do
-      dep.version.should eq('2.0.0')
+      expect(dep.version).to eq('2.0.0')
     end
     it "should contain a single dependency" do
-      subject.framework_assemblies.length.should eq(1)
+      expect(subject.framework_assemblies.length).to eq(1)
     end
   end
 end
 
 describe Albacore::NugetModel::Package, "when doing some xml generation" do
   it "should be newable" do
-    subject.should_not be_nil
+    expect(subject).to_not be_nil
   end
   [:metadata, :files, :to_xml, :to_xml_builder].each do |prop|
     it "should respond to #{prop}" do
-      subject.should respond_to(prop)
+      expect(subject).to respond_to(prop)
     end
   end
   it "should generate default metadata" do
-    subject.to_xml.should include('<metadata')
+    expect(subject.to_xml).to include('<metadata')
   end
   it "should not generate default files" do
-    subject.to_xml.should_not include('<files')
+    expect(subject.to_xml).to_not include('<files')
   end
 end
 
@@ -117,7 +117,7 @@ XML
     package
   end
   it "should exist" do
-    subject.should_not be_nil
+    expect(subject).to_not be_nil
   end
   it "should have the metadata properties of the XML above" do
     parser.
@@ -127,31 +127,31 @@ XML
       reject { |n| n.text? }.
       each do |node|
       name = Albacore::NugetModel::Metadata.underscore node.name
-      subject.metadata.send(:"#{name}").should eq(node.inner_text.chomp)
+      expect(subject.metadata.send(:"#{name}")).to eq(node.inner_text.chomp)
     end
   end
 
   # on Windows this fails due to replacement of path separators (by design)
   unless ::Albacore.windows?
     it 'should generate the same (semantic) XML as above' do
-      Nokogiri::XML(subject.to_xml, &:noblanks).to_xml.should eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+      expect(Nokogiri::XML(subject.to_xml, &:noblanks).to_xml).to eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
     end
   end
 
   describe "all dependencies" do
     it "should have the SampleDependency dependency of the XML above" do
       parser.xpath('./ng:metadata/ng:dependencies', ns).children.reject{ |c| c.text? }.each do |dep|
-        subject.metadata.dependencies[dep['id']].should_not be_nil
+        expect(subject.metadata.dependencies[dep['id']]).to_not be_nil
       end
     end 
   end
 
   it "should have all the files of the XML above" do
-    subject.files.length.should eq(5)
+    expect(subject.files.length).to eq(5)
   end
 
   it "should have a dep on SampleDependency version 1.0" do
-    subject.metadata.dependencies['SampleDependency'].should_not be_nil
+    expect(subject.metadata.dependencies['SampleDependency']).to_not be_nil
   end
 end
 
@@ -188,7 +188,7 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
       Albacore::NugetModel::Package.from_xxproj_file projfile, :symbols => true
     end
     it "should contain all files (just one) and all dll and pdb files (two)" do
-      subject.files.length.should eq 3
+      expect(subject.files.length).to eq 3
     end
 
     has_file 'Library1.fs', 'src/Library1.fs'

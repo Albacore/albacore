@@ -50,16 +50,16 @@ describe Example, 'when setting properties' do
     ::Rake::Win32.windows? ? 'a\\b\\c' : 'a/b/c'
   end
   it 'should have remapped :in' do
-    subject.in.should eq(expected)
+    expect(subject.in).to eq(expected)
   end
   it 'should have remapped :out' do
-    subject.out.should eq(expected)
+    expect(subject.out).to eq(expected)
   end
   it 'should be able to read and write :a' do
-    subject.a.should eq(expected)
+    expect(subject.a).to eq(expected)
   end
   it 'should be able to read and write :b' do
-    subject.b.should eq(expected)
+    expect(subject.b).to eq(expected)
   end
 end
 
@@ -72,12 +72,12 @@ describe Example, 'when using blocks for properties' do
     ::Rake::Win32.windows? ? 'a\\b\\c' : 'a/b/c'
   end
   it 'should have written x' do
-    subject.x.should eq(expected)
+    expect(subject.x).to eq(expected)
   end
   it 'should have called x block' do
-    subject.was_called.should eq(expected)
+    expect(subject.was_called).to eq(expected)
   end
   it 'should have called y block' do
-    subject.y_called.should eq(expected)
+    expect(subject.y_called).to eq(expected)
   end
 end

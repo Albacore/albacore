@@ -7,7 +7,7 @@ shared_context 'package_metadata_dsl' do
 
   def self.has_value sym, e
     it "should have overridden #{sym}, to be #{e}" do
-      m.send(sym).should eq e
+      expect(m.send(sym)).to eq e
     end
   end
 

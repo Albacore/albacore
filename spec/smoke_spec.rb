@@ -5,7 +5,7 @@ require 'logger'
 describe Array, "with some elements" do
   subject { [1,2,3] }
   it "should have the prescribed elements" do
-    subject.should == [1,2,3]
+    expect(subject).to eq [1,2,3]
   end
 end
 
@@ -14,14 +14,14 @@ describe Enumerable, "when using #find" do
     [OpenStruct.new(:a => "1 apple")]
   end
   it "should handle find properly one arg" do
-    subject.find { |f| f.a == "1 apple" }.a.should eq "1 apple"
+    expect(subject.find { |f| f.a == "1 apple" }.a).to eq "1 apple"
   end
   it "should handle find properly, two args" do
     s = subject.clone
     s << OpenStruct.new(:a => "2 banana")
-    s.find { |f| f.a == "2 banana" }.a.should eq "2 banana"
-    s.find { |f| f.a == "1 banana" }.should be_nil
-    s.find { |f| f.a == "1 apple" }.a.should eq "1 apple" 
+    expect(s.find { |f| f.a == "2 banana" }.a).to eq "2 banana"
+    expect(s.find { |f| f.a == "1 banana" }).to be_nil
+    expect(s.find { |f| f.a == "1 apple" }.a).to eq "1 apple" 
   end
 end
 
@@ -46,10 +46,10 @@ describe 'logging methods' do
       subject.blocky 'trace-is-enabled with ::DEBUG'
     end
     it 'should contain non-block line' do
-      @logout.string.should include('my-trace-line')
+      expect(@logout.string).to include('my-trace-line')
     end
     it 'should contain block line' do
-      @logout.string.should include('trace-is-enabled')
+      expect(@logout.string).to include('trace-is-enabled')
     end
   end
 end
