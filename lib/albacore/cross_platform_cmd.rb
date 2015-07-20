@@ -191,8 +191,11 @@ module Albacore
 
       cmd = ::Rake::Win32.windows? ? 'where' : 'which'
       parameters = []
-      parameters << Paths.normalise_slashes(file) if dir == '.'
-      parameters << Paths.normalise_slashes("#{dir}:#{file}") unless dir == '.'
+      pattern = if dir == '.' then file
+      elsif ::Rake::Win32.windows? then "#{dir}:#{file}"
+      else executable
+      end
+      parameters << Paths.normalise_slashes("\"#{pattern}\"")
       parameters << '2> nul' if ::Rake::Win32.windows?
       cmd, parameters = Paths.normalise cmd, parameters
       cmd = "#{cmd} #{parameters.join(' ')}"
