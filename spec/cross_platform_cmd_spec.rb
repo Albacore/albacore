@@ -10,6 +10,10 @@ describe Albacore::CrossPlatformCmd.method(:which), "what happens when calling #
   it "should return a non-null path" do
     expect(subject.call("ruby")).to_not be_empty
   end
+  it "should return its input if given an absolute path to an executable that exists" do
+    pathToRuby = subject.call("ruby")
+    expect(subject.call(pathToRuby)).to eq(pathToRuby)
+  end
   it "should return nil if nothing was found" do
     expect(subject.call("notlikelyonsystem")).to be_nil
   end
