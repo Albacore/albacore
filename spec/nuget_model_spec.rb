@@ -91,8 +91,8 @@ describe Albacore::NugetModel::Package, "from XML" do
     </dependencies>
   </metadata>
   <files>
-    <file src="Full/bin/Debug/*.dll" target="lib/net40"/>
-    <file src="Full/bin/Debug/*.pdb" target="lib/net40"/>
+    <file src="Full/bin/Debug/*.dll" target="lib/net45"/>
+    <file src="Full/bin/Debug/*.pdb" target="lib/net45"/>
     <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40"/> 
     <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40"/> 
     <file src="**/*.cs" target="src"/>
@@ -192,8 +192,8 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     end
 
     has_file 'Library1.fs', 'src/Library1.fs'
-    has_file 'bin/Debug/Project.dll', 'lib/net40'
-    has_file 'bin/Debug/Project.pdb', 'lib/net40'
+    has_file 'bin/Debug/Project.dll', 'lib/net45'
+    has_file 'bin/Debug/Project.pdb', 'lib/net45'
   end
 end
 
@@ -290,8 +290,8 @@ describe "creating nuget (not symbols) from dependent proj file" do
   has_dep 'Newtonsoft.Json', '5.0.6'
 
   # actual nuspec contents
-  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
 
   describe 'when dotnet_version is set' do
     subject do
@@ -331,8 +331,8 @@ describe "creating nuget on dependent proj file" do
     has_dep 'Magnum', '2.1.0'
     has_dep 'MassTransit', '2.8.0'
     has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
     has_not_file 'Library.fs'
   end
 
@@ -349,8 +349,8 @@ describe "creating nuget on dependent proj file" do
     has_dep 'Magnum', '2.1.0'
     has_dep 'MassTransit', '2.8.0'
     has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
     has_not_file 'Library.fs'
 
   end
@@ -366,8 +366,8 @@ describe "creating nuget on dependent proj file" do
     has_not_dep 'Magnum'
     has_not_dep 'MassTransit'
     has_not_dep 'Newtonsoft.Json'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
     has_not_file 'Library.fs'
   end
 
@@ -381,8 +381,8 @@ describe "creating nuget on dependent proj file" do
     has_dep 'Magnum', '2.1.0'
     has_dep 'MassTransit', '2.8.0'
     has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
     has_not_file 'Library.fs'
   end
 
@@ -397,8 +397,8 @@ describe "creating nuget on dependent proj file" do
     has_dep 'MassTransit', '2.8.0'
     has_dep 'Newtonsoft.Json', '5.0.6'
     has_not_file 'bin/Debug/Sample.Commands.xml'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
-    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net45'
     has_file 'Library.fs', 'src/Library.fs'
   end
 
@@ -416,6 +416,6 @@ describe "creating nuget on dependent proj file" do
     has_not_file 'bin/Debug/Sample.Commands.dll'
     has_not_file 'bin/Debug/EmptyProject.dll' 
     has_not_file 'bin/Debug/EmptyProject.xml' 
-    has_file 'bin/Release/EmptyProject.dll', 'lib/net40'
+    has_file 'bin/Release/EmptyProject.dll', 'lib/net45'
   end
 end
