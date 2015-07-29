@@ -183,33 +183,32 @@ module Albacore
       end
 
       def heuristic_executable
-        if ::Rake::Win32.windows?
-          require 'win32/registry'
-          trace 'build tasktype finding msbuild.exe'
+    	  return nil unless ::Rake::Win32.windows?
+    	  require 'win32/registry'
+    	  trace 'build tasktype finding msbuild.exe'
 
-          msb = "msbuild_not_found"
-          maxVersion = -1
-          begin
-            Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\MSBuild\ToolsVersions') do |toolsVersion|
-              toolsVersion.each_key do |key|
-                begin
-                  versionKey = toolsVersion.open(key)
-                  version = key.to_i
-                  if maxVersion < version
-                    maxVersion = version
-                    msb = "#{versionKey['MSBuildToolsPath']}\\msbuild.exe"
-                  end
-                rescue
-                  error "failed to open #{key}"
-                end
-              end
-            end
-          rescue
-            error "failed to open HKLM\\SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions"
-          end
+    	  msb = "msbuild_not_found"
+    	  maxVersion = -1
+    	  begin
+    		Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\MSBuild\ToolsVersions') do |toolsVersion|
+    		  toolsVersion.each_key do |key|
+    			begin
+    			  versionKey = toolsVersion.open(key)
+    			  version = key.to_i
+    			  if maxVersion < version
+    				maxVersion = version
+    				msb = "#{versionKey['MSBuildToolsPath']}\\msbuild.exe"
+    			  end
+    			rescue
+    			  error "failed to open #{key}"
+    			end
+    		  end
+    		end
+    	  rescue
+    		error "failed to open HKLM\\SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions"
+    	  end
 
-          CrossPlatformCmd.which(msb) ? msb : nil
-        end
+    	  CrossPlatformCmd.which(msb) ? msb : nil
       end
 
     end
