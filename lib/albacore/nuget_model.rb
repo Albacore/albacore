@@ -343,7 +343,7 @@ end})
         opts = Map.options(opts || {}).
           apply({
             symbols:              false,
-            dotnet_version:       'net40',
+            dotnet_version:       'net45',
             known_projects:       Set.new,
             configuration:        'Debug',
             project_dependencies: true,
