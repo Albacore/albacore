@@ -91,10 +91,10 @@ module Albacore
         @parameters.add "/property:#{make_props}"
       end
 
-      # Specifies the amount of information to display in the build log. 
+      # Specifies the amount of information to display in the build log.
       # Each logger displays events based on the verbosity level that you set for that logger.
-      # You can specify the following verbosity levels: q[uiet], m[inimal], 
-      # n[ormal], d[etailed], and diag[nostic]. 
+      # You can specify the following verbosity levels: q[uiet], m[inimal],
+      # n[ormal], d[etailed], and diag[nostic].
       attr_path_accessor :logging do |mode|
         set_logging mode
       end
@@ -156,7 +156,7 @@ module Albacore
         # @targets ||= []
         instance_variable_set field, [] unless instance_variable_defined? field
         # parameters.delete "/target:#{make_target}" if @targets.any?
-        @parameters.delete "/#{prop_name}:#{callable_prop_val.call}" if 
+        @parameters.delete "/#{prop_name}:#{callable_prop_val.call}" if
           instance_variable_get(field).any?
         if value.respond_to? 'each'
           value.each { |v| instance_variable_get(field) << v }
@@ -183,24 +183,32 @@ module Albacore
       end
 
       def heuristic_executable
-        if ::Rake::Win32.windows?
-          require 'win32/registry'
-          trace 'build tasktype finding msbuild.exe'
-          %w{12.0 4.0 3.5 2.0}.collect { |msbuild_ver|
-            msb = "msbuild_not_found"
-            key = "SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions\\#{msbuild_ver}"
-            begin
-              Win32::Registry::HKEY_LOCAL_MACHINE.open(key) do |reg|
-                  msb = "#{reg['MSBuildToolsPath']}\\msbuild.exe"
-              end
-            rescue
-              error "failed to open HKLM\\#{key}\\MSBuildToolsPath"
-            end
-            CrossPlatformCmd.which(msb) ? msb : nil
-          }.compact.first
-        else
-          nil
-        end
+    	  return nil unless ::Rake::Win32.windows?
+    	  require 'win32/registry'
+    	  trace 'build tasktype finding msbuild.exe'
+
+    	  msb = "msbuild_not_found"
+    	  maxVersion = -1
+    	  begin
+    		Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\MSBuild\ToolsVersions') do |toolsVersion|
+    		  toolsVersion.each_key do |key|
+    			begin
+    			  versionKey = toolsVersion.open(key)
+    			  version = key.to_i
+    			  if maxVersion < version
+    				maxVersion = version
+    				msb = "#{versionKey['MSBuildToolsPath']}\\msbuild.exe"
+    			  end
+    			rescue
+    			  error "failed to open #{key}"
+    			end
+    		  end
+    		end
+    	  rescue
+    		error "failed to open HKLM\\SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions"
+    	  end
+
+    	  CrossPlatformCmd.which(msb) ? msb : nil
       end
 
     end
