@@ -120,6 +120,10 @@ module Albacore
         add_parameter "-ExcludeVersion"
       end
 
+      def no_cache
+        add_parameter "-NoCache"
+      end
+
       def has_credentials?
         username && password && source
       end
