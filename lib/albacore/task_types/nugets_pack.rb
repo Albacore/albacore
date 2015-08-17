@@ -145,6 +145,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @target  = 'net40'
         @symbols = false
         @project_dependencies = true
+        @nuget_dependencies = true
         @leave_nuspec = false
         fill_required
       end
@@ -176,6 +177,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @project_dependencies = false
       end
 
+      # call this if you want to cancel inclusion of package dependencies
+      # when creating the nuspec file
+      def no_nuget_dependencies
+        @nuget_dependencies = false
+      end
+
       # gets the options specified for the task, used from the task
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
@@ -193,6 +200,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           :files         => @files,
           :configuration => @configuration,
           :project_dependencies => @project_dependencies,
+          :nuget_dependencies => @nuget_dependencies,
           :original_path => FileUtils.pwd,
           :leave_nuspec  => @leave_nuspec
         })
@@ -286,6 +294,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       def create_nuspec proj, knowns
         version = @opts.get(:package).metadata.version
         project_dependencies = @opts.get(:project_dependencies, true)
+        nuget_dependencies = @opts.get(:nuget_dependencies, true)
         target = @opts.get :target
 
         trace "creating NON-SYMBOL package for '#{proj.name}', targeting '#{target}' [nugets pack: task]"
@@ -296,7 +305,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           known_projects: knowns,
           version:        version,
           configuration:  (@opts.get(:configuration)),
-          project_dependencies: project_dependencies
+          project_dependencies: project_dependencies,
+          nuget_dependencies: nuget_dependencies
 
         # take data from package as configured in Rakefile, choosing what is in
         # Rakefile over what is in projfile.
@@ -312,7 +322,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
             known_projects: knowns,
             version:        version,
             configuration:  (@opts.get(:configuration)),
-            project_dependencies: project_dependencies
+            project_dependencies: project_dependencies,
+            nuget_dependencies: nuget_dependencies
 
           nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
           trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
