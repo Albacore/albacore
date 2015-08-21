@@ -190,7 +190,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         [:authors, :description, :version].each do |required|
           warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
         end
-        
+
         Map.new({
           :out           => @out,
           :exe           => @exe,

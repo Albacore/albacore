@@ -394,10 +394,11 @@ end})
 
           debug "add dll and pdb files [nuget model: package]"
           package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.pdb'), target_lib)
+          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.dll.mdb'), target_lib)
           package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.dll'), target_lib)
         else
           # add *.{dll,xml,config}
-          %w[dll xml config].each do |ext|
+          %w[dll xml config pdb dll.mdb].each do |ext|
             file = %W{#{output} #{proj.asmname}.#{ext}}.
               map { |f| f.gsub /\\$/, '' }.
               map { |f| Albacore::Paths.normalise_slashes f }.

@@ -187,13 +187,14 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
     subject do
       Albacore::NugetModel::Package.from_xxproj_file projfile, :symbols => true
     end
-    it "should contain all files (just one) and all dll and pdb files (two)" do
-      expect(subject.files.length).to eq 3
+    it "should contain all files (just one) and all dll and pdb+mdb files (two)" do
+      expect(subject.files.length).to eq 4
     end
 
     has_file 'Library1.fs', 'src/Library1.fs'
     has_file 'bin/Debug/Project.dll', 'lib/net45'
     has_file 'bin/Debug/Project.pdb', 'lib/net45'
+    has_file 'bin/Debug/Project.dll.mdb', 'lib/net45'
   end
 end
 
