@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
+require 'albacore/task_types/nugets'
 require 'albacore/task_types/nugets_authentication'
 
 module Albacore
@@ -134,6 +135,10 @@ module Albacore
         readd  = AddSourceCmd.new exe, source, username, password
         remove.execute
         readd.execute
+      end
+
+      def nuget_gem_exe
+        @exe = Albacore::Nugets::find_nuget_gem_exe
       end
 
       def opts_for_pkgcfg pkg
