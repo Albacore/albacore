@@ -11,6 +11,7 @@ require 'albacore/cross_platform_cmd'
 require 'albacore/project'
 require 'albacore/logging'
 require 'albacore/nuget_model'
+require 'albacore/task_types/nugets'
 
 module Albacore
   module NugetsPack
@@ -181,6 +182,10 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       # when creating the nuspec file
       def no_nuget_dependencies
         @nuget_dependencies = false
+      end
+
+      def nuget_gem_exe
+        @exe = Albacore::Nugets::find_nuget_gem_exe
       end
 
       # gets the options specified for the task, used from the task

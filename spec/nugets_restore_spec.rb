@@ -30,6 +30,14 @@ describe Albacore::NugetsRestore::Config, 'when setting #source' do
   end
 end
 
+describe Albacore::NugetsRestore::Config, 'when setting #nuget_gem_exe' do
+  it 'should be set to path that exists' do
+    subject.nuget_gem_exe
+    expect(subject.exe).to be_a String
+    expect(File.exists?( subject.exe)).to be true
+  end
+end
+
 describe Albacore::NugetsRestore::RemoveSourceCmd, 'when calling #execute should remove source' do
   let(:cmd) { Albacore::NugetsRestore::RemoveSourceCmd.new 'nuget.exe', hafsrc }
   include_context 'cmd context'

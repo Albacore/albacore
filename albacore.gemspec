@@ -28,6 +28,7 @@ EOF
 	
   s.add_development_dependency 'rubygems-tasks', '~>0.2'
   s.add_development_dependency 'rspec', '~> 3.00'
+  s.add_development_dependency 'nuget', '~> 2.8'
 
   s.files         = `git ls-files`.split("\n").concat(Dir.glob('./resources/**'))
   s.test_files    = `git ls-files -- spec/*`.split("\n")
