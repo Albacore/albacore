@@ -64,6 +64,13 @@ shared_context 'pack_config no symbols' do
   end
 end
 
+describe Config, 'when setting #nuget_gem_exe' do
+  it 'should be set to path that exists' do
+    subject.nuget_gem_exe
+    expect(subject.exe).to be_a String
+    expect(File.exists?( subject.exe)).to be true
+  end
+end
 # testing the command for nuget
 
 describe Cmd, "when calling #execute" do
