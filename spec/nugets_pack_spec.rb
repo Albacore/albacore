@@ -64,7 +64,7 @@ shared_context 'pack_config no symbols' do
   end
 end
 
-describe Config, 'when setting #nuget_gem_exe' do
+describe Albacore::NugetsPack::Config, 'when setting #nuget_gem_exe' do
   it 'should be set to path that exists' do
     subject.nuget_gem_exe
     expect(subject.exe).to be_a String
