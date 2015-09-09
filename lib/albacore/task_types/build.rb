@@ -191,7 +191,7 @@ module Albacore
     	  msb = "msbuild_not_found"
         versions = Albacore.find_msbuild_versions
         if versions.any?
-          msb = versions.max[1]
+          msb = versions[versions.keys.max]
         end
     	  CrossPlatformCmd.which(msb) ? msb : nil
       end
