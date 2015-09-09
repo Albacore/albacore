@@ -189,7 +189,6 @@ module Albacore
     	  trace 'build tasktype finding msbuild.exe'
 
     	  msb = "msbuild_not_found"
-    	  maxVersion = -1
         versions = Albacore.find_msbuild_versions
         if versions.any?
           msb = versions.max[1]
