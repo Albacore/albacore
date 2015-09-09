@@ -6,6 +6,7 @@ require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
 require 'albacore/logging'
 require 'albacore/facts'
+require 'albacore/task_types/find_msbuild_versions'
 
 module Albacore
   module Build
@@ -188,26 +189,10 @@ module Albacore
     	  trace 'build tasktype finding msbuild.exe'
 
     	  msb = "msbuild_not_found"
-    	  maxVersion = -1
-    	  begin
-    		Win32::Registry::HKEY_LOCAL_MACHINE.open('SOFTWARE\Microsoft\MSBuild\ToolsVersions') do |toolsVersion|
-    		  toolsVersion.each_key do |key|
-    			begin
-    			  versionKey = toolsVersion.open(key)
-    			  version = key.to_i
-    			  if maxVersion < version
-    				maxVersion = version
-    				msb = "#{versionKey['MSBuildToolsPath']}\\msbuild.exe"
-    			  end
-    			rescue
-    			  error "failed to open #{key}"
-    			end
-    		  end
-    		end
-    	  rescue
-    		error "failed to open HKLM\\SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions"
-    	  end
-
+        versions = Albacore.find_msbuild_versions
+        if versions.any?
+          msb = versions[versions.keys.max]
+        end
     	  CrossPlatformCmd.which(msb) ? msb : nil
       end
 
