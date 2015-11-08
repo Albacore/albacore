@@ -86,7 +86,8 @@ module Albacore
     end
 
     def try_output_path conf
-      path = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|'] OutputPath")
+      default_platform = @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
+      path = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
       # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
 
       debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }

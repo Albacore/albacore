@@ -195,7 +195,7 @@ end})
           elsif n.name == 'frameworkDepdendencies'
             n.children.reject { |n| n.text? }.each do |dep|
               m.add_framework_depdendency dep['id'], dep['version']
-            end 
+            end
           else
             # just set the property
             m.send(:"#{underscore n.name}=", n.inner_text)
