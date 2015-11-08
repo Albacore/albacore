@@ -3,6 +3,7 @@
 require 'rake'
 require 'nokogiri'
 require 'fileutils'
+require 'pathname'
 require 'albacore'
 require 'albacore/paths'
 require 'albacore/cmd_config'
@@ -241,8 +242,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         end
       end
 
-      def path_to relative_file_path, cwd
-        File.expand_path( File.join(@opts.get(:original_path), relative_file_path), cwd )
+      def path_to path, cwd
+        if (Pathname.new path).absolute?
+           return path
+        else
+           File.expand_path( File.join(@opts.get(:original_path), path), cwd )
+        end
       end
 
       # generate all nuspecs
