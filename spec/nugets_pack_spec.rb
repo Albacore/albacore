@@ -304,6 +304,21 @@ describe ProjectTask, "creating nuget from proj file" do
   end
 end
 
+describe ProjectTask, "path_to should accept both relative and absolute paths" do
+  let :proj_task do
+    curr = File.dirname(__FILE__)
+    ProjectTask.new(Map.new(
+      :files => [File.join( curr, "testdata", "Project.fsproj")], 
+      :original_path => "/original_path/"))
+  end
+  it "should use original_path to resolve path" do
+    expect(proj_task.path_to( "./bin/something.exe", "./tmp/")).to eq "/original_path/bin/something.exe"
+  end
+  it "should return the absolute path when the path to the exe is absolute" do
+    expect(proj_task.path_to( "/bin/something.exe", "./tmp/")).to eq "/bin/something.exe"
+  end
+end
+
 describe 'encoding functions' do
   it 'should throw InvalidByteSequenceError by default' do
     # http://www.ruby-doc.org/core-2.1.3/String.html#method-i-encode

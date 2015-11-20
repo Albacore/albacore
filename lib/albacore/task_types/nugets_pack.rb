@@ -246,7 +246,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         if (Pathname.new path).absolute?
            return path
         else
-           File.expand_path( File.join(@opts.get(:original_path), path), cwd )
+           return File.expand_path( File.join(@opts.get(:original_path), path), cwd )
         end
       end
 
