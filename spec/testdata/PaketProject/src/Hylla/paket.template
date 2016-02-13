@@ -1,0 +1,9 @@
+type file
+id Hylla
+version 0.0.1-alpha1
+authors Henrik Feldt
+description
+  description of this test package
+files
+  bin/Debug ==> lib/net40
+
