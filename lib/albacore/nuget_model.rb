@@ -45,7 +45,7 @@ end})
   @#{sym} = val
   @set_fields.add? :#{sym}
 end})
-        end 
+        end
       end
 
       # REQUIRED: gets or sets the id of this package
@@ -153,6 +153,34 @@ end})
         to_xml_builder.to_xml
       end
 
+      def to_paket_template
+        fields = @set_fields.inject("type file") do |state, field|
+          txt = case field
+                  when :release_notes
+                    "#{send(field).split(/\n/).inject("") { |acc, val|
+                      "#{acc}\n  #{val}"
+                    }}"
+                  else
+                    " #{send(field)}"
+                end
+
+          "#{state}\n#{Metadata.camel_case(field)}#{txt}"
+        end
+
+        fws = @framework_assemblies || []
+        fws = fws.empty? ? "" : fws.inject("\nframeworkDependencies") do |s, asm|
+          _, asm = asm
+          "#{s}\n  #{asm.id}"
+        end
+
+        dependencies = @dependencies.inject("\ndependencies") do |state, d|
+          _, dependency = d
+          "#{state}\n  #{dependency.id} ~> #{dependency.version}"
+        end unless @dependencies.empty?
+
+        "#{fields}#{dependencies}#{fws}"
+      end
+
       def merge_with other
         raise ArgumentError, 'other is nil' if other.nil?
         raise ArgumentError, 'other is wrong type' unless other.is_a? Metadata
@@ -166,13 +194,13 @@ end})
 
         # set all my fields to the new instance
         @set_fields.each do |field|
-          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]" 
+          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]"
           m_next.send(:"#{field}=", send(field))
         end
 
         # set all other's fields to the new instance, overriding mine
         other.set_fields.each do |field|
-          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]" 
+          debug "setting field '#{field}' to be '#{send(field)}' [nuget model: metadata]"
           m_next.send(:"#{field}=", other.send(field))
         end
 
@@ -189,11 +217,11 @@ end})
         m = Metadata.new
         node.children.reject { |n| n.text? }.each do |n|
           if n.name == 'dependencies'
-            n.children.reject { |n| n.text? }.each do |dep|
+            n.children.reject { |nn| nn.text? }.each do |dep|
               m.add_dependency dep['id'], dep['version']
             end
           elsif n.name == 'frameworkDepdendencies'
-            n.children.reject { |n| n.text? }.each do |dep|
+            n.children.reject { |nn| nn.text? }.each do |dep|
               m.add_framework_depdendency dep['id'], dep['version']
             end
           else
@@ -208,6 +236,14 @@ end})
         str = str.to_s unless str.respond_to? :split
         str = str.split('_').inject([]){ |buffer,e| buffer.push(buffer.empty? ? e : e.capitalize) }.join
         :"#{str}"
+      end
+
+      def self.camel_case str
+        str.to_s.
+            split('_').
+            inject([]) { |buffer, e|
+              buffer.push(buffer.empty? ? e : e.capitalize)
+            }.join
       end
 
       def self.underscore str
@@ -282,6 +318,15 @@ end})
       # gets the current package as a xml node
       def to_xml
         to_xml_builder.to_xml
+      end
+
+      # Converts the Package instance to a paket template string
+      def to_paket_template
+        files = @files.inject("\nfiles") do |state, file|
+          "#{state}\n  #{file.src} => #{file.target}"
+        end
+
+        %{#{metadata.to_paket_template}#{files}}
       end
 
       # creates a new Package/Metadata by overriding data in this instance with
@@ -390,7 +435,7 @@ end})
           compile_files.each do |f|
             target = %W[src #{Albacore::Paths.normalise_slashes(f.include)}].join(Albacore::Paths.separator)
             package.add_file f.include, target
-          end 
+          end
 
           debug "add dll and pdb files [nuget model: package]"
           package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.pdb'), target_lib)
@@ -400,7 +445,7 @@ end})
           # add *.{dll,xml,config}
           %w[dll xml config pdb dll.mdb].each do |ext|
             file = %W{#{output} #{proj.asmname}.#{ext}}.
-              map { |f| f.gsub /\\$/, '' }.
+              map { |f| f.gsub(/\\$/, '') }.
               map { |f| Albacore::Paths.normalise_slashes f }.
               join(Albacore::Paths.separator)
             debug "adding binary file #{file} [nuget model: package]"

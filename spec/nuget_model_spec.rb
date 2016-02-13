@@ -14,7 +14,7 @@ describe Albacore::NugetModel::Metadata do
   end
 
   describe "when adding a dependency" do
-    before do 
+    before do
       subject.add_dependency 'DepId', '=> 3.4.5'
     end
     let :dep do
@@ -33,7 +33,7 @@ describe Albacore::NugetModel::Metadata do
 
   describe "when adding a framework dependency" do
     before do
-      subject.add_framework_dependency 'System.Transactions', '2.0.0' 
+      subject.add_framework_dependency 'System.Transactions', '2.0.0'
     end
     let :dep do
       subject.framework_assemblies.first[1]
@@ -69,33 +69,57 @@ end
 
 describe Albacore::NugetModel::Package, "when doing paket template generation" do
   let :metadata do
-    md = Albacore::NuGetModel::Metadata.new
+    md = ::Albacore::NugetModel::Metadata.new
     md.id = 'MyExamplePackage'
     md.title = 'My Example Package'
-    md.title 
-    md.add_
+    md.version = '1.0.3'
+    md.authors = 'Henrik Feldt'
+    md.owners = 'Henrik Feldt Owner'
+    md.summary = 'If there was a man, or a woman, who would withstand.'
+    md.description = 'Wowowow'
+    md.release_notes = %{These are my notes, to those who came after me.
+ - Item 1
+ - Item 2}
+    md.add_dependency 'FSharp.Core', '4.3.1'
+    md.add_framework_dependency 'System.Xml', '4.0.0'
+    md
   end
+
+  let :package do
+    pkg = ::Albacore::NugetModel::Package.new metadata
+    pkg.add_file 'bin/Release', 'lib/net45'
+    pkg
+  end
+
   let :expected do
     %{type file
 id MyExamplePackage
 title My Example Package
 version 1.0.3
 authors Henrik Feldt
-owners Henrik Feldt
+owners Henrik Feldt Owner
 summary If there was a man, or a woman, who would withstand.
-description
-  Wowowow
-files
-  bin/Release => lib
+description Wowowow
 releaseNotes
-  These are my notes, to those who come after me.
-
+  These are my notes, to those who came after me.
    - Item 1
    - Item 2
 dependencies
-  FSharp.Core >= 4.3.1
-}
+  FSharp.Core ~> 4.3.1
+frameworkDependencies
+  System.Xml
+files
+  bin/Release => lib/net45}
   end
+
+  subject do
+    package.to_paket_template
+  end
+
+  it 'should generate sweet paket templates' do
+    expect(subject).to eq(expected)
+  end
+
 end
 
 describe Albacore::NugetModel::Package, "from XML" do
@@ -124,8 +148,8 @@ describe Albacore::NugetModel::Package, "from XML" do
   <files>
     <file src="Full/bin/Debug/*.dll" target="lib/net45"/>
     <file src="Full/bin/Debug/*.pdb" target="lib/net45"/>
-    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40"/> 
-    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40"/> 
+    <file src="Silverlight/bin/Debug/*.dll" target="lib/sl40"/>
+    <file src="Silverlight/bin/Debug/*.pdb" target="lib/sl40"/>
     <file src="**/*.cs" target="src"/>
   </files>
 </package>
@@ -174,7 +198,7 @@ XML
       parser.xpath('./ng:metadata/ng:dependencies', ns).children.reject{ |c| c.text? }.each do |dep|
         expect(subject.metadata.dependencies[dep['id']]).to_not be_nil
       end
-    end 
+    end
   end
 
   it "should have all the files of the XML above" do
@@ -233,7 +257,7 @@ describe "when reading xml from a fsproj file into Project/Metadata (with Id dif
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project", "ProjectWithTitle.fsproj"
-  end 
+  end
 
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile
@@ -267,7 +291,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
     end
     p.add_file 'CodeFolder/A.cs', 'lib/CodeFolder/A.cs'
     p.add_file 'CodeFolder/*.fs', 'lib', 'AssemblyInfo.fs'
-  end 
+  end
   let :p2 do
     p = Albacore::NugetModel::Package.new.with_metadata do |m|
       m.id = 'A.B.C'
@@ -302,7 +326,7 @@ describe "creating nuget (not symbols) from dependent proj file" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "TestingDependencies", "Sample.Commands", "Sample.Commands.fsproj"
-  end 
+  end
 
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile,
@@ -343,7 +367,7 @@ describe "creating nuget on dependent proj file" do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "TestingDependencies", "Sample.Commands",
               "Sample.Commands.fsproj"
-  end 
+  end
 
   let :opts do
     { project_dependencies: false,
@@ -444,10 +468,10 @@ describe "creating nuget on dependent proj file" do
     let :projfile do
       curr = File.dirname(__FILE__)
       File.join curr, "testdata", "EmptyProject", "EmptyProject.csproj"
-    end 
+    end
     has_not_file 'bin/Debug/Sample.Commands.dll'
-    has_not_file 'bin/Debug/EmptyProject.dll' 
-    has_not_file 'bin/Debug/EmptyProject.xml' 
+    has_not_file 'bin/Debug/EmptyProject.dll'
+    has_not_file 'bin/Debug/EmptyProject.xml'
     has_file 'bin/Release/EmptyProject.dll', 'lib/net45'
   end
 end
