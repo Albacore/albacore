@@ -10,7 +10,7 @@ require 'albacore/cross_platform_cmd'
 require 'albacore/project'
 require 'albacore/logging'
 require 'albacore/nuget_model'
-require 'albacore/task_types/nugets'
+require 'albacore/nugets'
 
 module Albacore
   module NugetsPack

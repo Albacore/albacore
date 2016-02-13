@@ -2,12 +2,10 @@
 
 require 'spec_helper'
 require 'albacore'
-require 'albacore/task_types/nugets'
-
+require 'albacore/nugets'
 
 describe "when trying to find nuget exe in gem" do
-  
-  subject do 
+  subject do
     Albacore::Nugets::find_nuget_gem_exe
   end
 

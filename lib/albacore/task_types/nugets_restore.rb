@@ -3,7 +3,7 @@ require 'nokogiri'
 require 'albacore/paths'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
-require 'albacore/task_types/nugets'
+require 'albacore/nugets'
 require 'albacore/task_types/nugets_authentication'
 
 module Albacore
