@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'shared_contexts'
-require 'nugets_pack_shared'
 require 'support/sh_interceptor'
 require 'albacore'
 require 'albacore/task_types/nugets_pack'

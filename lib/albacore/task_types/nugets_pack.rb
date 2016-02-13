@@ -73,11 +73,11 @@ module Albacore
       # regexpes the package path from the output
       def get_nuget_path_of
         out = yield
-        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.symbols\.nupkg)'./iu if out.respond_to? :match
+        out.match(/Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.symbols\.nupkg)'./iu) if out.respond_to? :match
         trace "Got symbols return value: '#{out}', matched: '#{$1}'" if $1
         return $1 if $1
 
-        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.nupkg)'./iu if out.respond_to? :match
+        out.match(/Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.nupkg)'./iu) if out.respond_to? :match
         trace "Got NOT-symbols return value: '#{out}', matched: '#{$1}'"
 
         unless $1
@@ -151,6 +151,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @nuget_dependencies = true
         @package_analysis = true
         @leave_nuspec = false
+        @use_paket = true
         fill_required
       end
 
@@ -187,6 +188,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @nuget_dependencies = false
       end
 
+      # Call this if you want to use the legacy NuGet.exe infrastructure instead
+      # of the more modern Paket infrastructure
+      def use_legacy_exe
+        @use_paket = false
+      end
+
       # call this if you want to disable NuGet's package analysis
       # when creating the nupkg file
       def no_package_analysis
@@ -214,7 +221,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           :symbols       => @symbols,
           :package       => @package,
           :target        => @target,
-          :files         => @files,
+          :files         => files,
           :configuration => @configuration,
           :project_dependencies => @project_dependencies,
           :nuget_dependencies => @nuget_dependencies,

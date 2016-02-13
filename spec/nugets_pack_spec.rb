@@ -3,7 +3,6 @@
 require 'spec_helper'
 require 'shared_contexts'
 require 'support/sh_interceptor'
-require 'nugets_pack_shared'
 require 'albacore'
 require 'albacore/task_types/nugets_pack'
 require 'albacore/nuget_model'
@@ -14,7 +13,13 @@ describe Albacore::NugetsPack::Config, 'when setting #nuget_gem_exe' do
   it 'should be set to path that exists' do
     subject.nuget_gem_exe
     expect(subject.exe).to be_a String
-    expect(File.exists?( subject.exe)).to be true
+    expect(File.exists?(subject.exe)).to be true
+  end
+
+  # this denotes that the user wishes to use the buggy NuGet.exe instead of
+  # paket
+  it 'should respond to #use_legacy_exe' do
+    expect(subject).to respond_to :use_legacy_exe
   end
 end
 
