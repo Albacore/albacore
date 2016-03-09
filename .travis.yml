@@ -4,6 +4,7 @@ language: ruby
 
 before_install:
   - gem install bundler
+  - bundler --version
 
 install:
   - travis_retry sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
