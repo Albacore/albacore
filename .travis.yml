@@ -2,6 +2,9 @@
 
 language: ruby
 
+before_install:
+  - gem install bundler
+
 install:
   - travis_retry sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
   - travis_retry sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
