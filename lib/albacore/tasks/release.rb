@@ -1,5 +1,6 @@
 require 'rake'
 require 'albacore/dsl'
+require 'albacore/nuget_model'
 require 'albacore/tasks/versionizer'
 require 'map'
 
@@ -34,7 +35,7 @@ module Albacore
       include ::Rake::DSL
       include ::Albacore::DSL
 
-      def initialize name = :release, opts = {}
+      def initialize name = :release, opts = {}, &block
         @name = name
         @opts = Map.new(opts).apply \
           pkg_dir:      'build/pkg',
@@ -44,6 +45,7 @@ module Albacore
           depend_on:    :versioning,
           semver:       nil
         semver = @opts.get :semver
+        @block = block if block_given?
 
         unless semver
           ::Albacore.subscribe :build_version do |data|
@@ -98,11 +100,11 @@ module Albacore
 
       def nuget_push package
         exe     = @opts.get :nuget_exe
-        api_key = @opts.get :api_key
-        params = %W|push #{package}|
+        api_key = package[:api_key]
+        params = %W|push #{package[:path]}|
         params << api_key if api_key
-        params << %W|-Source #{@opts.get :nuget_source}|
-        system exe, params, clr_command: @opts.get(:clr_command)
+        params << %W|-Source #{package[:nuget_source]}|
+        system exe, params, clr_command: package[:clr_command]
       end
 
       def git_push
@@ -162,7 +164,19 @@ module Albacore
         # only read packages once
         path = "#{@opts.get :pkg_dir}/*.#{nuget_version}.nupkg"
         debug { "[release] looking for packages in #{path}, version #{@semver}" }
-        @packages ||= Dir.glob path
+
+        @packages ||= Dir.glob(path).map do |f|
+          id = /(?<id>.*)\.#{nuget_version}/.match(File.basename(f, '.nupkg'))[:id]
+          package = {
+            path: f,
+            id_version: Albacore::NugetModel::IdVersion.new(id, nuget_version),
+            nuget_source: @opts.get(:nuget_source),
+            api_key: @opts.get(:api_key),
+            clr_command: @opts.get(:clr_command)
+          }
+          @block.call(package) if @block
+          package
+        end
         @packages
       end
 
