@@ -73,6 +73,20 @@ describe Cmd, "when calling #execute" do
       expect(subject.invocations.length).to eq(1)
     end
   end
+
+  describe 'with paket' do
+    include_context 'pack_config paket'
+
+    subject do
+      cmd.extend ShInterceptor
+      cmd.execute './spec/testdata/PaketProject'
+      cmd
+    end
+
+    it 'should run "paket pack output spec/testdata/pkg"' do
+      expect(subject.mono_parameters(0)).to eq(%W[pack output #{path 'spec/testdata/pkg'}])
+    end
+  end
 end
 
 describe Cmd, 'when calling :get_nuget_path_of' do

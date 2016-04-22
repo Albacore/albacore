@@ -1,9 +1,10 @@
 # encoding: utf-8
 
 require 'albacore/paths'
+require 'albacore/task_types/nugets_pack'
 
 class ConfigFac
-  def self.create id, curr, gen_symbols = true
+  def self.create id, curr, gen_symbols = true, legacy_nuget = true
     cfg = Albacore::NugetsPack::Config.new
     cfg.target        = 'mono32'
     cfg.configuration = 'Debug'
@@ -29,6 +30,7 @@ v10.0.0:
       m.add_framework_dependency 'System.Transactions', '4.0.0'
     end
     cfg.gen_symbols if gen_symbols # files: *.{pdb,dll,all compiled files}
+    cfg.use_legacy_nuget if legacy_nuget
     cfg
   end
 end
@@ -38,7 +40,7 @@ shared_context 'pack_config' do
     'Sample.Nuget'
   end
   let :curr do
-    File.dirname(__FILE__)
+    File.dirname __FILE__
   end
   let :config do
     ConfigFac.create id, curr, true
@@ -50,10 +52,26 @@ shared_context 'pack_config no symbols' do
     'Sample.Nuget'
   end
   let :curr do
-    File.dirname(__FILE__)
+    File.dirname __FILE__
   end
   let :config do
     ConfigFac.create id, curr, false
+  end
+end
+
+shared_context 'pack_config paket' do
+  let :id do
+    'Hylla'
+  end
+
+  let :curr do
+    File.dirname __FILE__
+  end
+
+  let :config do
+    cfg = ConfigFac.create id, curr, true, false
+    cfg.exe = nil
+    cfg
   end
 end
 
