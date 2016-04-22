@@ -126,7 +126,7 @@ module Albacore
       end
 
       def guard_clean
-        clean? && committed? or raise("There are files that need to be committed first.")
+        committed? or raise("There are files that need to be committed first.")
       end
 
       def guard_pkg
@@ -134,15 +134,10 @@ module Albacore
         (! packages.empty?) or \
           raise("You must have built your packages for version #{nuget_version}, use 'depend_on: :nuget_pkg'")
         (File.exists?(exe)) or raise("You don't have a NuGet.exe file to push with, expected path: #{exe}")
-
-      end
-
-      def clean?
-        run('git diff --exit-code', silent: true)[1] == 0
       end
 
       def committed?
-        run('git diff-index --quiet --cached HEAD', silent: true)[1] == 0
+        run('git status --porcelain', silent: true)[0] == ""
       end
 
       def tag_version
