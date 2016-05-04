@@ -18,6 +18,7 @@ module Albacore
       # constructor, no parameters
       def initialize
         @copy_local = false
+        @is_ms_test = false
         @clr_command = true
         @files = []
       end
@@ -26,8 +27,9 @@ module Albacore
       #
       def opts
         Map.new(
-          :files       => files,
+          :files => files,
           :copy_local  => @copy_local,
+          :is_ms_test  => @is_ms_test, 
           :exe         => @exe,
           :parameters  => @parameters,
           :clr_command => @clr_command)
@@ -46,6 +48,10 @@ module Albacore
       def native_exe
         @clr_command = false
       end
+
+      def is_ms_test
+        @is_ms_test = true
+      end 
 
       private
       def files
@@ -69,7 +75,7 @@ module Albacore
       end
 
       def execute
-        info { "executing in directory './#{@work_dir}'" }
+        info { "executing in directory '#{@work_dir}'" }
         system @executable,
           @parameters,
           :work_dir    => @work_dir,
@@ -97,8 +103,13 @@ module Albacore
       def execute_tests_for dll
         handle_directory dll, @opts.get(:exe) do |dir, exe|
           filename = File.basename dll
+          
+          if @opts.get(:is_ms_test)
+            filename = "/testcontainer:#{filename}"
+          end
           cmd = Albacore::TestRunner::Cmd.new dir,
-                                              exe, @opts.get(:parameters, []),
+                                              exe, 
+                                              @opts.get(:parameters, []),
                                               filename,
                                               @opts.get(:clr_command)
           cmd.execute
