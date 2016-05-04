@@ -63,7 +63,7 @@ module Albacore
           debug "symbol package at '#{spkg}'"
 
           [pkg, spkg]
-        else
+        else 
           info "symbols not configured for generation, use Config#gen_symbols to do so [nugets pack: cmd]"
           [pkg, nil]
         end
@@ -138,6 +138,9 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       # sets the files to search
       attr_writer :files
 
+      # sets the nuspec file
+      attr_writer :nuspec      
+
       # sets the MsBuild configuration that is used to produce the output into
       # <OutputPath>...</OutputPath>
       attr_writer :configuration
@@ -149,6 +152,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @project_dependencies = true
         @nuget_dependencies = true
         @leave_nuspec = false
+        @nuspec = ''
         fill_required
       end
 
@@ -193,12 +197,17 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
 
-        [:authors, :description, :version].each do |required|
-          warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
-        end
+          if (@nuspec  == '')
+
+            [:authors, :description, :version].each do |required|
+                warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
+            end
+
+          end
 
         Map.new({
           :out           => @out,
+          :nuspec        => @nuspec,
           :exe           => @exe,
           :symbols       => @symbols,
           :package       => @package,
@@ -228,17 +237,25 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       def initialize opts, &before_execute
         raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
-        raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
+        
+        if(opts.get(:nuspec) == '')
+          raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
+        end
+
         @opts           = opts.apply :out => '.'
         @files          = opts.get :files
         @before_execute = before_execute
       end
 
       def execute
-        knowns = compute_knowns
-        @files.each do |p|
-          proj, n, ns = generate_nuspec p, knowns
-          execute_inner! proj, n, ns
+        if(@opts.get(:nuspec) == '')
+          knowns = compute_knowns
+          @files.each do |p|
+           proj, n, ns = generate_nuspec p, knowns
+           execute_inner! proj, n, ns
+          end
+        else
+          create_nuget! "#{Dir.pwd}", @opts.get(:nuspec)
         end
       end
 
@@ -358,7 +375,9 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         # create the command
         exe = path_to(@opts.get(:exe), cwd)
         out = path_to(@opts.get(:out), cwd)
+        
         nuspec = path_to nuspec, cwd
+
         nuspec_symbols = path_to nuspec_symbols, cwd if nuspec_symbols
         cmd = Albacore::NugetsPack::Cmd.new exe,
                 work_dir: cwd,
