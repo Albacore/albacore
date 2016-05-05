@@ -63,7 +63,7 @@ module Albacore
           debug "symbol package at '#{spkg}'"
 
           [pkg, spkg]
-        else 
+        else  
           info "symbols not configured for generation, use Config#gen_symbols to do so [nugets pack: cmd]"
           [pkg, nil]
         end
@@ -152,7 +152,6 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @project_dependencies = true
         @nuget_dependencies = true
         @leave_nuspec = false
-        @nuspec = ''
         fill_required
       end
 
@@ -197,13 +196,11 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
 
-          if (@nuspec  == '')
-
-            [:authors, :description, :version].each do |required|
-                warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
-            end
-
+        unless !@nuspec.nil?
+          [:authors, :description, :version].each do |required|
+            warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
           end
+        end
 
         Map.new({
           :out           => @out,
