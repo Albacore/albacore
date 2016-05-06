@@ -235,7 +235,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       def initialize opts, &before_execute
         raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
         
-        if(opts.get(:nuspec) == '')
+        unless !opts.get(:nuspec).nil?
           raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
         end
 
