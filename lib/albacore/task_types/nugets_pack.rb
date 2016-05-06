@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'rake'
 require 'nokogiri'
 require 'fileutils'
@@ -63,7 +61,7 @@ module Albacore
           debug "symbol package at '#{spkg}'"
 
           [pkg, spkg]
-        else  
+        else
           info "symbols not configured for generation, use Config#gen_symbols to do so [nugets pack: cmd]"
           [pkg, nil]
         end
@@ -85,9 +83,7 @@ module Albacore
           args = ARGV.inject("") { |state, arg| state + " " + '"' + arg + '"' }
           warn do
             %{Couldn't match package, please run
-
      bundle exec rake DEBUG=true #{args} --trace
-
 and report a bug to albacore with the full output. Here's the nuget process output:
 --- START OUTPUT ---
 #{out}
@@ -140,6 +136,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       # sets the nuspec file
       attr_writer :nuspec      
+
 
       # sets the MsBuild configuration that is used to produce the output into
       # <OutputPath>...</OutputPath>
@@ -233,9 +230,9 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       include Logging
 
       def initialize opts, &before_execute
-        raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
         
         unless !opts.get(:nuspec).nil?
+          raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
           raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
         end
 
@@ -245,11 +242,11 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       end
 
       def execute
-        if(@opts.get(:nuspec) == '')
+        unless !@opts.get(:nuspec).nil?
           knowns = compute_knowns
           @files.each do |p|
-           proj, n, ns = generate_nuspec p, knowns
-           execute_inner! proj, n, ns
+            proj, n, ns = generate_nuspec p, knowns
+            execute_inner! proj, n, ns
           end
         else
           create_nuget! "#{Dir.pwd}", @opts.get(:nuspec)
@@ -301,11 +298,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         trace do
           %{
  PROJECT #{proj.name} nuspec:
-
 #{nuspec.to_xml}
-
  PROJECT #{proj.name} symbol nuspec:
-
 #{if nuspec_symbols then nuspec_symbols.to_xml else 'NO SYMBOLS' end}}
         end
 
@@ -372,10 +366,9 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         # create the command
         exe = path_to(@opts.get(:exe), cwd)
         out = path_to(@opts.get(:out), cwd)
-        
         nuspec = path_to nuspec, cwd
-
         nuspec_symbols = path_to nuspec_symbols, cwd if nuspec_symbols
+        
         cmd = Albacore::NugetsPack::Cmd.new exe,
                 work_dir: cwd,
                 out:      out
