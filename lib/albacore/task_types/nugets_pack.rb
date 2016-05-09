@@ -193,7 +193,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       def opts
         files = @files.respond_to?(:each) ? @files : [@files]
 
-        unless !@nuspec.nil?
+        unless @nuspec
           [:authors, :description, :version].each do |required|
             warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
           end
@@ -231,7 +231,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       def initialize opts, &before_execute
         
-        unless !opts.get(:nuspec).nil?
+        unless opts.get(:nuspec)
           raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
           raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
         end
@@ -242,7 +242,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       end
 
       def execute
-        unless !@opts.get(:nuspec).nil?
+        unless @opts.get(:nuspec)
           knowns = compute_knowns
           @files.each do |p|
             proj, n, ns = generate_nuspec p, knowns
