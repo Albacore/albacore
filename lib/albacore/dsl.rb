@@ -139,6 +139,21 @@ module Albacore
         Albacore::Sql::SqlTask.new(c.work_dir, c.opts).execute
       end
     end
+
+    # a task for publishing sql databases
+    # with IsDeploy
+    def is_deploy *args, &block
+      require 'albacore/task_types/is_deploy'
+      Albacore.define_task *args do
+        c = Albacore::IsDeploy::Config.new
+        yield c
+
+        fail "IsDeploy.exe is not installed.\nPlease download and install Microsoft SSDT: https://msdn.microsoft.com/en-gb/library/hh213373.aspx\nAnd add the location of IsDeploy.exe to the PATH system varible." unless c.exe
+
+        command = Albacore::IsDeploy::Cmd.new(c.work_dir, c.exe, c.get_ parameters)
+        Albacore::IsDeploy::Task.new(command).execute
+      end
+    end
   end
 end
 
