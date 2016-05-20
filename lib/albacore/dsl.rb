@@ -140,18 +140,18 @@ module Albacore
       end
     end
 
-    # a task for publishing sql databases
-    # with IsDeploy
-    def is_deploy *args, &block
-      require 'albacore/task_types/is_deploy'
+    # a task for publishing Integration Services Packages
+    # with IsPackage
+    def is_package *args, &block
+      require 'albacore/task_types/is_package'
       Albacore.define_task *args do
-        c = Albacore::IsDeploy::Config.new
+        c = Albacore::IsPackage::Config.new
         yield c
 
-        fail "IsDeploy.exe is not installed.\nPlease download and install Microsoft SSDT: https://msdn.microsoft.com/en-gb/library/hh213373.aspx\nAnd add the location of IsDeploy.exe to the PATH system varible." unless c.exe
+        fail "IsPackage.exe is not installed.\nPlease download and install Microsoft SSDT-BI: https://msdn.microsoft.com/en-us/library/mt674919.aspx\nAnd add the location of IsPackage.exe to the PATH system varible." unless c.exe
 
-        command = Albacore::IsDeploy::Cmd.new(c.work_dir, c.exe, c.get_ parameters)
-        Albacore::IsDeploy::Task.new(command).execute
+        command = Albacore::IsPackage::Cmd.new(c.work_dir, c.exe, c.get_parameters)
+        Albacore::IsPackage::Task.new(command).execute
       end
     end
   end

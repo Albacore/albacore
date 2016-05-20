@@ -33,6 +33,12 @@ module Albacore
       # this is the database for SqlCmd
       attr_writer :database
 
+      # this is the username for SqlCmd
+      attr_writer :username
+
+      # this is the password for SqlCmd
+      attr_writer :password
+
       # this is the scripts for SqlCmd
       attr_writer :scripts
 
@@ -57,6 +63,16 @@ module Albacore
 
       attr_path_accessor :database do |d|
         @parameters.add("-d#{d}")
+      end      
+
+      attr_path_accessor :username do |u|
+        @parameters.add("-U#{u}")
+        @parameters.delete('-E')
+      end
+
+      attr_path_accessor :password do |p|
+        @parameters.add("-P#{p}")
+        @parameters.delete('-E')
       end
 
       # gets the options specified for the task, used from the task

@@ -11,12 +11,17 @@ module Albacore
     # the configuration object for the test runner
     class Config
       include CmdConfig
+      self.extend ConfigDSL
 
       # give this property the list of dlls you want to test
       attr_writer :files
 
+      # give this property the settings file for the dlls you want to test
+      attr_writer :settings
+
       # constructor, no parameters
       def initialize
+        @parameters = Set.new
         @copy_local = false
         @is_ms_test = false
         @clr_command = true
@@ -33,6 +38,10 @@ module Albacore
           :exe         => @exe,
           :parameters  => @parameters,
           :clr_command => @clr_command)
+      end
+
+      attr_path_accessor :settings do |s|
+        @parameters.add("/testsettings:#{s}")
       end
 
       # Mark that it should be possible to copy the test files local
@@ -142,7 +151,7 @@ module Albacore
                 [Pathname.new(File.absolute_path(dll)), Pathname.new(File.absolute_path(exe))]
               else 
                 # otherwise, please continue with the basics
-                [Pathname.new(File.dirname(dll)), Pathname.new(exe)]
+                [Pathname.new(File.dirname(dll)).sub("/", "\\"), Pathname.new(exe)]
             end
 
           exe_rel = exe.relative_path_from dir
