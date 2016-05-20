@@ -113,6 +113,47 @@ module Albacore
         end
       end
     end
+
+    # a task for publishing sql databases
+    # with SqlPackage
+    def sql_package *args, &block
+      require 'albacore/task_types/sql_package'
+      Albacore.define_task *args do
+        c = Albacore::SqlPackage::Config.new
+        yield c
+
+        fail "SqlPackage.exe is not installed.\nPlease download and install Microsoft SSDT: https://msdn.microsoft.com/en-us/library/mt204009.aspx\nAnd add the location of SqlPackage.exe to the PATH system varible." unless c.exe
+
+        command = Albacore::SqlPackage::Cmd.new(c.work_dir, c.exe, c.parameters)
+        Albacore::SqlPackage::Task.new(command).execute
+      end
+    end
+
+    # a task for publishing sql scripts
+    # with Sql
+    def sql_cmd *args, &block
+      require 'albacore/task_types/sql_cmd'
+      Albacore.define_task *args do
+        c = Albacore::Sql::Config.new
+        yield c
+        Albacore::Sql::SqlTask.new(c.work_dir, c.opts).execute
+      end
+    end
+
+    # a task for publishing Integration Services Packages
+    # with IsPackage
+    def is_package *args, &block
+      require 'albacore/task_types/is_package'
+      Albacore.define_task *args do
+        c = Albacore::IsPackage::Config.new
+        yield c
+
+        fail "IsPackage.exe is not installed.\nPlease download and install Microsoft SSDT-BI: https://msdn.microsoft.com/en-us/library/mt674919.aspx\nAnd add the location of IsPackage.exe to the PATH system varible." unless c.exe
+
+        command = Albacore::IsPackage::Cmd.new(c.work_dir, c.exe, c.get_parameters)
+        Albacore::IsPackage::Task.new(command).execute
+      end
+    end
   end
 end
 
