@@ -85,7 +85,7 @@ describe 'when running with sql' do
     expect(subject.executable).to eq('ISDeploymentWizard')
   end
   it do
-    expect(subject.parameters).to eq(%W|/Silent /SourcePath:testdata\\test.ispac /DestinationServer:. /DestinationPath:/SSISDB/test/test|)
+    expect(subject.parameters).to eq(%W|/Silent /SourcePath:testdata/test.ispac /DestinationServer:. /DestinationPath:/SSISDB/test/test|)
   end
   it do
     expect(subject.is_mono_command?).to be false
