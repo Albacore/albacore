@@ -8,7 +8,7 @@ require 'albacore/logging'
 require 'albacore/facts'
 
 module Albacore
-  module IsPackage
+  module IsDeploy
     class Cmd
       include CrossPlatformCmd
       def initialize work_dir, executable, parameters
@@ -27,20 +27,20 @@ module Albacore
       self.extend ConfigDSL
       include Logging
 
-      # this is the is_package of ISDeploymentWizard
-      attr_reader :is_package
+      # this is the source_path of ISDeploymentWizard
+      attr_reader :source_path
 
-      # this is the server of ISDeploymentWizard
-      attr_reader :server
+      # this is the destination_server of ISDeploymentWizard
+      attr_reader :destination_server
 
-      # this is the database of ISDeploymentWizard
-      attr_accessor :database
+      # this is the destination_database of ISDeploymentWizard
+      attr_accessor :destination_database
 
-      # this is the folder_name of ISDeploymentWizard
-      attr_accessor :folder_name
+      # this is the destination_folder_name of ISDeploymentWizard
+      attr_accessor :destination_folder_name
 
-     # this is the project_name of ISDeploymentWizard
-      attr_accessor :project_name
+     # this is the destination_project_name of ISDeploymentWizard
+      attr_accessor :destination_project_name
 
 
       def initialize
@@ -57,23 +57,23 @@ module Albacore
         @parameters.add "/Silent"
       end
 
-      attr_path_accessor :is_package do |s|
+      attr_path_accessor :source_path do |s|
         @parameters.add "/SourcePath:#{s}"
       end
 
-      attr_path_accessor :server do |ds|
+      attr_path_accessor :destination_server do |ds|
         @parameters.add "/DestinationServer:#{ds}"
       end
 
       def get_parameters
-        make_folder
+        make_destination_folder
         @parameters
       end
 
       private
 
-      def make_folder
-        @parameters.add "/DestinationPath:/#{database}/#{folder_name}/#{project_name}"
+      def make_destination_folder
+        @parameters.add "/DestinationPath:/#{destination_database}/#{destination_folder_name}/#{destination_project_name}"
       end
 
     end
