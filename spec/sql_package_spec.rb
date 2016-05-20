@@ -76,7 +76,7 @@ describe 'when running with sql' do
     expect(subject.executable).to eq('SqlPackage')
   end
   it do
-    expect(subject.parameters).to eq(%W|/Action:Publish /SourceFile:testdata\\test.dacpac /Profile:testdata\\test.publish /p:VerifyDeployment:True /Quiet:True|)
+    expect(subject.parameters).to eq(%W|/Action:Publish /SourceFile:testdata/test.dacpac /Profile:testdata/test.publish /p:VerifyDeployment:True /Quiet:True|)
   end
   it do
     expect(subject.is_mono_command?).to be false
