@@ -150,7 +150,7 @@ module Albacore
 
         fail "IsDeploy.exe is not installed.\nPlease download and install Microsoft SSDT: https://msdn.microsoft.com/en-gb/library/hh213373.aspx\nAnd add the location of IsDeploy.exe to the PATH system varible." unless c.exe
 
-        command = Albacore::IsDeploy::Cmd.new(c.work_dir, c.exe, c.get_ parameters)
+        command = Albacore::IsDeploy::Cmd.new(c.work_dir, c.exe, c.get_parameters)
         Albacore::IsDeploy::Task.new(command).execute
       end
     end
