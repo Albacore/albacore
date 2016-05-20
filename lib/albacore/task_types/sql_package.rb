@@ -33,8 +33,8 @@ module Albacore
       # this is the action of SqlPackage
       attr_reader :action
 
-      # this is the source of SqlPackage
-      attr_reader :source
+      # this is the sql_package of SqlPackage
+      attr_reader :sql_package
 
       # this is the profile of SqlPackage
       attr_reader :profile
@@ -76,18 +76,18 @@ module Albacore
       # For example, your publish action might stop if you have foreign keys on the 
       # target database that do not exist in the database project, and that will 
       # cause errors when you publish.
-      attr_path_accessor :verify_deployment do |bool|
-        @parameters.add "/p:VerifyDeployment:#{bool}"
+      def verify_deployment
+        @parameters.add "/p:VerifyDeployment:True"
       end
 
       # Specifies whether detailed feedback is suppressed. Defaults to False.
-      attr_path_accessor :be_quiet do |q|
-        @parameters.add "/Quiet:#{q}"
+      def be_quiet
+        @parameters.add "/Quiet:True"
       end
 
-      # Specifies a source file to be used as the source of action instead of database. 
-      # If this parameter is used, no other source parameter shall be valid.
-      attr_path_accessor :source do |s|
+      # Specifies a sql_package file to be used as the sql_package of action instead of database. 
+      # If this parameter is used, no other sql_package parameter shall be valid.
+      attr_path_accessor :sql_package do |s|
         @parameters.add "/SourceFile:#{s}"
       end
 
