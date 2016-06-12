@@ -5,6 +5,7 @@ require 'fileutils'
 require 'pathname'
 require 'albacore/cmd_config'
 require 'albacore/cross_platform_cmd'
+require 'albacore/paths'
 
 module Albacore
   module TestRunner
@@ -151,7 +152,7 @@ module Albacore
                 [Pathname.new(File.absolute_path(dll)), Pathname.new(File.absolute_path(exe))]
               else 
                 # otherwise, please continue with the basics
-                [Pathname.new(File.dirname(dll)).sub("/", "\\"), Pathname.new(exe)]
+                [Paths.normalise_slashes(Pathname.new(File.dirname(dll))), Pathname.new(exe)]
             end
 
           exe_rel = exe.relative_path_from dir

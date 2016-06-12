@@ -1,5 +1,5 @@
 require 'albacore/app_spec'
-
+require 'albacore/paths'
 # note: this is a Windows provider
 
 module Albacore
@@ -17,10 +17,9 @@ module Albacore
 
     # Where to copy contents from
     def source_dir app_spec, configuration = 'Release'
-      File.join(app_spec.proj.proj_path_base,
+      Paths.normalise_slashes( File.join(app_spec.proj.proj_path_base,
                 app_spec.bin_folder(configuration),
-                '.').
-           gsub(/\//, '\\')
+                '.'))
     end
 
     # create a chocolatey install script for a topshelf service on windows
