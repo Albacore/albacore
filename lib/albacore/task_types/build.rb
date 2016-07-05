@@ -42,8 +42,8 @@ module Albacore
 
         w = lambda { |e| CrossPlatformCmd.which(e) ? e : nil }
 
-        @exe = w.call( "msbuild" ) ||
-               w.call( "xbuild" )  ||
+        @exe = w.call( "xbuild" )  ||
+               w.call( "msbuild" ) ||
                heuristic_executable
 
         debug { "build using '#{@exe}'" }
