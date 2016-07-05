@@ -77,7 +77,7 @@ module Albacore
       # target database that do not exist in the database project, and that will 
       # cause errors when you publish.
       def verify_deployment
-        @parameters.add "/p:VerifyDeployment:True"
+        @parameters.add "/p:VerifyDeployment=True"
       end
 
       # Specifies whether detailed feedback is suppressed. Defaults to False.
