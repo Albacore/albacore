@@ -80,24 +80,6 @@ describe ::Albacore::TestRunner::Cmd do
 end
 
 describe ::Albacore::TestRunner::Task do
-  let :config do
-    config = ::Albacore::TestRunner::Config.new
-    config.files = 'a/b/c/file.dll'
-    config.exe   = 'test-runner.exe'
-    config.add_parameter '/TestResults=abc.xml'
-    config
-  end
-
-  subject do
-    ::Albacore::TestRunner::Task.new(config.opts)
-  end
-
-  it do
-    should respond_to :execute
-  end
-end
-
-describe ::Albacore::TestRunner::Task do
   def create_task_that_intercepts_commands opts
     task = ::Albacore::TestRunner::Task.new(config.opts)
     def task.execute_commands commands
