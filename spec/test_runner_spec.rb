@@ -35,7 +35,7 @@ describe ::Albacore::TestRunner::Config do
   it 'should have the appropriate parameter in #opts.get(:parameters)' do
     expect(subject.opts.get(:parameters)).to include('/TestResults=/b/c/d/e.xml')
   end
-  
+
   it 'should have clr_command=false' do
     expect(subject.opts.get(:clr_command)).to be false
   end
@@ -111,6 +111,25 @@ describe ::Albacore::TestRunner::Task do
 
   subject do
     create_task_that_intercepts_commands config.opts
+  end
+
+  context "extra parameters and options specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config.add_parameter '/magic_parameter1'
+      config.add_parameter '/magic_parameter2'
+      config
+    end
+
+    it "should include the parameters at the end of the command" do
+      expect(subject.commands[0].invocations[0].parameters.last(2)).to eq(['/magic_parameter1', '/magic_parameter2'])
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
   end
 
   context "file is in current directory" do
