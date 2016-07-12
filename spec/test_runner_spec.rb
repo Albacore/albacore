@@ -22,6 +22,7 @@ describe ::Albacore::TestRunner::Config do
     should respond_to :native_exe
   end
 end
+
 describe ::Albacore::TestRunner::Config do
   subject do
     ::Albacore::TestRunner::Config.new
@@ -111,6 +112,41 @@ describe ::Albacore::TestRunner::Task do
 
   subject do
     create_task_that_intercepts_commands config.opts
+  end
+
+  context "native_exe not specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it "should execute command as CLR command" do
+      expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(true)
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
+  end
+
+  context "native_exe specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config.native_exe
+      config
+    end
+
+    it "should execute command as non-CLR command" do
+      expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(false)
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
   end
 
   context "extra parameters and options specified" do
