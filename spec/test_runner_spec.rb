@@ -4,16 +4,10 @@ require 'map'
 
 describe ::Albacore::TestRunner::Config do
   it do
-    should respond_to :files=
-  end
-  it do
     should_not respond_to :files
   end
   it do
     should respond_to :copy_local
-  end
-  it do
-    should respond_to :exe=
   end
   it do
     should respond_to :native_exe
