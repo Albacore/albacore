@@ -103,26 +103,32 @@ module Albacore
       def execute
         raise ArgumentError, 'missing :exe' unless @opts.get :exe
         raise ArgumentError, 'missing :files' unless @opts.get :files
+        commands = []
         @opts.get(:files).each do |dll|
           raise ArgumentError, "could not find test dll '#{dll}' in dir #{FileUtils.pwd}" unless File.exists? dll
-          execute_tests_for dll
+          commands.push build_command_for dll
         end
+
+        execute_commands commands
       end
 
       private
-      def execute_tests_for dll
+      def execute_commands commands
+        commands.each { |command| command.execute }
+      end
+
+      def build_command_for dll
         handle_directory dll, @opts.get(:exe) do |dir, exe|
           filename = File.basename dll
           
           if @opts.get(:is_ms_test)
             filename = "/testcontainer:#{filename}"
           end
-          cmd = Albacore::TestRunner::Cmd.new dir,
-                                              exe, 
-                                              @opts.get(:parameters, []),
-                                              filename,
-                                              @opts.get(:clr_command)
-          cmd.execute
+          Albacore::TestRunner::Cmd.new dir,
+                                        exe,
+                                        @opts.get(:parameters, []),
+                                        filename,
+                                        @opts.get(:clr_command)
         end
       end
       def handle_directory dll, exe, &block
