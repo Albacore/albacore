@@ -147,11 +147,46 @@ module Albacore
         end
       end
 
+      def split_path path
+        parts = []
+        last_path = ''
+        path, leaf = File.split path
+        while path != last_path do
+          last_path = path
+          parts.unshift leaf
+          path, leaf = File.split path
+        end
+
+        parts.unshift path
+      end
+
+      def find_common_prefix paths
+        first = paths.min
+        last = paths.max
+
+        i = 0
+        i = i + 1 while i < first.length and i < last.length and first[i] == last[i]
+        first.slice(0, i)
+      end
+
       def build_command_for_all_dlls
-        command = Albacore::TestRunner::Cmd.new '.',
-                                                @opts.get(:exe),
+        files = @opts.get(:files)
+
+        absolute_files = files.map { |file| File.absolute_path(file) }
+        file_paths = absolute_files.map { |file| split_path file }
+
+        common_prefix = Pathname.new(File.join(find_common_prefix file_paths))
+        relative_working_directory = common_prefix.relative_path_from(Pathname.new(FileUtils.pwd))
+
+        relative_paths = absolute_files.map { |file| (Pathname(file).relative_path_from Pathname.new(relative_working_directory.realpath())).to_s }
+
+        exe = @opts.get(:exe)
+        exe = Pathname.new(exe).relative_path_from(relative_working_directory)
+
+        command = Albacore::TestRunner::Cmd.new relative_working_directory.to_s,
+                                                exe.to_s,
                                                 @opts.get(:parameters, []),
-                                                @opts.get(:files),
+                                                relative_paths,
                                                 @opts.get(:clr_command)
         [command]
       end

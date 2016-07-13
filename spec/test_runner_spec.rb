@@ -228,4 +228,27 @@ describe ::Albacore::TestRunner::Task do
       expect(subject.commands[0].invocations[0].parameters).to eq(['utils_spec.rb', 'tools/fluent_migrator_spec.rb'])
     end
   end
+
+  context 'multiple files in subdirectory tested as a batch' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = ['testdata/Gemfile', 'testdata/Rakefile'] # not real DLLs, but we need files that exist
+      config.execute_as_batch
+      config
+    end
+
+    it 'should execute a single command' do
+      expect(subject.commands.length).to eq(1)
+    end
+
+    it "should run the command from the subdirectory" do
+      expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('testdata')
+      expect(subject.commands[0].invocations[0].executable).to eq('../test-runner.exe')
+    end
+
+    it 'should reference the files without directory qualitifers' do
+      expect(subject.commands[0].invocations[0].parameters).to eq(['Gemfile', 'Rakefile'])
+    end
+  end
 end
