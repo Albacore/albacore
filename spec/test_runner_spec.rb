@@ -149,4 +149,19 @@ describe ::Albacore::TestRunner::Task do
       expect(subject.commands[0].invocations[0].parameters).to include 'Rakefile'
     end
   end
+
+  context 'is_ms_test specified' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.is_ms_test
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it 'should handle is_ms_test by adding testcontainer to the filename' do
+      expect(subject.commands.length).to eq(1)
+      expect(subject.commands[0].invocations[0].parameters.last).to eq('/testcontainer:utils_spec.rb')
+    end
+  end
 end
