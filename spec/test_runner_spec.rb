@@ -236,4 +236,19 @@ describe ::Albacore::TestRunner::Task do
       expect(subject.commands[0].invocations[0].parameters.last).to eq('/testcontainer:utils_spec.rb')
     end
   end
+
+  context 'multiple files' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = ['utils_spec.rb', 'tools/fluent_migrator_spec.rb'] # not real DLLs, but we need files that exist
+      config
+    end
+
+    it 'should execute one command per file' do
+      expect(subject.commands.length).to eq(2)
+      expect(subject.commands[0].invocations[0].parameters.last).to eq('utils_spec.rb')
+      expect(subject.commands[1].invocations[0].parameters.last).to eq('fluent_migrator_spec.rb')
+    end
+  end
 end
