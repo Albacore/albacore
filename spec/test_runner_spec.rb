@@ -11,6 +11,40 @@ describe ::Albacore::TestRunner::Config do
   end
 end
 
+describe ::Albacore::TestRunner::Task, 'when configured improperly' do
+  context 'is_ms_test and execute_as_batch both specified' do
+    it 'should raise ArgumentError' do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'Rakefile' # not a real DLL, but we need something that exists
+      config.is_ms_test
+      config.execute_as_batch
+
+      task = ::Albacore::TestRunner::Task.new(config.opts)
+
+      expect {
+        task.execute
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context 'copy_local and execute_as_batch both specified' do
+    it 'should raise ArgumentError' do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'Rakefile' # not a real DLL, but we need something that exists
+      config.copy_local
+      config.execute_as_batch
+
+      task = ::Albacore::TestRunner::Task.new(config.opts)
+
+      expect {
+        task.execute
+      }.to raise_error(ArgumentError)
+    end
+  end
+end
+
 describe ::Albacore::TestRunner::Task do
   def create_task_that_intercepts_commands opts
     task = ::Albacore::TestRunner::Task.new(config.opts)
@@ -165,7 +199,7 @@ describe ::Albacore::TestRunner::Task do
     end
   end
 
-  context 'multiple files' do
+  context 'multiple files tested individually' do
     let :config do
       config = ::Albacore::TestRunner::Config.new
       config.exe = 'test-runner.exe'
@@ -177,6 +211,21 @@ describe ::Albacore::TestRunner::Task do
       expect(subject.commands.length).to eq(2)
       expect(subject.commands[0].invocations[0].parameters.last).to eq('utils_spec.rb')
       expect(subject.commands[1].invocations[0].parameters.last).to eq('fluent_migrator_spec.rb')
+    end
+  end
+
+  context 'multiple files tested as a batch' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = ['utils_spec.rb', 'tools/fluent_migrator_spec.rb'] # not real DLLs, but we need files that exist
+      config.execute_as_batch
+      config
+    end
+
+    it 'should execute a single command for all the files' do
+      expect(subject.commands.length).to eq(1)
+      expect(subject.commands[0].invocations[0].parameters).to eq(['utils_spec.rb', 'tools/fluent_migrator_spec.rb'])
     end
   end
 end
