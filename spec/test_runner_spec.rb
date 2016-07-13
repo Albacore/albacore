@@ -26,6 +26,7 @@ describe ::Albacore::TestRunner::Task do
       @commands
     end
 
+    task.execute
     task
   end
 
@@ -50,12 +51,10 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should execute command as CLR command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(true)
     end
 
     it "should include the file at the beginning of the command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
     end
   end
@@ -70,12 +69,10 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should execute command as non-CLR command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(false)
     end
 
     it "should include the file at the beginning of the command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
     end
   end
@@ -91,12 +88,10 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should include the parameters at the end of the command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters.last(2)).to eq(['/magic_parameter1', '/magic_parameter2'])
     end
 
     it "should include the file at the beginning of the command" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
     end
   end
@@ -110,13 +105,11 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should run the command from the current directory" do
-      subject.execute
       expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('.')
       expect(subject.commands[0].invocations[0].executable).to eq('test-runner.exe')
     end
 
     it "should reference the file without directory qualifiers" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters).to include 'utils_spec.rb'
     end
   end
@@ -130,13 +123,11 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should run the command from the subdirectory" do
-      subject.execute
       expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('tools')
       expect(subject.commands[0].invocations[0].executable).to eq('../test-runner.exe')
     end
 
     it "should reference the file without directory qualifiers" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters).to include 'fluent_migrator_spec.rb'
     end
   end
@@ -150,13 +141,11 @@ describe ::Albacore::TestRunner::Task do
     end
 
     it "should run the command from the parent directory" do
-      subject.execute
       expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('..')
       expect(subject.commands[0].invocations[0].executable).to eq('../spec/test-runner.exe')
     end
 
     it "should reference the file without directory qualifiers" do
-      subject.execute
       expect(subject.commands[0].invocations[0].parameters).to include 'Rakefile'
     end
   end
