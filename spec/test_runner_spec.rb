@@ -21,7 +21,11 @@ describe ::Albacore::TestRunner::Config do
   it do
     should respond_to :native_exe
   end
+  it do
+    should respond_to :execute_as_batch
+  end
 end
+
 describe ::Albacore::TestRunner::Config do
   subject do
     ::Albacore::TestRunner::Config.new
@@ -35,7 +39,7 @@ describe ::Albacore::TestRunner::Config do
   it 'should have the appropriate parameter in #opts.get(:parameters)' do
     expect(subject.opts.get(:parameters)).to include('/TestResults=/b/c/d/e.xml')
   end
-  
+
   it 'should have clr_command=false' do
     expect(subject.opts.get(:clr_command)).to be false
   end
@@ -82,46 +86,255 @@ describe ::Albacore::TestRunner::Cmd do
   end
 end
 
+describe ::Albacore::TestRunner::Task, 'when configured improperly' do
+  context 'is_ms_test and execute_as_batch both specified' do
+    it 'should raise ArgumentError' do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'Rakefile' # not a real DLL, but we need something that exists
+      config.is_ms_test
+      config.execute_as_batch
+
+      task = ::Albacore::TestRunner::Task.new(config.opts)
+
+      expect {
+        task.execute
+      }.to raise_error(ArgumentError)
+    end
+  end
+
+  context 'copy_local and execute_as_batch both specified' do
+    it 'should raise ArgumentError' do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'Rakefile' # not a real DLL, but we need something that exists
+      config.copy_local
+      config.execute_as_batch
+
+      task = ::Albacore::TestRunner::Task.new(config.opts)
+
+      expect {
+        task.execute
+      }.to raise_error(ArgumentError)
+    end
+  end
+end
+
 describe ::Albacore::TestRunner::Task do
-  let :config do
-    config = ::Albacore::TestRunner::Config.new
-    config.files = 'a/b/c/file.dll'
-    config.exe   = 'test-runner.exe'
-    config.add_parameter '/TestResults=abc.xml'
-    config
+  def create_task_that_intercepts_commands opts
+    task = ::Albacore::TestRunner::Task.new(config.opts)
+    def task.execute_commands commands
+      @commands = commands
+      commands.each { |command|
+        command.extend ShInterceptor
+        command.execute
+      }
+    end
+
+    def task.commands
+      @commands
+    end
+
+    task.execute
+    task
+  end
+
+  before(:context) do
+    Dir.chdir 'spec'
+  end
+
+  after(:context) do
+    Dir.chdir '..'
   end
 
   subject do
-    ::Albacore::TestRunner::Task.new(config.opts)
+    create_task_that_intercepts_commands config.opts
   end
 
-  it do
-    should respond_to :execute
-  end
-
-  def test_dir_exe hash
-    given = hash.first[0]
-    expected = hash.first[1]
-    subject.send(:handle_directory, given[0], given[1]) do |dir, exe|
-      expect(dir).to eq(expected[0])
-      expect(exe).to eq(expected[1])
+  context "native_exe not specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config
     end
 
+    it "should execute command as CLR command" do
+      expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(true)
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
   end
 
-  it 'should handle relative handle_directory' do
-    test_dir_exe ['d.dll', 'e.exe'] => ['.', 'e.exe']
+  context "native_exe specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config.native_exe
+      config
+    end
+
+    it "should execute command as non-CLR command" do
+      expect(subject.commands[0].invocations[0].options[:clr_command]).to eq(false)
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
   end
 
-  it 'should handle actual relative directories correctly' do
-    test_dir_exe ['a/d.dll', 'e.exe'] => ['a', '../e.exe']
+  context "extra parameters and options specified" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config.add_parameter '/magic_parameter1'
+      config.add_parameter '/magic_parameter2'
+      config
+    end
+
+    it "should include the parameters at the end of the command" do
+      expect(subject.commands[0].invocations[0].parameters.last(2)).to eq(['/magic_parameter1', '/magic_parameter2'])
+    end
+
+    it "should include the file at the beginning of the command" do
+      expect(subject.commands[0].invocations[0].parameters.first).to eq('utils_spec.rb')
+    end
   end
 
-  it 'should handle negative dirs by getting current dir name' do
-    subject.send(:handle_directory, '../d.dll', 'e.exe') do |dir, exe|
-      expect(dir).to eq('..')
-      # at this point, the exe file is just a dir in
-      expect(exe).to match /\w+\/e\.exe/
+  context "file is in current directory" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it "should run the command from the current directory" do
+      expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('.')
+      expect(subject.commands[0].invocations[0].executable).to eq('test-runner.exe')
+    end
+
+    it "should reference the file without directory qualifiers" do
+      expect(subject.commands[0].invocations[0].parameters).to include 'utils_spec.rb'
+    end
+  end
+
+  context "file is in subdirectory" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = 'tools/fluent_migrator_spec.rb' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it "should run the command from the subdirectory" do
+      expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('tools')
+      expect(subject.commands[0].invocations[0].executable).to eq('../test-runner.exe')
+    end
+
+    it "should reference the file without directory qualifiers" do
+      expect(subject.commands[0].invocations[0].parameters).to include 'fluent_migrator_spec.rb'
+    end
+  end
+
+  context "file is in parent directory" do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = '../Rakefile' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it "should run the command from the parent directory" do
+      expect(subject.commands[0].invocations[0].options[:work_dir]).to eq('..')
+      expect(subject.commands[0].invocations[0].executable).to eq('../spec/test-runner.exe')
+    end
+
+    it "should reference the file without directory qualifiers" do
+      expect(subject.commands[0].invocations[0].parameters).to include 'Rakefile'
+    end
+  end
+
+  context 'is_ms_test specified' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.is_ms_test
+      config.files = 'utils_spec.rb' # not a real DLL, but we need something that exists
+      config
+    end
+
+    it 'should handle is_ms_test by adding testcontainer to the filename' do
+      expect(subject.commands.length).to eq(1)
+      expect(subject.commands[0].invocations[0].parameters.last).to eq('/testcontainer:utils_spec.rb')
+    end
+  end
+
+  context 'multiple files tested individually' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = ['utils_spec.rb', 'tools/fluent_migrator_spec.rb'] # not real DLLs, but we need files that exist
+      config
+    end
+
+    it 'should execute one command per file' do
+      expect(subject.commands.length).to eq(2)
+      expect(subject.commands[0].invocations[0].parameters.last).to eq('utils_spec.rb')
+      expect(subject.commands[1].invocations[0].parameters.last).to eq('fluent_migrator_spec.rb')
+    end
+  end
+
+  context 'multiple files tested as a batch' do
+    let :config do
+      config = ::Albacore::TestRunner::Config.new
+      config.exe = 'test-runner.exe'
+      config.files = ['utils_spec.rb', 'tools/fluent_migrator_spec.rb'] # not real DLLs, but we need files that exist
+      config.execute_as_batch
+      config
+    end
+
+    it 'should execute a single command for all the files' do
+      expect(subject.commands.length).to eq(1)
+      expect(subject.commands[0].invocations[0].parameters).to eq(['utils_spec.rb', 'tools/fluent_migrator_spec.rb'])
+    end
+  end
+end
+
+describe ::Albacore::TestRunner::Cmd do
+  describe "creation" do
+    subject do
+      command = ::Albacore::TestRunner::Cmd.new '.',
+                                                'test-runner.exe',
+                                                ['/parameter'],
+                                                files
+      command.extend ShInterceptor
+      command.execute
+      command
+    end
+
+    context "files is a single file" do
+      let :files do
+        'file'
+      end
+
+      it "should prepend the file to the parameters list" do
+        expect(subject.invocations[0].parameters).to eq(['file', '/parameter'])
+      end
+    end
+
+    context "files is an array" do
+      let :files do
+        ['file1', 'file2']
+      end
+
+      it "should prepend the files to the parameters list" do
+        expect(subject.invocations[0].parameters).to eq(['file1', 'file2', '/parameter'])
+      end
     end
   end
 end

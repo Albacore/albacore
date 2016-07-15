@@ -26,6 +26,7 @@ module Albacore
         @copy_local = false
         @is_ms_test = false
         @clr_command = true
+        @execute_as_batch = false
         @files = []
       end
 
@@ -38,7 +39,8 @@ module Albacore
           :is_ms_test  => @is_ms_test, 
           :exe         => @exe,
           :parameters  => @parameters,
-          :clr_command => @clr_command)
+          :clr_command => @clr_command,
+          :execute_as_batch => @execute_as_batch)
       end
 
       attr_path_accessor :settings do |s|
@@ -63,6 +65,11 @@ module Albacore
         @is_ms_test = true
       end 
 
+      # Will cause the executable to be run only once, testing all files as a batch.
+      def execute_as_batch
+        @execute_as_batch = true
+      end
+
       private
       def files
         if @files.respond_to? :each
@@ -78,9 +85,14 @@ module Albacore
 
       # expects both parameters and executable to be relative to the
       # work_dir parameter
-      def initialize work_dir, executable, parameters, file, clr_command = true
+      def initialize work_dir, executable, parameters, files, clr_command = true
         @work_dir, @executable = work_dir, executable
-        @parameters = parameters.to_a.unshift(file)
+        if files.respond_to? :each
+          @parameters = files.to_a.concat(parameters.to_a)
+        else
+          @parameters = parameters.to_a.unshift(files)
+        end
+
         @clr_command = clr_command
       end
 
@@ -103,28 +115,52 @@ module Albacore
       def execute
         raise ArgumentError, 'missing :exe' unless @opts.get :exe
         raise ArgumentError, 'missing :files' unless @opts.get :files
+        raise ArgumentError, 'cannot specify both execute_as_batch and is_ms_test' if @opts.get :execute_as_batch and @opts.get :is_ms_test
+        raise ArgumentError, 'cannot specify both execute_as_batch and is_ms_test' if @opts.get :execute_as_batch and @opts.get :copy_local
+
         @opts.get(:files).each do |dll|
           raise ArgumentError, "could not find test dll '#{dll}' in dir #{FileUtils.pwd}" unless File.exists? dll
-          execute_tests_for dll
         end
+
+        commands = []
+        if @opts.get(:execute_as_batch)
+          commands = build_command_for_all_dlls
+        else
+          commands = @opts.get(:files).map { |dll| build_command_for dll }
+        end
+
+        execute_commands commands
       end
 
       private
-      def execute_tests_for dll
+      def execute_commands commands
+        commands.each { |command| command.execute }
+      end
+
+      def build_command_for dll
         handle_directory dll, @opts.get(:exe) do |dir, exe|
           filename = File.basename dll
           
           if @opts.get(:is_ms_test)
             filename = "/testcontainer:#{filename}"
           end
-          cmd = Albacore::TestRunner::Cmd.new dir,
-                                              exe, 
-                                              @opts.get(:parameters, []),
-                                              filename,
-                                              @opts.get(:clr_command)
-          cmd.execute
+          Albacore::TestRunner::Cmd.new dir,
+                                        exe,
+                                        @opts.get(:parameters, []),
+                                        [filename],
+                                        @opts.get(:clr_command)
         end
       end
+
+      def build_command_for_all_dlls
+        command = Albacore::TestRunner::Cmd.new '.',
+                                                @opts.get(:exe),
+                                                @opts.get(:parameters, []),
+                                                @opts.get(:files),
+                                                @opts.get(:clr_command)
+        [command]
+      end
+
       def handle_directory dll, exe, &block
         if @opts.get(:copy_local)
           # TODO: #mktmpdir is not always reliable; consider contributing a patch to ruby?
