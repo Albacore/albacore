@@ -210,6 +210,10 @@ module Albacore
       path
     end
 
+    # Get Project folder path
+    def proj_folder_path
+      read_property('AppDesignerFolder')
+    end
     private
     def nuget_packages
       return nil unless has_packages_config?
