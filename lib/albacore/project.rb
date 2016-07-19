@@ -184,6 +184,9 @@ module Albacore
       File.join @proj_path_base, @proj_filename
     end
 
+    def properties_path
+      File.join @proj_path_base, property_folder_path
+    end
     # save the xml
     def save(output = nil)
       output = path unless output

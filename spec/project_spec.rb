@@ -112,3 +112,13 @@ describe Albacore::Project, 'when given a PathnameWrap' do
     Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path('../testdata/Project/Project.fsproj', __FILE__)))
   end
 end
+describe Albacore::Project do
+  it 'should return path to property folder' do
+    p        = '../testdata/Exemplar/Exemplar/Exemplar.csproj'
+    path     = Pathname.new File.expand_path(p, __FILE__)
+    expected = path.expand_path.sub('Exemplar.csproj', 'Properties')
+    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = Pathname.new(project.properties_path).expand_path
+    expect(expected).to eql(result)
+  end
+end
