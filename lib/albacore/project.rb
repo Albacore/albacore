@@ -210,8 +210,8 @@ module Albacore
       path
     end
 
-    # Get Project folder path
-    def proj_folder_path
+    # Get Property folder path
+    def property_folder_path
       read_property('AppDesignerFolder')
     end
     private
