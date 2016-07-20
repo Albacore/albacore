@@ -230,12 +230,13 @@ module Albacore
       reg.match(v).captures.first
 
     end
-    private
     # Get path to assemblyinfo.cs
     # @return string
     def assembly_info
       File.join properties_path, 'AssemblyInfo.cs'
     end
+
+    private
     def nuget_packages
       return nil unless has_packages_config?
       doc = Nokogiri.XML(open(package_config))
