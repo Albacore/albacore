@@ -232,6 +232,7 @@ module Albacore
     end
     private
     # Get path to assemblyinfo.cs
+    # @return string
     def assembly_info
       File.join properties_path, 'AssemblyInfo.cs'
     end

@@ -114,11 +114,18 @@ describe Albacore::Project, 'when given a PathnameWrap' do
 end
 describe Albacore::Project do
   it 'should return path to property folder' do
-    p        = '../testdata/Exemplar/Exemplar/Exemplar.csproj'
+    p        = '../testdata/csharp/Exemplar/Exemplar/Exemplar.csproj'
     path     = Pathname.new File.expand_path(p, __FILE__)
     expected = path.expand_path.sub('Exemplar.csproj', 'Properties')
     project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
     result   = Pathname.new(project.properties_path).expand_path
     expect(expected).to eql(result)
+  end
+  it 'should read version from AssemblyInfo.cs' do
+    p        = '../testdata/csharp/Exemplar/Exemplar/Exemplar.csproj'
+    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.read_assembly_version
+    expected = '1.0.0.0'
+    expect(expected).to eq(result)
   end
 end
