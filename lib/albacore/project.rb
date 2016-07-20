@@ -230,6 +230,7 @@ module Albacore
       reg.match(v).captures.first
 
     end
+
     # Get path to assemblyinfo.cs
     # @return string
     def assembly_info
