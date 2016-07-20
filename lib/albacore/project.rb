@@ -96,7 +96,7 @@ module Albacore
       nil
     end
 
-    # This is the output path if the project file doens't have a configured
+    # This is the output path if the project file doesn't have a configured
     # 'Configuration' condition like all default project files have that come
     # from Visual Studio/Xamarin Studio.
     def fallback_output_path
@@ -184,9 +184,6 @@ module Albacore
       File.join @proj_path_base, @proj_filename
     end
 
-    def properties_path
-      File.join @proj_path_base, property_folder_path
-    end
     # save the xml
     def save(output = nil)
       output = path unless output
@@ -217,7 +214,27 @@ module Albacore
     def property_folder_path
       read_property('AppDesignerFolder')
     end
+
+    # Return path to properties folder
+    def properties_path
+      File.join @proj_path_base, property_folder_path
+    end
+
+    # Reads assembly version information
+    # @return string
+    def read_assembly_version
+      info= File.read(assembly_info)
+      v   = info.each_line
+                .select { |l| !(l.start_with?('//')||l.start_with?('/*')) && l.include?('AssemblyVersion') }.first
+      reg = /"(.*?)"/
+      reg.match(v).captures.first
+
+    end
     private
+    # Get path to assemblyinfo.cs
+    def assembly_info
+      File.join properties_path, 'AssemblyInfo.cs'
+    end
     def nuget_packages
       return nil unless has_packages_config?
       doc = Nokogiri.XML(open(package_config))
