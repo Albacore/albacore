@@ -58,6 +58,7 @@ describe Albacore::Project, "when reading project file" do
   def project_path
     File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
   end
+
   subject do
     Albacore::Project.new project_path
   end
@@ -126,6 +127,28 @@ describe Albacore::Project do
     project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
     result   = project.read_assembly_version
     expected = '1.0.0.0'
+    expect(expected).to eq(result)
+  end
+  it 'should return 1.0.0.0 when AssemblyVersion is not found' do
+    p        = '../testdata/Project/Project.fsproj'
+    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.read_assembly_version
+    expected = '1.0.0.0'
+    expect(expected).to eq(result)
+  end
+  it 'properties_path should return project base path if assemblyinfo not found' do
+    p        = '../testdata/Project/Project.fsproj'
+    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.properties_path
+    expected = File.dirname(project.path)
+    expect(expected).to eq(result)
+
+  end
+  xit 'properties path should return project base path if both are equivalent' do
+    p        = '../testdata/Project/Project.fsproj'
+    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.properties_path
+    expected = File.dirname(project.path)
     expect(expected).to eq(result)
   end
 end
