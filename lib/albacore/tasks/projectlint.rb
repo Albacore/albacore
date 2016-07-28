@@ -12,7 +12,7 @@ module Albacore
         attr_accessor :ignores
       end
 
-      # since msbuild projects have a habbit of ignoring case differences, lets use downcase for comparison
+      # since msbuild projects have a habit of ignoring case differences, lets use downcase for comparison
       # in windows / and \ can sometimes be used interchangeably 
       class FileReference
         attr_reader :file, :downcase_and_path_replaced
