@@ -196,7 +196,7 @@ task :default => :create_nugets #, :tests ]
       end
 
       def download_paket
-        download_tool 'https://github.com/fsprojects/Paket/releases/download/0.16.2/paket.bootstrapper.exe', 'paket.bootstrapper.exe' unless File.exists? './tools/paket.bootstrapper.exe'
+        download_tool 'https://github.com/fsprojects/Paket/releases/download/3.10.0/paket.bootstrapper.exe', 'paket.bootstrapper.exe' unless File.exists? './tools/paket.bootstrapper.exe'
       end
 
       def download_tool uri, file_name
