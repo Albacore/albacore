@@ -8,7 +8,6 @@ before_install:
 install:
   - travis_retry sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
   - travis_retry sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
-  - travis_retry sudo apt-get update
   - travis_retry sudo apt-get install mono-devel mono-gmcs mono-vbnc
   - travis_retry sudo apt-get install gettext
   - travis_retry sudo wget -q -P "/opt"  "http://samples.nancyfx.org/content/mono-3.0.12-x64-bin.tar.bz2"
