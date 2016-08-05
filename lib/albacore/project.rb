@@ -3,7 +3,7 @@ require 'albacore/logging'
 require 'albacore/semver'
 require 'albacore/package_repo'
 require 'albacore/paket'
-
+require 'pathname'
 module Albacore
 
   # error raised from Project#output_path if the given configuration wasn't
@@ -213,7 +213,12 @@ module Albacore
     # Get Property folder path
     # @return string or nil if path not found
     def property_folder_path
-      read_property('AppDesignerFolder')
+      result=@proj_xml_node.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
+      if result.nil?
+        result
+      else
+        File.expand_path(result[:Include])
+      end
     end
 
     # Return path to properties folder
@@ -222,7 +227,7 @@ module Albacore
         @proj_path_base
 
       else
-        File.join @proj_path_base, property_folder_path
+        property_folder_path
       end
 
     end
@@ -320,4 +325,5 @@ module Albacore
       @proj_xml.css("Project ItemGroup Reference[@Include*='#{pkg_id},']").first
     end
   end
+
 end

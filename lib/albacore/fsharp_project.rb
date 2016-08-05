@@ -5,9 +5,20 @@ module Albacore
       super(project_path)
       sanity_checks
     end
-    def assembly_info
-      File.join properties_path,'AssemblyInfo.fs'
+
+    def read_assembly_version
+      begin
+        info= File.read(assembly_info)
+        v   = info.each_line
+                  .select { |l| !(l.start_with?('//')||l.start_with?('(*')) && l.include?('AssemblyVersion') }.first
+        reg = /"(.*?)"/
+        reg.match(v).captures.first
+      rescue
+        '1.0.0.0'
+      end
+
     end
+
     private
     def sanity_checks
       super
