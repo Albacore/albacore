@@ -6,10 +6,16 @@ module Albacore
     sanity_checks
   end
 
-  def assembly_info
-    File.join properties_path, 'AssemblyInfo.vb'
-  end
-
+# Get AssemblyInfo path
+# @return string or nil if path not found
+    def assembly_info_path
+      result=@proj_xml_node.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
+      if result.nil?
+        @proj_path_base
+      else
+        File.expand_path(result[:Include])
+      end
+    end
   private
   def sanity_checks
     super

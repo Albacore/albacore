@@ -90,6 +90,9 @@ module Paths
       ::Albacore::Paths.normalise_slashes p
     end
 
+    def extname
+      @inner.extname
+    end
     def ==(o)
       trace { "#{self} ==( #{o} )" }
       (o.respond_to? :p) && o.p == p

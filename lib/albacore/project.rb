@@ -210,34 +210,25 @@ module Albacore
       path
     end
 
-    # Get Property folder path
+    # Get AssemblyInfo path
     # @return string or nil if path not found
-    def property_folder_path
+    def assembly_info_path
       result=@proj_xml_node.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
       if result.nil?
-        result
+        @proj_path_base
       else
         File.expand_path(result[:Include])
       end
     end
 
-    # Return path to properties folder
-    def properties_path
-      if property_folder_path.nil?||property_folder_path.eql?(@proj_path_base)
-        @proj_path_base
 
-      else
-        property_folder_path
-      end
-
-    end
 
     # Reads assembly version information
     # Returns 1.0.0.0 if AssemblyVersion is not found
     # @return string
     def read_assembly_version
       begin
-        info= File.read(assembly_info)
+        info= File.read(assembly_info_path)
         v   = info.each_line
                   .select { |l| !(l.start_with?('//')||l.start_with?('/*')) && l.include?('AssemblyVersion') }.first
         reg = /"(.*?)"/
@@ -248,12 +239,6 @@ module Albacore
 
     end
 
-
-    # Get path to assemblyinfo.cs
-    # @return string
-    def assembly_info
-      File.join properties_path, 'AssemblyInfo.cs'
-    end
 
     private
     def nuget_packages

@@ -7,7 +7,7 @@ describe Albacore::Project, "when loading packages.config" do
   subject do
     p = File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
     #puts "path: #{p}"
-    Albacore::Project.new(p)
+    Albacore.create_project(p)
   end
   let :nlog do
     subject.declared_packages.find { |p| p.id == 'NLog' }
@@ -60,7 +60,7 @@ describe Albacore::Project, "when reading project file" do
   end
 
   subject do
-    Albacore::Project.new project_path
+    Albacore.create_project project_path
   end
   let :library1 do
     subject.included_files.find { |p| p.include == 'Library1.fs' }
@@ -110,44 +110,37 @@ end
 describe Albacore::Project, 'when given a PathnameWrap' do
   it 'should allow argument of PathnameWrap' do
     require 'albacore/paths'
-    Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path('../testdata/Project/Project.fsproj', __FILE__)))
+    Albacore.create_project(Paths::PathnameWrap.new(File.expand_path('../testdata/Project/Project.fsproj', __FILE__)))
   end
 end
 describe Albacore::Project do
-  it 'should return path to property folder' do
-    p        = '../testdata/csharp/Exemplar/Exemplar/Exemplar.csproj'
-    path     = Pathname.new File.expand_path(p, __FILE__)
-    expected = path.expand_path.sub('Exemplar.csproj', 'Properties')
-    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
-    result   = Pathname.new(project.properties_path).expand_path
-    expect(expected).to eql(result)
-  end
+
   it 'should read version from AssemblyInfo.cs' do
     p        = '../testdata/csharp/Exemplar/Exemplar/Exemplar.csproj'
-    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
     result   = project.read_assembly_version
     expected = '1.0.0.0'
     expect(expected).to eq(result)
   end
   it 'should return 1.0.0.0 when AssemblyVersion is not found' do
     p        = '../testdata/Project/Project.fsproj'
-    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
     result   = project.read_assembly_version
     expected = '1.0.0.0'
     expect(expected).to eq(result)
   end
   it 'properties_path should return project base path if assemblyinfo not found' do
     p        = '../testdata/Project/Project.fsproj'
-    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
-    result   = project.properties_path
+    project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.assembly_info_path
     expected = File.dirname(project.path)
     expect(expected).to eq(result)
 
   end
-  xit 'properties path should return project base path if both are equivalent' do
+  it 'properties path should return project base path if both are equivalent' do
     p        = '../testdata/Project/Project.fsproj'
-    project  = Albacore::Project.new(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
-    result   = project.properties_path
+    project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.assembly_info_path
     expected = File.dirname(project.path)
     expect(expected).to eq(result)
   end
