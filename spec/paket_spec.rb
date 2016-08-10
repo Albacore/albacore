@@ -12,7 +12,7 @@ describe Albacore::Paket do
       FSharp.Core (>= 3.1.2.1)
     FParsec (1.0.1)
     FsCheck (1.0.4) - framework: >= net45
-    FSharp.Core (3.1.2.1)
+    FSharp.Core (4.0.0.1) - redirects: force
     Fuchu (0.6.0.0) - framework: >= net40
     Http.fs-prerelease (2.0.0-alpha1)
       FSharp.Core (>= 3.1.2.1)
@@ -36,10 +36,15 @@ describe Albacore::Paket do
       expect(references['FsCheck'].version).to eq '1.0.4'
       expect(references['FsCheck'].target_framework).to eq 'net45'
     end
-
     it 'has Fuchu' do
       expect(references['Fuchu']).to_not be_nil
       expect(references['Fuchu'].target_framework).to eq 'net40'
+    end
+    it 'has FSharp.Core' do
+      ref = references['FSharp.Core']
+      expect(ref).to_not be_nil
+      expect(ref.version).to eq '4.0.0.1'
+      expect(ref.redirects).to eq 'force'
     end
   end
 end
