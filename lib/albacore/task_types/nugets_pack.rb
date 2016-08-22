@@ -40,6 +40,7 @@ module Albacore
 
         pars = original_pars.dup
         pars << nuspec_file
+        pars << '-NoPackageAnalysis' unless @opts.get :package_analysis
         pkg = get_nuget_path_of do
           system @executable, pars, :work_dir => @work_dir
         end
@@ -49,9 +50,9 @@ module Albacore
         # if the symbols flag is set and there's a symbols file specified
         # then run NuGet.exe to generate the .symbols.nupkg file
         if nuspec_symbols_file
-          pars = original_pars.dup 
-          pars << '-Symbols' 
-          pars << nuspec_symbols_file 
+          pars = original_pars.dup
+          pars << '-Symbols'
+          pars << nuspec_symbols_file
           spkg = with_subterfuge pkg do
             get_nuget_path_of do
               system @executable, pars, :work_dir => @work_dir
@@ -103,7 +104,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         res
       end
     end
-    
+
     # This tasktype allows you to quickly package project files to nuget
     # packages.
     #
@@ -135,7 +136,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       attr_writer :files
 
       # sets the nuspec file
-      attr_writer :nuspec      
+      attr_writer :nuspec
 
 
       # sets the MsBuild configuration that is used to produce the output into
@@ -148,6 +149,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @symbols = false
         @project_dependencies = true
         @nuget_dependencies = true
+        @package_analysis = true
         @leave_nuspec = false
         fill_required
       end
@@ -185,6 +187,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @nuget_dependencies = false
       end
 
+      # call this if you want to disable NuGet's package analysis
+      # when creating the nupkg file
+      def no_package_analysis
+        @package_analysis = false
+      end
+
       def nuget_gem_exe
         @exe = Albacore::Nugets::find_nuget_gem_exe
       end
@@ -195,7 +203,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
         unless @nuspec
           [:authors, :description, :version].each do |required|
-            warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING' 
+            warn "metadata##{required} is missing from nugets_pack [nugets pack: config]" if @package.metadata.send(required) == 'MISSING'
           end
         end
 
@@ -210,6 +218,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           :configuration => @configuration,
           :project_dependencies => @project_dependencies,
           :nuget_dependencies => @nuget_dependencies,
+          :package_analysis => @package_analysis,
           :original_path => FileUtils.pwd,
           :leave_nuspec  => @leave_nuspec
         })
@@ -230,7 +239,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
       include Logging
 
       def initialize opts, &before_execute
-        
+
         unless opts.get(:nuspec)
           raise ArgumentError, 'opts is not a map' unless opts.is_a? Map
           raise ArgumentError, 'no files given' unless opts.get(:files).length > 0
@@ -316,7 +325,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         target = @opts.get :target
 
         trace "creating NON-SYMBOL package for '#{proj.name}', targeting '#{target}' [nugets pack: task]"
-        nuspec = Albacore::NugetModel::Package.from_xxproj proj, 
+        nuspec = Albacore::NugetModel::Package.from_xxproj proj,
           symbols:        false,
           verify_files:   true,
           dotnet_version: target,
@@ -368,10 +377,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         out = path_to(@opts.get(:out), cwd)
         nuspec = path_to nuspec, cwd
         nuspec_symbols = path_to nuspec_symbols, cwd if nuspec_symbols
-        
+
         cmd = Albacore::NugetsPack::Cmd.new exe,
-                work_dir: cwd,
-                out:      out
+                work_dir:         cwd,
+                out:              out,
+                package_analysis: @opts.get(:package_analysis)
+
 
         # run any concerns that modify the command
         @before_execute.call cmd if @before_execute
@@ -398,14 +409,14 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           :nuspec   => nuspec,
           :nupkg    => nuget,
           :location => nuget
-        ) 
+        )
       end
 
       def self.accept? f
         File.extname(f).downcase != '.nuspec'
       end
     end
-    
+
     # generate a nuget from a nuspec
     class NuspecTask
       include Logging
