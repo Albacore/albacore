@@ -16,16 +16,15 @@ module Albacore
     end
 
     def projects
-      project_paths.map {|path| Project.new path }
+      project_paths.map { |path| File.join(@path_base, path) }
+                   .select { |path| File.file?(path) }
+                   .map {|path| Albacore::Project.new(File.absolute_path(path)) }
     end
 
     def project_paths
       project_matches.map { |matches| matches[:location] }
-                     .map { |path| File.join(@path_base, path) }
-                     .map { |path| Pathname.new(path).cleanpath }
-                     .select { |path| File.file? path }
-                     .select { |path| File.extname(path) == '.csproj' }
-                     .map { |path| File.absolute_path(path) }
+                     .select { |path| %w{.csproj .fsproj}.include?(File.extname(path)) }
+
     end
 
     private
