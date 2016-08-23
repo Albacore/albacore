@@ -7,7 +7,7 @@ describe 'build config' do
   subject do
     Albacore::Build::Config.new
   end
-  %w[file= sln= target target= logging logging= prop cores cores= tools_version tools_version=].each do |writer|
+  %w[files= file= sln= target target= logging logging= prop cores cores= tools_version tools_version=].each do |writer|
     it "should respond to :#{writer}" do
       expect(subject).to respond_to(:"#{writer}")
     end
@@ -42,6 +42,7 @@ describe 'when running with sln' do
 
   before do
     cfg.sln = 'src/HelloWorld.sln'
+    cfg.params_for_file cfg.sln
     cfg.target = %w|Clean Build|
     cmd.execute
   end
@@ -60,4 +61,3 @@ describe 'when running with sln' do
     expect(subject.is_mono_command?).to be false
   end
 end
-
