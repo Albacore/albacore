@@ -41,8 +41,11 @@ module Albacore
         yield c, own_args
 
         fail "unable to find MsBuild or XBuild" unless c.exe
-        command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.parameters)
-        Albacore::Build::Task.new(command).execute
+
+        c.files.each do |f|
+          command = Albacore::Build::Cmd.new(c.work_dir, c.exe, c.params_for_file(f))
+          Albacore::Build::Task.new(command).execute
+        end
       end
     end
 
@@ -53,7 +56,7 @@ module Albacore
         c = Albacore::NugetsRestore::Config.new
         yield c, own_args
 
-        c.ensure_authentication! 
+        c.ensure_authentication!
 
         c.packages.each do |p|
           command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, c.opts_for_pkgcfg(p))

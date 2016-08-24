@@ -42,6 +42,8 @@ module Albacore
 
         w = lambda { |e| CrossPlatformCmd.which(e) ? e : nil }
 
+        @files = []
+
         @exe = w.call( "xbuild" )  ||
                w.call( "msbuild" ) ||
                heuristic_executable
@@ -54,9 +56,11 @@ module Albacore
                       'minimal')
       end
 
+      attr_accessor :files
+
       # this is the solution file to build (or the project files themselves)
       attr_path_accessor :sln, :file do |val|
-        @parameters.add val
+        @files.concat [*val]
       end
 
       # Call for each target that you want to add, or pass an array or
@@ -99,7 +103,6 @@ module Albacore
       attr_path_accessor :logging do |mode|
         set_logging mode
       end
-
 
       #  Gets or sets a target .NET Framework version to build the project with, which
       #  enables an MSBuild task to build a project that targets a different version of
@@ -145,6 +148,11 @@ module Albacore
         @parameters.add "/nologo"
       end
 
+      def params_for_file file
+        update_file file
+        @parameters
+      end
+
       private
       def set_logging mode
         modes = %w{quiet minimal normal detailed diagnostic}.collect{ |m| "/verbosity:#{m}" }
@@ -167,6 +175,12 @@ module Albacore
         instance_variable_get(field).uniq!
         # @parameters.add "/target:#{make_target}"
         @parameters.add "/#{prop_name}:#{callable_prop_val.call}"
+      end
+
+      # There can be only one
+      def update_file val
+        @parameters.delete_if { |param| File.file? param }
+        @parameters.add ::Albacore::Paths.normalise_slashes val
       end
 
       def make_target
@@ -195,7 +209,6 @@ module Albacore
         end
     	  CrossPlatformCmd.which(msb) ? msb : nil
       end
-
     end
     class Task
       def initialize command_line
