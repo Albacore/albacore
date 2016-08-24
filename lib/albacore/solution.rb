@@ -27,6 +27,16 @@ module Albacore
 
     end
 
+    # get the path of the solution file
+    def path
+      File.join @path_base, @filename
+    end
+
+    # Gets the path of the solution file
+    def to_s
+      path
+    end
+
     private
 
     def project_matches
