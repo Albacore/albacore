@@ -23,7 +23,7 @@ module Albacore
 
     def project_paths
       project_matches.map { |matches| matches[:location] }
-                     .select { |path| %w{.csproj .fsproj}.include?(File.extname(path)) }
+                     .select { |path| File.extname(path).end_with? 'proj' }
 
     end
 
