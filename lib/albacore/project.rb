@@ -211,14 +211,15 @@ module Albacore
     end
 
     # Get AssemblyInfo path
-    # @return string or nil if path not found
+    # @return string or project base path if path not found
     def assembly_info_path
-      result=@proj_xml_node.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
-      if result.nil?
+      result=@proj_xml_node.css("Compile[Include*='AssemblyInfo']").first.attributes["Include"].value #.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
+      p     = if result.nil?
         @proj_path_base
       else
-        File.expand_path(result[:Include])
-      end
+        File.expand_path(File.join(@proj_path_base, '/', result))
+              end
+      p
     end
 
 
@@ -226,11 +227,11 @@ module Albacore
     # Reads assembly version information
     # Returns 1.0.0.0 if AssemblyVersion is not found
     # @return string
-    def read_assembly_version
+    def default_assembly_version
       begin
         info= File.read(assembly_info_path)
         v   = info.each_line
-                  .select { |l| !(l.start_with?('//')||l.start_with?('/*')) && l.include?('AssemblyVersion') }.first
+                  .select { |l| !(l.start_with?('//')||l.start_with?('/*')) && l.include?('AssemblyVersion(') }.first
         reg = /"(.*?)"/
         reg.match(v).captures.first
       rescue

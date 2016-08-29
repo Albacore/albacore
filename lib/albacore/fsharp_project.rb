@@ -6,11 +6,11 @@ module Albacore
       sanity_checks
     end
 
-    def read_assembly_version
+    def default_assembly_version
       begin
         info= File.read(assembly_info)
         v   = info.each_line
-                  .select { |l| !(l.start_with?('//')||l.start_with?('(*')) && l.include?('AssemblyVersion') }.first
+                  .select { |l| !(l.start_with?('//')||l.start_with?('(*')) && l.include?('AssemblyVersion(') }.first
         reg = /"(.*?)"/
         reg.match(v).captures.first
       rescue

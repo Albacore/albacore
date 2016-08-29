@@ -118,14 +118,21 @@ describe Albacore::Project do
   it 'should read version from AssemblyInfo.cs' do
     p        = '../testdata/csharp/Exemplar/Exemplar/Exemplar.csproj'
     project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
-    result   = project.read_assembly_version
+    result   = project.default_assembly_version
     expected = '1.0.0.0'
+    expect(expected).to eq(result)
+  end
+  it 'should read version from AssemblyInfo.cs in ModifiedAssemblyVersion' do
+    p        = '../testdata/csharp/ModifiedAssemblyVersion/ModifiedAssemblyVersion/ModifiedAssemblyVersion.csproj'
+    project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
+    result   = project.default_assembly_version
+    expected = '2.0.0.0'
     expect(expected).to eq(result)
   end
   it 'should return 1.0.0.0 when AssemblyVersion is not found' do
     p        = '../testdata/Project/Project.fsproj'
     project  = Albacore.create_project(Paths::PathnameWrap.new(File.expand_path(p, __FILE__)))
-    result   = project.read_assembly_version
+    result   = project.default_assembly_version
     expected = '1.0.0.0'
     expect(expected).to eq(result)
   end
