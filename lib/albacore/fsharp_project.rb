@@ -8,7 +8,7 @@ module Albacore
 
     def default_assembly_version
       begin
-        info= File.read(assembly_info)
+        info= File.read(assembly_info_path)
         v   = info.each_line
                   .select { |l| !(l.start_with?('//')||l.start_with?('(*')) && l.include?('AssemblyVersion(') }.first
         reg = /"(.*?)"/

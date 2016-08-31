@@ -213,11 +213,11 @@ module Albacore
     # Get AssemblyInfo path
     # @return string or project base path if path not found
     def assembly_info_path
-      result=@proj_xml_node.css("Compile[Include*='AssemblyInfo']").first.attributes["Include"].value #.xpath("//Compile[contains(@Include,'AssemblyInfo')]").first
+      result=@proj_xml_node.css("Compile[Include*='AssemblyInfo']").first #
       p     = if result.nil?
         @proj_path_base
       else
-        File.expand_path(File.join(@proj_path_base, '/', result))
+        File.expand_path(File.join(@proj_path_base, '/', result.attributes["Include"].value))
               end
       p
     end
