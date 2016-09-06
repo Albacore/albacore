@@ -217,8 +217,8 @@ module Albacore
       p     = if result.nil?
         @proj_path_base
       else
-        File.expand_path(File.join(@proj_path_base, '/', result.attributes["Include"].value))
-              end
+        File.expand_path(File.join(@proj_path_base, '/', Albacore::Paths.normalise_slashes(result.attributes["Include"].value)))
+      end
       p
     end
 

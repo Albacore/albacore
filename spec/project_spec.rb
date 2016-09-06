@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 require 'albacore/semver'
 require 'albacore/project'
 require 'albacore/paths'
