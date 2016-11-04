@@ -25,11 +25,9 @@ EOF
   s.add_dependency 'map', '~> 6.6' # https://github.com/ahoward/map for options handling
   s.add_dependency 'nokogiri', '~> 1.6.7' # used to manipulate and read *proj files
   s.add_dependency 'semver2', '~> 3.4'
-  s.add_dependency 'paket_bootstrapper', '~> 1.33'
-	
+
   s.add_development_dependency 'rubygems-tasks', '~>0.2'
   s.add_development_dependency 'rspec', '~> 3.00'
-  s.add_development_dependency 'nuget', '~> 2.8'
 
   s.files         = Dir.glob './{lib,resources}/**/*'
   s.test_files    = `git ls-files -- spec/*`.split("\n")
