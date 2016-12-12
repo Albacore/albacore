@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'albacore/task_types/asmver'
 
 describe ::Albacore::Asmver::Config, 'when setting attributes and out' do

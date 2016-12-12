@@ -3,7 +3,7 @@ require 'albacore/logging'
 require 'albacore/semver'
 require 'albacore/package_repo'
 require 'albacore/paket'
-
+require 'pathname'
 module Albacore
 
   # error raised from Project#output_path if the given configuration wasn't
@@ -19,8 +19,8 @@ module Albacore
 
     def initialize proj_path
       raise ArgumentError, 'project path does not exist' unless File.exists? proj_path.to_s
-      proj_path = proj_path.to_s unless proj_path.is_a? String
-      @proj_xml_node = Nokogiri.XML(open(proj_path))
+      proj_path                       = proj_path.to_s unless proj_path.is_a? String
+      @proj_xml_node                  = Nokogiri.XML(open(proj_path))
       @proj_path_base, @proj_filename = File.split proj_path
       sanity_checks
     end
@@ -68,7 +68,7 @@ module Albacore
     # gets any authors from the project file
     def authors
       read_property 'Authors'
-    end 
+    end
 
     def description
       read_property 'Description'
@@ -87,7 +87,7 @@ module Albacore
 
     def try_output_path conf
       default_platform = @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
-      path = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
+      path             = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
       # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
 
       debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }
@@ -96,11 +96,11 @@ module Albacore
       nil
     end
 
-    # This is the output path if the project file doens't have a configured
+    # This is the output path if the project file doesn't have a configured
     # 'Configuration' condition like all default project files have that come
     # from Visual Studio/Xamarin Studio.
     def fallback_output_path
-      fallback = @proj_xml_node.css("Project PropertyGroup OutputPath").first
+      fallback  = @proj_xml_node.css("Project PropertyGroup OutputPath").first
       condition = fallback.parent['Condition'] || 'No \'Condition\' specified'
       warn "chose an OutputPath in: '#{self}' for Configuration: <#{condition}> [albacore: project]"
       fallback.inner_text
@@ -119,7 +119,7 @@ module Albacore
     end
 
     def faulty_refs
-      find_refs.to_a.keep_if{ |r| r.children.css("HintPath").empty? }
+      find_refs.to_a.keep_if { |r| r.children.css("HintPath").empty? }
     end
 
     def has_faulty_refs?
@@ -154,15 +154,15 @@ module Albacore
 
     # returns a list of the files included in the project
     def included_files
-      ['Compile','Content','EmbeddedResource','None'].map { |item_name|
+      ['Compile', 'Content', 'EmbeddedResource', 'None'].map { |item_name|
         proj_xml_node.xpath("/x:Project/x:ItemGroup/x:#{item_name}",
-          'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
+                            'x' => "http://schemas.microsoft.com/developer/msbuild/2003").collect { |f|
           debug "#{name}: #included_files looking at '#{f}' [albacore: project]"
-          link = f.elements.select{ |el| el.name == 'Link' }.map { |el| el.content }.first
+          link = f.elements.select { |el| el.name == 'Link' }.map { |el| el.content }.first
           OpenStruct.new(
-            :item_name => item_name.downcase,
-            :link      => link,
-            :include   => f['Include']
+              :item_name => item_name.downcase,
+              :link      => link,
+              :include   => f['Include']
           )
         }
       }.flatten
@@ -210,6 +210,37 @@ module Albacore
       path
     end
 
+    # Get AssemblyInfo path
+    # @return string or project base path if path not found
+    def assembly_info_path
+      result=@proj_xml_node.css("Compile[Include*='AssemblyInfo']").first #
+      p     = if result.nil?
+        @proj_path_base
+      else
+        File.expand_path(File.join(@proj_path_base, '/', Albacore::Paths.normalise_slashes(result.attributes["Include"].value)))
+      end
+      p
+    end
+
+
+
+    # Reads assembly version information
+    # Returns 1.0.0.0 if AssemblyVersion is not found
+    # @return string
+    def default_assembly_version
+      begin
+        info= File.read(assembly_info_path)
+        v   = info.each_line
+                  .select { |l| !(l.start_with?('//')||l.start_with?('/*')) && l.include?('AssemblyVersion(') }.first
+        reg = /"(.*?)"/
+        reg.match(v).captures.first
+      rescue
+        '1.0.0.0'
+      end
+
+    end
+
+
     private
     def nuget_packages
       return nil unless has_packages_config?
@@ -226,7 +257,7 @@ module Albacore
 
     def all_paket_deps
       return @all_paket_deps if @all_paket_deps
-      arr = File.open('paket.lock', 'r') do |io|
+      arr             = File.open('paket.lock', 'r') do |io|
         Albacore::Paket.parse_paket_lock(io.readlines.map(&:chomp))
       end
       @all_paket_deps = Hash[arr]
@@ -280,4 +311,5 @@ module Albacore
       @proj_xml.css("Project ItemGroup Reference[@Include*='#{pkg_id},']").first
     end
   end
+
 end

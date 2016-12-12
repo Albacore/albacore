@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'albacore/task_types/asmver'
 require 'albacore/task_types/asmver/engine'
 require 'albacore/task_types/asmver/file_generator'

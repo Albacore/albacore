@@ -98,6 +98,7 @@ module Albacore
         usings << ns
       end
 
+      # @return Map object
       def opts
         raise MissingOutputError, "#file_path or #out is not set" unless (file_path or out)
         ns   = @namespace || '' # defaults to empty namespace if not set.

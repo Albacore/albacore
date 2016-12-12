@@ -2,6 +2,9 @@
 
 require 'albacore/application'
 require 'albacore/logging'
+require 'albacore/fsharp_project'
+require 'albacore/csharp_project'
+require 'albacore/vb_project'
 
 # The albacore module instance methods.
 module Albacore
@@ -75,6 +78,21 @@ module Albacore
       !!::Rake::Win32.windows?
     end
 
+    def create_project(project)
+      path=if project.is_a? String
+             Pathname.new(project)
+           else
+             project
+           end
+      case path.extname
+        when ".fsproj"
+          FsharpProject.new(path)
+        when ".csproj"
+          CsharpProject.new(path)
+        when ".vbproj"
+          VbProject.new(path)
+      end
+    end
     Albacore.log_level = Logger::DEBUG if ENV["DEBUG"]
   end
 end

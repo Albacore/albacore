@@ -8,3 +8,4 @@ spec/testdata/Project/Sample.Nuget.nuspec
 spec/testdata/TestingDependencies/Sample.Core/Sample.Core.nuspec
 
 *.userprefs
+/.idea/
