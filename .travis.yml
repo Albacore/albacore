@@ -1,10 +1,9 @@
-language: ruby
+language: csharp
 
 before_install:
   - gem install bundler
 
 install:
-  - travis_retry sudo apt-get install fsharp
   - travis_retry bundle install
 
 script:
