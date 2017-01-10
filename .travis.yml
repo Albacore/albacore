@@ -1,34 +1,17 @@
-# kisses and hugs to https://raw.github.com/NancyFx/Nancy/master/.travis.yml
-
 language: ruby
 
 before_install:
   - gem install bundler
 
 install:
-  - travis_retry sudo bash -c "echo deb http://badgerports.org lucid main >> /etc/apt/sources.list"
-  - travis_retry sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E1FAD0C
-  - travis_retry sudo apt-get install mono-devel mono-gmcs mono-vbnc
-  - travis_retry sudo apt-get install gettext
-  - travis_retry sudo wget -q -P "/opt"  "http://samples.nancyfx.org/content/mono-3.0.12-x64-bin.tar.bz2"
+  - travis_retry sudo apt-get install fsharp
   - travis_retry bundle install
-  - echo set -e >> ./travis.sh
-  - echo set -o pipefail >> ./travis.sh
-  - echo echo Running on Mono 3.x >> ./travis.sh
-  - echo sudo tar xk -C "/opt" -f /opt/mono-3.0.12-x64-bin.tar.bz2 >> ./travis.sh
-  - echo export PATH="/opt/mono/bin:$PATH" >> ./travis.sh
-  - echo export LD_LIBRARY_PATH="/opt/mono/bin" >> ./travis.sh
-  - echo bundle exec rake spec >> ./travis.sh
-  - chmod +x ./travis.sh
 
-script: ./travis.sh
+script:
+  - bundle exec rake
 
 rvm:
-  - 1.9.3
-# 2.0 seems to be experiencing issues with subclasses not saying that they respond_to(:baseclass_method)
-# so that's for another day to fix
-#  - 2.0.0
-#  - jruby
+ - 2.3.1
 
 branches:
   only: master
