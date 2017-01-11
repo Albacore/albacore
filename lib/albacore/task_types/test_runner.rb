@@ -191,7 +191,7 @@ module Albacore
                 [Paths.normalise_slashes(Pathname.new(File.dirname(dll))), Pathname.new(exe)]
             end
 
-          exe_rel = exe.to_s.include?(':') ? exe : exe.relative_path_from(dir)
+          exe_rel = (Pathname.new exe.to_s).absolute? ? exe : exe.relative_path_from(dir)
           yield [File.dirname(dll), exe_rel.to_s]
         end
       end
