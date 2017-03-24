@@ -50,7 +50,11 @@ module Albacore
         @opts = opts
 
         pars = opts.getopt(:parameters, :default => [])
-        @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
+
+        if (opts.getopt :source)
+          @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)} -source #{@opts[:source][:uri]}}, pars.to_a].flatten
+        else
+          @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
 
         mono_command
       end
@@ -117,6 +121,9 @@ module Albacore
       # defaults to true
       attr_accessor :include_official
 
+      # allows a source without credentials be added
+      attr_accessor :allow_insecure_source
+
       def exclude_version
         add_parameter "-ExcludeVersion"
       end
@@ -145,16 +152,18 @@ module Albacore
         pars = parameters.to_a
         debug "include_official nuget repo: #{include_official}"
         pars << %W[-source #{OFFICIAL_REPO}] if include_official
-        
+
         map = Map.new({ :pkgcfg     => Albacore::Paths.normalise_slashes(pkg),
                         :out        => @out,
                         :parameters => pars })
 
-        if has_credentials?
+        if allow_insecure_source
+          map.set :source, source
+        elsif has_credentials?
           map.set :username, username
           map.set :password, password
           map.set :source, source
-        end 
+        end
         map
       end
     end
