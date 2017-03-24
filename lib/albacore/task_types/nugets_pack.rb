@@ -320,6 +320,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       def create_nuspec proj, knowns
         version = @opts.get(:package).metadata.version
+        framework_dependencies = @opts.get(:package).metadata.framework_assemblies
         project_dependencies = @opts.get(:project_dependencies, true)
         nuget_dependencies = @opts.get(:nuget_dependencies, true)
         target = @opts.get :target
@@ -333,7 +334,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           version:        version,
           configuration:  (@opts.get(:configuration)),
           project_dependencies: project_dependencies,
-          nuget_dependencies: nuget_dependencies
+          nuget_dependencies: nuget_dependencies,
+          framework_dependencies: framework_dependencies
 
         # take data from package as configured in Rakefile, choosing what is in
         # Rakefile over what is in projfile.
@@ -350,7 +352,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
             version:        version,
             configuration:  (@opts.get(:configuration)),
             project_dependencies: project_dependencies,
-            nuget_dependencies: nuget_dependencies
+            nuget_dependencies: nuget_dependencies,
+            framework_dependencies: framework_dependencies
 
           nuspec_symbols = nuspec_symbols.merge_with @opts.get(:package)
           trace { "nuspec symbols: #{nuspec_symbols.to_s} [nugets pack: task]" }
