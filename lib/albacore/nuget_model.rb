@@ -144,6 +144,11 @@ end})
                 x.dependency id: d.id, version: d.version
               }
             }
+            x.frameworkAssemblies {
+              @framework_assemblies.each { |k, d|
+                x.frameworkAssembly assemblyName: d.id, targetFramework: d.version
+              }
+            }
           }
         end
       end
@@ -192,9 +197,9 @@ end})
             n.children.reject { |n| n.text? }.each do |dep|
               m.add_dependency dep['id'], dep['version']
             end
-          elsif n.name == 'frameworkDepdendencies'
+          elsif n.name == 'frameworkDependencies'
             n.children.reject { |n| n.text? }.each do |dep|
-              m.add_framework_depdendency dep['id'], dep['version']
+              m.add_framework_dependency dep['id'], dep['version']
             end
           else
             # just set the property
@@ -348,7 +353,8 @@ end})
             configuration:        'Debug',
             project_dependencies: true,
             verify_files:         false,
-            nuget_dependencies:   true })
+            nuget_dependencies:   true,
+            framework_dependencies: true })
 
         trace { "#from_xxproj proj: '#{proj}' opts: #{opts} [nuget model: package]" }
 
@@ -378,6 +384,13 @@ end})
             debug "adding project dependency: #{proj.id} => #{p.id} at #{version} [nuget model: package]"
             package.metadata.add_dependency p.id, version
           end
+        end
+
+        if opts.get :framework_dependencies
+          fd = opts.get :framework_dependencies
+          fd.each { |n, p|
+            package.metadata.add_framework_dependency p.id, p.version
+          }
         end
 
         output = get_output_path proj, opts
