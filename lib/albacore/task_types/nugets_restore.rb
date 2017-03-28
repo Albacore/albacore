@@ -55,6 +55,7 @@ module Albacore
           @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)} -source #{@opts[:source][:uri]}}, pars.to_a].flatten
         else
           @parameters = [%W{install #{opts.getopt(:pkgcfg)} -OutputDirectory #{opts.getopt(:out)}}, pars.to_a].flatten
+        end
 
         mono_command
       end
