@@ -75,17 +75,6 @@ module Albacore
       end
     end
 
-    # basically a command with some parameters; allows you to execute your
-    # tests with albacore
-    def test_runner *args, &block
-      require 'albacore/task_types/test_runner'
-      Albacore.define_task *args do |task_name, own_args|
-        c = Albacore::TestRunner::Config.new
-        yield c, own_args
-        Albacore::TestRunner::Task.new(c.opts).execute
-      end
-    end
-
     # Restore hint paths to registered nugets
     def restore_hint_paths *args, &block
       require 'albacore/tools/restore_hint_paths'
