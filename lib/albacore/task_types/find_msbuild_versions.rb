@@ -20,6 +20,11 @@ module Albacore
     rescue
       error "failed to open HKLM\\SOFTWARE\\Microsoft\\MSBuild\\ToolsVersions"
     end
+	
+	# MSBuild 15, assume default installation path
+	vs2017_dir = Dir[File.join(ENV['ProgramFiles(x86)'].gsub('\\', '/'), 'Microsoft Visual Studio', '2017', '*')].first
+	retval[15] = File.join(vs2017_dir, 'MSBuild', '15.0', 'Bin') unless vs2017_dir.nil?
+	
     return retval
   end
 end
