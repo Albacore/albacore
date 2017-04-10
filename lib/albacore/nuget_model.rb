@@ -144,11 +144,13 @@ end})
                 x.dependency id: d.id, version: d.version
               }
             }
-            x.frameworkAssemblies {
-              @framework_assemblies.each { |k, d|
-                x.frameworkAssembly assemblyName: d.id, targetFramework: d.version
+            if @frameworkAssemblies.respond_to? :each
+              x.frameworkAssemblies {
+                @framework_assemblies.each { |k, d|
+                  x.frameworkAssembly assemblyName: d.id, targetFramework: d.version
+                }
               }
-            }
+            end
           }
         end
       end
@@ -386,8 +388,9 @@ end})
           end
         end
 
-        if opts.get :framework_dependencies
-          fd = opts.get :framework_dependencies
+
+        fd = opts.get :framework_dependencies
+        if fd && fd.respond_to?(:each)
           fd.each { |n, p|
             package.metadata.add_framework_dependency p.id, p.version
           }

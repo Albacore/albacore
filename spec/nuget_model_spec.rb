@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'shared_contexts'
 require 'albacore/paths'
 require 'albacore/nuget_model'
+require 'albacore/application'
 
 describe Albacore::NugetModel::Metadata do
   [ :id, :version, :authors, :title, :description, :summary, :language,
@@ -134,7 +135,8 @@ XML
   # on Windows this fails due to replacement of path separators (by design)
   unless ::Albacore.windows?
     it 'should generate the same (semantic) XML as above' do
-      expect(Nokogiri::XML(subject.to_xml, &:noblanks).to_xml).to eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+      expect(Nokogiri::XML(subject.to_xml, &:noblanks).to_xml).to \
+        eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
     end
   end
 
