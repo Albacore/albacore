@@ -28,7 +28,7 @@ module Albacore
         @parameters = [%W{Pack -OutputDirectory #{opts.get(:out)}}].flatten
         @opts = opts
 
-        mono_command
+        mono_command unless opts.get(:mono_opt_out)
       end
 
       # run nuget on the nuspec to create a new package
@@ -73,11 +73,11 @@ module Albacore
       # regexpes the package path from the output
       def get_nuget_path_of
         out = yield
-        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.symbols\.nupkg)'./iu if out.respond_to? :match
+        out.match(/Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.symbols\.nupkg)'./iu) if out.respond_to? :match
         trace "Got symbols return value: '#{out}', matched: '#{$1}'" if $1
         return $1 if $1
 
-        out.match /Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.nupkg)'./iu if out.respond_to? :match
+        out.match(/Successfully created package '([:\s\p{Word}\\\/\d\.\-]+\.nupkg)'./iu)if out.respond_to? :match
         trace "Got NOT-symbols return value: '#{out}', matched: '#{$1}'"
 
         unless $1
@@ -151,7 +151,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         @nuget_dependencies = true
         @package_analysis = true
         @leave_nuspec = false
+        @mono_opt_out = false
         fill_required
+      end
+
+      def mono_opt_out
+        @mono_opt_out = true
       end
 
       def with_metadata &block
@@ -214,11 +219,12 @@ and report a bug to albacore with the full output. Here's the nuget process outp
           :symbols       => @symbols,
           :package       => @package,
           :target        => @target,
-          :files         => @files,
+          :files         => files,
           :configuration => @configuration,
           :project_dependencies => @project_dependencies,
           :nuget_dependencies => @nuget_dependencies,
           :package_analysis => @package_analysis,
+          :mono_opt_out     => @mono_opt_out,
           :original_path => FileUtils.pwd,
           :leave_nuspec  => @leave_nuspec
         })
@@ -384,7 +390,8 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         cmd = Albacore::NugetsPack::Cmd.new exe,
                 work_dir:         cwd,
                 out:              out,
-                package_analysis: @opts.get(:package_analysis)
+                package_analysis: @opts.get(:package_analysis),
+                mono_opt_out:     @opts.get(:mono_opt_out)
 
 
         # run any concerns that modify the command
