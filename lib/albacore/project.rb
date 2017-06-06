@@ -79,6 +79,11 @@ module Albacore
       read_property 'License'
     end
 
+    # the target .NET Framework / .NET Standard version
+    def target_framework
+      read_property 'TargetFrameworkVersion'
+    end
+    
     # gets the output path of the project given the configuration or raise
     # an error otherwise
     def output_path conf

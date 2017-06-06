@@ -10,9 +10,9 @@ require 'albacore/nuget_model'
 include ::Albacore::NugetsPack
 
 class ConfigFac
-  def self.create id, curr, gen_symbols = true
+  def self.create id, curr, target, gen_symbols = true
     cfg = Albacore::NugetsPack::Config.new
-    cfg.target        = 'mono32'
+    cfg.target        = target
     cfg.configuration = 'Debug'
     cfg.files         = Dir.glob(File.join(curr, 'testdata', 'Project', '*.fsproj'))
     cfg.out           = 'spec/testdata/pkg'
@@ -48,7 +48,7 @@ shared_context 'pack_config' do
     File.dirname(__FILE__)
   end
   let :config do
-    cfg = ConfigFac.create id, curr, true
+    cfg = ConfigFac.create id, curr, 'mono32', true
   end
 end
 
@@ -60,7 +60,7 @@ shared_context 'pack_config no symbols' do
     File.dirname(__FILE__)
   end
   let :config do
-    cfg = ConfigFac.create id, curr, false
+    cfg = ConfigFac.create id, curr, 'mono32', false
   end
 end
 
@@ -229,7 +229,7 @@ end
 
 # testing project task
 
-describe ProjectTask do
+describe ProjectTask, 'when target framework is specified' do
   include_context 'pack_config no symbols'
   include_context 'package_metadata_dsl'
 
@@ -248,6 +248,25 @@ describe ProjectTask do
   end 
 
   has_file 'bin/Debug/Project.dll', 'lib/mono32'
+end
+
+describe ProjectTask, 'when target framework is unspecified' do
+  include_context 'pack_config no symbols'
+  include_context 'package_metadata_dsl'
+
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "Project", "Project.fsproj"
+  end 
+  let :vanilla_config do
+    cfg = ConfigFac.create id, curr, '', false
+  end
+  subject do
+    proj = Albacore::Project.new projfile
+    ProjectTask.new( vanilla_config.opts() ).send(:create_nuspec, proj, [])[0] # index0 first nuspec Alabacore::Package
+  end 
+
+  has_file 'bin/Debug/Project.dll', 'lib/net45'
 end
 
 describe ProjectTask, "when testing public interface" do
