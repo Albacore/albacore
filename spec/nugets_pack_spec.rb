@@ -9,6 +9,9 @@ require 'albacore/nuget_model'
 
 include ::Albacore::NugetsPack
 
+# The .NET Framework / .NET Standard specified by default
+DEFAULT_FRAMEWORK = 'net461'
+
 class ConfigFac
   def self.create id, curr, target, gen_symbols = true
     cfg = Albacore::NugetsPack::Config.new
@@ -48,7 +51,7 @@ shared_context 'pack_config' do
     File.dirname(__FILE__)
   end
   let :config do
-    cfg = ConfigFac.create id, curr, 'mono32', true
+    cfg = ConfigFac.create id, curr, DEFAULT_FRAMEWORK, true
   end
 end
 
@@ -60,7 +63,7 @@ shared_context 'pack_config no symbols' do
     File.dirname(__FILE__)
   end
   let :config do
-    cfg = ConfigFac.create id, curr, 'mono32', false
+    cfg = ConfigFac.create id, curr, DEFAULT_FRAMEWORK, false
   end
 end
 
@@ -233,8 +236,8 @@ describe ProjectTask, 'when target framework is specified' do
   include_context 'pack_config no symbols'
   include_context 'package_metadata_dsl'
 
-  it 'sanity: should have config with target=mono32' do
-    expect(config.opts().get(:target)).to eq('mono32')
+  it "sanity: should have config with target=#{DEFAULT_FRAMEWORK}" do
+    expect(config.opts().get(:target)).to eq(DEFAULT_FRAMEWORK)
   end
 
   let :projfile do
@@ -247,7 +250,7 @@ describe ProjectTask, 'when target framework is specified' do
     ProjectTask.new( config.opts() ).send(:create_nuspec, proj, [])[0] # index0 first nuspec Alabacore::Package
   end 
 
-  has_file 'bin/Debug/Project.dll', 'lib/mono32'
+  has_file 'bin/Debug/Project.dll', "lib/#{DEFAULT_FRAMEWORK}"
 end
 
 describe ProjectTask, 'when target framework is unspecified' do
