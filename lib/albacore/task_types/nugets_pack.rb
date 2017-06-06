@@ -145,7 +145,7 @@ and report a bug to albacore with the full output. Here's the nuget process outp
 
       def initialize
         @package = Albacore::NugetModel::Package.new
-        @target  = 'net40'
+        @target  = ''
         @symbols = false
         @project_dependencies = true
         @nuget_dependencies = true
@@ -329,7 +329,10 @@ and report a bug to albacore with the full output. Here's the nuget process outp
         framework_dependencies = @opts.get(:package).metadata.framework_assemblies
         project_dependencies = @opts.get(:project_dependencies, true)
         nuget_dependencies = @opts.get(:nuget_dependencies, true)
-        target = @opts.get :target
+        target = if '' == @opts.get(:target) then proj.target_framework else @opts.get :target end
+        if target.start_with? 'v'
+          target = "net#{target[1..target.size].gsub('.', '')}"
+        end
 
         trace "creating NON-SYMBOL package for '#{proj.name}', targeting '#{target}' [nugets pack: task]"
         nuspec = Albacore::NugetModel::Package.from_xxproj proj,

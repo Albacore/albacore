@@ -68,7 +68,10 @@ describe Albacore::Project, "when reading project file" do
   it "should contain library1" do
     expect(library1).to_not be_nil
   end
-
+  it 'should contain the target framework' do
+    expect(subject.target_framework).to eq "v4.5"
+  end
+  
   describe 'public API' do
     it do
       expect(subject).to respond_to :name
@@ -84,6 +87,15 @@ describe Albacore::Project, "when reading project file" do
     end
     it do
       expect(subject).to respond_to :authors
+    end
+    it do
+      expect(subject).to respond_to :description
+    end
+    it do
+      expect(subject).to respond_to :license
+    end
+    it do
+      expect(subject).to respond_to :target_framework
     end
     it 'should have five referenced assemblies' do
       expect(subject.find_refs.length).to eq 5
