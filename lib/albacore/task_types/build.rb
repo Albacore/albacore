@@ -44,8 +44,8 @@ module Albacore
 
         @files = []
 
-        @exe = w.call( "xbuild" )  ||
-               w.call( "msbuild" ) ||
+        @exe = w.call( "msbuild" ) ||
+               w.call( "xbuild" )  ||
                heuristic_executable
 
         debug { "build using '#{@exe}'" }
