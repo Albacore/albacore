@@ -101,9 +101,9 @@ module Albacore
       def nuget_push package
         exe     = @opts.get :nuget_exe
         api_key = package[:api_key]
-        params = %W|push #{package[:path]}|
-        params << api_key if api_key
-        params << %W|-Source #{package[:nuget_source]}|
+        params = %W|push --url #{package[:nuget_source]}|
+        params << %W|--api-key #{api_key}| if api_key
+        params << package[:path]
         system exe, params, clr_command: package[:clr_command]
       end
 
