@@ -4,6 +4,18 @@ require 'albacore/paths'
 require 'albacore/nuget_model'
 require 'albacore/application'
 
+##  Table of contents
+#
+# - Structure of Metadata
+# - Package#to_xml
+# - Package#from_xml
+# - Package#from_xxproj_file (full fw)
+# - Package#from_xxproj_file with metadata/title in proj file (full fw)
+# - Package#with_metadata
+# - Package#from_xxproj_file with packages.config (full fw)
+# - Package#from_xxproj_file with dependent project (full fw)
+#
+
 describe Albacore::NugetModel::Metadata do
   [ :id, :version, :authors, :title, :description, :summary, :language,
     :project_url, :license_url, :release_notes, :owners,
@@ -242,7 +254,7 @@ XML
   end
 end
 
-describe "when reading xml from a fsproj file into Project/Metadata" do
+describe Albacore::NugetModel::Package, "#from_xxproj_file (full) => Package" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project", "Project.fsproj"
@@ -285,7 +297,24 @@ describe "when reading xml from a fsproj file into Project/Metadata" do
   end
 end
 
-describe "when reading xml from a fsproj file into Project/Metadata (with Id different form Name)" do
+describe Albacore::NugetModel::Package, "#from_xxproj_file (core) => Package" do
+  let :projfile do
+    curr = File.dirname(__FILE__)
+    File.join curr, "testdata", "console-core-argu", "ConsoleArgu.fsproj"
+  end
+
+  subject do
+    Albacore::NugetModel::Package.from_xxproj_file projfile
+  end
+
+  include_context 'package_metadata_dsl'
+
+  it "targets netstandard2.0 and net461" do
+    expect(subject.target_frameworks).to eq %w|netstandard2.0 net461|
+  end
+end
+
+describe Albacore::NugetModel::Package, "#from_xxproj_file (full) => Package w/ title" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "Project", "ProjectWithTitle.fsproj"
@@ -314,7 +343,7 @@ describe "when reading xml from a fsproj file into Project/Metadata (with Id dif
   end
 end
 
-describe Albacore::NugetModel::Package, "overriding metadata" do
+describe Albacore::NugetModel::Package, "#with_metadata (full)" do
   let :p1 do
     p = Albacore::NugetModel::Package.new.with_metadata do |m|
       m.id = 'A.B'
@@ -353,7 +382,7 @@ describe Albacore::NugetModel::Package, "overriding metadata" do
   end
 end
 
-describe "creating nuget (not symbols) from dependent proj file" do
+describe Albacore::NugetModel::Package, "(full) w/ packages.config" do
 
   let :projfile do
     curr = File.dirname(__FILE__)
@@ -363,23 +392,23 @@ describe "creating nuget (not symbols) from dependent proj file" do
   subject do
     Albacore::NugetModel::Package.from_xxproj_file projfile,
       :known_projects => %w[Sample.Core],
-      :version        => '2.3.0',
+      :version        => '2.3.0', # TODO: [2.3.0, 3.0.0)
       :configuration  => 'Debug'
   end
 
   include_context 'package_metadata_dsl'
 
   # from fsproj
-  has_dep 'Sample.Core', '2.3.0'
+  has_dep 'Sample.Core', '2.3.0' # TODO: [2.3.0, 3.0.0)
 
   # from packages.config
-  has_dep 'Magnum', '2.1.0'
-  has_dep 'MassTransit', '2.8.0'
-  has_dep 'Newtonsoft.Json', '5.0.6'
+  has_dep 'Magnum', '2.1.0' # TODO: [2.3.0, 3.0.0)
+  has_dep 'MassTransit', '2.8.0' # TODO: [2.3.0, 3.0.0)
+  has_dep 'Newtonsoft.Json', '5.0.6' # TODO: [2.3.0, 3.0.0)
 
   # actual nuspec contents
-  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45' # TODO: [2.3.0, 3.0.0)
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45' # TODO: [2.3.0, 3.0.0)
 
   describe 'when dotnet_version is set' do
     subject do
@@ -393,8 +422,7 @@ describe "creating nuget (not symbols) from dependent proj file" do
   end
 end
 
-describe "creating nuget on dependent proj file" do
-
+describe Albacore::NugetModel::Package, "(full) w/ dependent project" do
   let :projfile do
     curr = File.dirname(__FILE__)
     File.join curr, "testdata", "TestingDependencies", "Sample.Commands",

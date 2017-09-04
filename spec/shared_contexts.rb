@@ -11,18 +11,33 @@ shared_context 'package_metadata_dsl' do
     end
   end
 
-  def self.has_dep name, version
-    it "has dependency on '#{name}'" do
-      expect(m.dependencies.has_key?(name)).to be true
-    end
-    it "overrode dependency on '#{name}'" do
-      expect(m.dependencies[name].version).to eq version
+  def self.has_dep name, version, target_framework = nil
+    if target_framework.nil?
+      it "has dependency on '#{name}'" do
+        expect(m.dependencies.has_key?(name)).to be true
+      end
+      it "overrode dependency on '#{name}'" do
+        expect(m.dependencies[name].version).to eq version
+      end
+    else
+      it "has dependency on '#{name}' for #{target_framework}" do
+        expect(m.dependencies.has_key?("#{name}|#{target_framework}")).to be true
+      end
+      it "overrode dependency on '#{name}' for #{target_framework}" do
+        expect(m.dependencies["#{name}|#{target_framework}"].version).to eq version
+      end
     end
   end
 
-  def self.has_not_dep name
-    it "does not have a dependency on #{name}" do
-      expect(m.dependencies.has_key?(name)).to be false
+  def self.has_not_dep name, target_framework = nil
+    if target_framework.nil?
+      it "does not have a dependency on #{name}" do
+        expect(m.dependencies.has_key?(name)).to be false
+      end
+    else
+      it "does not have a dependency on #{name} for #{target_framework}" do
+        expect(m.dependencies.has_key?("#{name}|#{target_framework}")).to be false
+      end
     end
   end
 

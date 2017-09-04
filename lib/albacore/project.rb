@@ -44,7 +44,12 @@ module Albacore
     # the title of the nuspec and, if Id is not specified, also the id of the
     # nuspec.
     def name
-      (read_property 'Name') || asmname
+      (read_property 'Name') || asmname || proj_filename
+    end
+
+    # The project is a .Net Core project.
+    def is_netcore
+      ! @proj_xml_node.css('Project').attr('Sdk').nil?
     end
 
     # The same as #name
@@ -79,26 +84,54 @@ module Albacore
       read_property 'License'
     end
 
-    # the target .NET Framework / .NET Standard version
+    # the target .NET Framework / .NET version
     def target_framework
       read_property 'TargetFrameworkVersion'
+    end
+
+    # Gets the target frameworks as specified by .Net Core syntax
+    def target_frameworks
+      if is_netcore
+        tfw = @proj_xml_node.css('Project PropertyGroup TargetFramework').inner_text
+        tfws = @proj_xml_node.css('Project PropertyGroup TargetFrameworks').inner_text
+        nfws = if tfw.nil? || tfw == '' then tfws else tfw end
+        fws = nfws.split(';')
+      else
+        [ target_framework ]
+      end
     end
     
     # gets the output path of the project given the configuration or raise
     # an error otherwise
     def output_path conf
-      try_output_path conf || raise(ConfigurationNotFoundError, "could not find configuration '#{conf}'")
+      try_output_path(conf) || raise(ConfigurationNotFoundError, "could not find configuration '#{conf}'")
     end
 
     def try_output_path conf
-      default_platform = @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
-      path             = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
-      # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
+      output_paths(conf).first
+    end
 
-      debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }
+    def output_paths conf
+      if is_netcore then
+        type = @proj_xml_node.css('PropertyGroup OutputType').inner_text
+        ext = File.extname proj_filename
+        fn = File.basename proj_filename, ext
+        target_frameworks.map do |fw|
+          if type == 'Library'
+            "bin/#{conf}/#{fw}/#{fn}.dll"
+          else
+            "bin/#{conf}/#{fw}/#{fn}.exe"
+          end
+        end
+      else
+        default_platform = @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
+        path             = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
+        # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
 
-      return path.inner_text unless path.empty?
-      nil
+        debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }
+
+        if path.empty? then [] else [ path.inner_text ] end
+      end
     end
 
     # This is the output path if the project file doesn't have a configured
@@ -246,7 +279,8 @@ module Albacore
     end
 
 
-    private
+  private
+
     def nuget_packages
       return nil unless has_packages_config?
       doc = Nokogiri.XML(open(package_config))
@@ -262,7 +296,8 @@ module Albacore
 
     def all_paket_deps
       return @all_paket_deps if @all_paket_deps
-      arr             = File.open('paket.lock', 'r') do |io|
+      path = if File.exists?('paket.lock') then 'paket.lock' else File.join(@proj_path_base, "paket.lock") end
+      arr = File.open(path, 'r') do |io|
         Albacore::Paket.parse_paket_lock(io.readlines.map(&:chomp))
       end
       @all_paket_deps = Hash[arr]

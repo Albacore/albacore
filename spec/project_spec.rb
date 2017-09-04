@@ -54,7 +54,7 @@ describe Albacore::Project, "when loading packages.config" do
   end
 end
 
-describe Albacore::Project, "when reading project file" do
+describe Albacore::Project, "reading project file" do
   def project_path
     File.expand_path('../testdata/Project/Project.fsproj', __FILE__)
   end
@@ -62,12 +62,15 @@ describe Albacore::Project, "when reading project file" do
   subject do
     Albacore.create_project project_path
   end
+
   let :library1 do
     subject.included_files.find { |p| p.include == 'Library1.fs' }
   end
+
   it "should contain library1" do
     expect(library1).to_not be_nil
   end
+
   it 'should contain the target framework' do
     expect(subject.target_framework).to eq "v4.5"
   end
@@ -116,6 +119,31 @@ describe Albacore::Project, "when reading project file" do
       should respond_to :output_dll
       expect(subject.output_dll('Release')).to eq(Paths.join 'bin', 'Release', 'Project.dll')
     end
+  end
+end
+
+describe Albacore::Project, "for netcore" do
+  def project_path
+    File.expand_path('../testdata/console-core-argu/ConsoleArgu.fsproj', __FILE__)
+  end
+
+  subject do
+    Albacore.create_project project_path
+  end
+
+  it '#is_netcore' do
+    expect(subject.is_netcore).to eq true
+  end
+
+  it '#target_frameworks' do
+    expect(subject.target_frameworks).to eq %w|netstandard2.0 net461|
+  end
+
+  it '#output_paths' do
+    expect(subject.output_paths 'Release').to eq [
+      'bin/Release/netstandard2.0/ConsoleArgu.dll',
+      'bin/Release/net461/ConsoleArgu.dll'
+    ]
   end
 end
 

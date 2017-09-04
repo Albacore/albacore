@@ -403,13 +403,13 @@ end})
       def self.from_xxproj proj, *opts
         opts = Map.options(opts || {}).
           apply({
-            symbols:              false,
-            dotnet_version:       'net45',
-            known_projects:       Set.new,
-            configuration:        'Debug',
-            project_dependencies: true,
-            verify_files:         false,
-            nuget_dependencies:   true,
+            symbols:                false,
+            dotnet_version:         'net45',
+            known_projects:         Set.new,
+            configuration:          'Debug',
+            project_dependencies:   true,
+            verify_files:           false,
+            nuget_dependencies:     true,
             framework_dependencies: true })
 
         trace { "#from_xxproj proj: '#{proj}' opts: #{opts} [nuget model: package]" }
