@@ -14,64 +14,144 @@ describe Albacore::NugetModel::Metadata do
     end
   end
 
-  describe "when adding a dependency" do
+  describe "adding dependency w/o group" do
     before do 
-      subject.add_dependency 'DepId', '=> 3.4.5'
+      subject.add_dependency 'DepId', '[3.4.5, 4.0)', '', false
     end
+
     let :dep do
       subject.dependencies['DepId']
     end
-    it "should contain the dependency version" do
-      expect(dep.version).to eq '=> 3.4.5'
+
+    it "contains the dependency version" do
+      expect(dep.version).to eq '[3.4.5, 4.0)'
     end
-    it "should contain the dependency id" do
+
+    it "contains the dependency id" do
       expect(dep.id).to eq 'DepId'
     end
-    it "should contain only one dependency" do
+
+    it "has group=false from invocation" do
+      expect(dep.group).to eq false
+    end
+
+    it "defaults to target_framework=''" do
+      expect(dep.target_framework).to be_empty
+    end
+
+    it "contains only one dependency" do
       expect(subject.dependencies.length).to eq 1
+    end
+
+    describe "#to_xml" do
+      let :xml do
+        subject.to_xml
+      end
+
+      it "generates a list" do
+        expect(xml).to include("  <dependencies>\n    <dependency id=\"DepId\" version=\"[3.4.5, 4.0)\"/>")
+      end
     end
   end
 
-  describe "when adding a framework dependency" do
+  describe "adding framework dependency" do
     before do
       subject.add_framework_dependency 'System.Transactions', '2.0.0' 
     end
+
     let :dep do
       subject.framework_assemblies.first[1]
     end
+
     it "should contain the dependency id" do
       expect(dep.id).to eq('System.Transactions')
     end
+
     it "should contain the dependency version" do
       expect(dep.version).to eq('2.0.0')
     end
+
     it "should contain a single dependency" do
       expect(subject.framework_assemblies.length).to eq(1)
     end
   end
+
+  describe "when adding dependency w/ groups" do
+    before do
+      subject.add_dependency 'Dep', '[1.2.3, 2.0)', 'net461'
+      subject.add_dependency 'Dep', '[1.2.3, 2.0)', 'netstandard2.0'
+    end
+
+    it "has both deps" do
+      expect(subject.dependencies.length).to eq 2
+    end
+
+    it "rejects non-grouped dependencies (after grouped)" do
+      expect(lambda {
+        subject.add_dependency 'Hepp', '1.2.3', '', false
+      }).to raise_error(ArgumentError)
+    end
+
+    describe "#to_xml" do
+      let :xml do
+        subject.to_xml
+      end
+
+      it "generates a list" do
+        expected = <<XML
+  <dependencies>
+    <group targetFramework="net461">
+      <dependency id="DepId" version="[3.4.5, 4.0)" />
+    </group>
+    <group targetFramework="netstandard2.0">
+      <dependency id="DepId" version="[3.4.5, 4.0)" />
+    </group>
+  </dependencies>
+XML
+        expect(Nokogiri::XML(xml, &:noblanks).to_xml).to \
+          include(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
+      end
+    end
+  end
+
+  describe "inverse rejection (no group, then group)" do
+    before do
+      subject.add_dependency 'Dep', '[1.2.3, 2.0)', '', false
+    end
+
+    it "rejects grouped dependencies (after non-grouped)" do
+      expect(lambda {
+        subject.add_dependency 'Hepp', '1.2.3', '', true
+      }).to raise_error(ArgumentError)
+    end
+  end
 end
 
-describe Albacore::NugetModel::Package, "when doing some xml generation" do
+describe Albacore::NugetModel::Package, "#to_xml" do
   it "should be newable" do
     expect(subject).to_not be_nil
   end
+
   [:metadata, :files, :to_xml, :to_xml_builder].each do |prop|
     it "should respond to #{prop}" do
       expect(subject).to respond_to(prop)
     end
   end
+
   it "should generate default metadata" do
     expect(subject.to_xml).to include('<metadata')
   end
+
   it "should not generate default files" do
     expect(subject.to_xml).to_not include('<files')
   end
 end
 
-describe Albacore::NugetModel::Package, "from XML" do
+describe Albacore::NugetModel::Package, "#from_xml" do
   let :dir do
     File.basename(__FILE__)
   end
+
   let :xml do
     <<XML
 <?xml version="1.0" encoding="utf-8"?>
@@ -88,7 +168,12 @@ describe Albacore::NugetModel::Package, "from XML" do
     <copyright>none</copyright>
     <tags>example spec</tags>
     <dependencies>
-      <dependency id="SampleDependency" version="1.0"/>
+      <group>
+        <dependency id="FSharp.Core" version="[4.1, 4.2)"/>
+      </group>
+      <group targetFramework="netstandard1.6">
+        <dependency id="System.Net" version="[1.1, 2.0)"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -113,14 +198,14 @@ XML
 
   subject do
     package = Albacore::NugetModel::Package.from_xml xml
-    #puts "node: #{package.inspect}"
-    #puts "node meta: #{package.metadata.inspect}"
     package
   end
-  it "should exist" do
+
+  it "exists" do
     expect(subject).to_not be_nil
   end
-  it "should have the metadata properties of the XML above" do
+
+  it "has identical metadata props" do
     parser.
       xpath('./ng:metadata', ns).
       children.
@@ -134,7 +219,7 @@ XML
 
   # on Windows this fails due to replacement of path separators (by design)
   unless ::Albacore.windows?
-    it 'should generate the same (semantic) XML as above' do
+    it 'roundtrips XML' do
       expect(Nokogiri::XML(subject.to_xml, &:noblanks).to_xml).to \
         eq(Nokogiri::XML(StringIO.new(xml), &:noblanks).to_xml)
     end
@@ -153,7 +238,7 @@ XML
   end
 
   it "should have a dep on SampleDependency version 1.0" do
-    expect(subject.metadata.dependencies['SampleDependency']).to_not be_nil
+    expect(subject.metadata.dependencies['FSharp.Core']).to_not be_nil
   end
 end
 

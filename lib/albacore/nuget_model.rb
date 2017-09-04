@@ -9,12 +9,18 @@ require 'albacore/tools'
 module Albacore
   module NugetModel
     class IdVersion
-      attr_reader :id, :version
-      def initialize id, version
-        @id, @version = id, version
+      attr_reader :id, :version, :group, :target_framework
+
+      def initialize id, version, group, target_framework
+        @id, @version, @group, @target_framework = id, version, group, target_framework
       end
+
       def to_s
-        "#{id}@#{version}"
+        if ! target_framework.nil? && target_framework != ''
+          "#{id}@#{version} when #{target_framework}"
+        else
+          "#{id}@#{version} grouped:#{group}"
+        end
       end
     end
 
@@ -117,41 +123,69 @@ end})
         @set_fields   = Set.new
         @dependencies = dependencies || Hash.new
         @framework_assemblies = framework_assemblies || Hash.new
+        @has_group = false
 
         debug "creating new metadata with dependencies: #{dependencies} [nuget model: metadata]" unless dependencies.nil?
         debug "creating new metadata (same as prev) with fw asms: #{framework_assemblies} [nuget model: metadata]" unless framework_assemblies.nil?
       end
 
       # add a dependency to the package; id and version
-      def add_dependency id, version
-        @dependencies[id] = IdVersion.new id, version
+      def add_dependency id, version, target_framework = '', group = true
+        guard_groups_or_not group
+        extra = (target_framework || '') == '' ? '' : "|#{target_framework}"
+        @has_group ||= group
+        @dependencies["#{id}#{extra}"] = IdVersion.new id, version, group, target_framework
       end
 
       # add a framework dependency for the package
-      def add_framework_dependency id, version
-        @framework_assemblies[id] = IdVersion.new id, version
+      def add_framework_dependency id, version, target_framework = '', group = true
+        guard_groups_or_not group
+        @has_group ||= group
+        @framework_assemblies[id] = IdVersion.new id, version, group, target_framework
       end
 
       def to_xml_builder
         # alt: new(encoding: 'utf-8')
         Nokogiri::XML::Builder.new do |x|
-          x.metadata {
+          x.metadata do
             @set_fields.each do |f|
               x.send(Metadata.pascal_case(f), send(f))
             end
-            x.dependencies {
-              @dependencies.each { |k, d|
-                x.dependency id: d.id, version: d.version
-              }
-            }
-            if @frameworkAssemblies.respond_to? :each
-              x.frameworkAssemblies {
-                @framework_assemblies.each { |k, d|
-                  x.frameworkAssembly assemblyName: d.id, targetFramework: d.version
-                }
-              }
+
+            x.dependencies do
+              if @has_group
+                groups = @dependencies.group_by { |k, d| d.target_framework }
+                groups.each do |group|
+                  fw, deps = group
+                  if fw == ''
+                    x.group do
+                      deps.each do |k, d|
+                        x.dependency id: d.id, version: d.version
+                      end
+                    end
+                  else
+                    x.group(targetFramework: fw) do
+                      deps.each do |k, d|
+                        x.dependency id: d.id, version: d.version
+                      end
+                    end
+                  end
+                end
+              else
+                @dependencies.each do |k, d|
+                  x.dependency id: d.id, version: d.version
+                end
+              end
             end
-          }
+
+            if @framework_assemblies.respond_to?(:each) && @framework_assemblies.length > 0
+              x.frameworkAssemblies do
+                @framework_assemblies.each do |k, d|
+                  x.frameworkAssembly assemblyName: d.id, targetFramework: d.version
+                end
+              end
+            end
+          end
         end
       end
 
@@ -196,12 +230,26 @@ end})
         m = Metadata.new
         node.children.reject { |n| n.text? }.each do |n|
           if n.name == 'dependencies'
-            n.children.reject { |n| n.text? }.each do |dep|
-              m.add_dependency dep['id'], dep['version']
+            n.children.reject { |n| n.text? }.each do |node|
+              if node.name == 'group'
+                node.children.reject { |n| n.text? }.each do |dep|
+                  tfw = node['targetFramework'] || ''
+                  m.add_dependency dep['id'], dep['version'], tfw, group=true
+                end
+              else
+                m.add_dependency node['id'], node['version'], group=false
+              end
             end
           elsif n.name == 'frameworkDependencies'
-            n.children.reject { |n| n.text? }.each do |dep|
-              m.add_framework_dependency dep['id'], dep['version']
+            n.children.reject { |n| n.text? }.each do |node|
+              if node.name == 'group'
+                node.children.reject { |n| n.text? }.each do |dep|
+                  tfw = node['targetFramework'] || ''
+                  m.add_framework_dependency dep['id'], dep['version'], tfw, group=true
+                end
+              else
+                m.add_framework_dependency node['id'], node['version'], group=false
+              end
             end
           else
             # just set the property
@@ -223,6 +271,14 @@ end})
           gsub(/([a-z\d])([A-Z])/,'\1_\2').
           tr("-", "_").
           downcase
+      end
+
+    private
+      def guard_groups_or_not add_in_group
+        if @has_group && ! add_in_group \
+           || ! @has_group && @dependencies.length > 0 && add_in_group
+          raise ArgumentError.new("If you've added dependencies in group, you must add the rest in groups, too. See https://docs.microsoft.com/en-us/nuget/schema/nuspec#framework-assembly-references")
+        end
       end
     end
 
@@ -269,8 +325,6 @@ end})
         Nokogiri::XML::Builder.new(encoding: 'utf-8') do |x|
           x.package(xmlns: 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd') {
             x << md
-            #x.__send__ :insert, md.at_css("metadata")
-#           x << md.at_css("metadata").to_xml(indent: 4)
             unless @files.empty?
               x.files {
                 @files.each do |f|
