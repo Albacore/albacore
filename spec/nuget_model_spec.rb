@@ -282,18 +282,14 @@ describe Albacore::NugetModel::Package, "#from_xxproj_file (full) => Package" do
     expect(m.title).to eq 'Project'
   end
 
-  describe "when including files" do
+  describe "with sources" do
     subject do
-      Albacore::NugetModel::Package.from_xxproj_file projfile, :symbols => true
-    end
-    it "should contain all files (just one) and all dll and pdb+mdb files (two)" do
-      expect(subject.files.length).to eq 4
+      Albacore::NugetModel::Package.from_xxproj_file projfile, :sources => true
     end
 
     has_file 'Library1.fs', 'src/Library1.fs'
-    has_file 'bin/Debug/Project.dll', 'lib/net45'
-    has_file 'bin/Debug/Project.pdb', 'lib/net45'
-    has_file 'bin/Debug/Project.dll.mdb', 'lib/net45'
+    has_file 'bin/Debug/Project.dll', 'lib/net451'
+    has_file 'bin/Debug/Project.pdb', 'lib/net451'
   end
 end
 
@@ -309,9 +305,27 @@ describe Albacore::NugetModel::Package, "#from_xxproj_file (core) => Package" do
 
   include_context 'package_metadata_dsl'
 
-  it "targets netstandard2.0 and net461" do
-    expect(subject.target_frameworks).to eq %w|netstandard2.0 net461|
+  let :frameworks do
+    subject
+      .metadata
+      .dependencies
+      .group_by { |k, dep| dep.target_framework }
+      .map { |g| g[0] }
   end
+
+  it "targets netstandard2.0 and net461" do
+    expect(frameworks).to eq %w|netstandard2.0 net461|
+  end
+
+  it "has groups" do
+    h = subject.metadata.dependencies
+    h.each do |key, depspec|
+      expect(depspec.group).to eq true
+    end
+  end
+
+  has_file 'bin/Debug/net461/ConsoleArgu.dll', 'lib/net461'
+  has_file 'bin/Debug/netstandard2.0/ConsoleArgu.dll', 'lib/netstandard2.0'
 end
 
 describe Albacore::NugetModel::Package, "#from_xxproj_file (full) => Package w/ title" do
@@ -368,7 +382,7 @@ describe Albacore::NugetModel::Package, "#with_metadata (full)" do
 
   include_context 'package_metadata_dsl'
 
-  describe "when overriding:" do
+  describe "when overriding" do
     has_value :id, 'A.B.C'
     has_value :owners, 'Henrik Feldt'
     has_value :version, '2.1.3'
@@ -399,26 +413,28 @@ describe Albacore::NugetModel::Package, "(full) w/ packages.config" do
   include_context 'package_metadata_dsl'
 
   # from fsproj
-  has_dep 'Sample.Core', '2.3.0' # TODO: [2.3.0, 3.0.0)
+  has_dep 'Sample.Core', '2.3.0', 'net40' # TODO: [2.3.0, 3.0.0)
 
   # from packages.config
-  has_dep 'Magnum', '2.1.0' # TODO: [2.3.0, 3.0.0)
-  has_dep 'MassTransit', '2.8.0' # TODO: [2.3.0, 3.0.0)
-  has_dep 'Newtonsoft.Json', '5.0.6' # TODO: [2.3.0, 3.0.0)
+  has_dep 'Magnum', '2.1.0', 'net40' # TODO: [2.3.0, 3.0.0)
+  has_dep 'MassTransit', '2.8.0', 'net40' # TODO: [2.3.0, 3.0.0)
+  has_dep 'Newtonsoft.Json', '5.0.6', 'net40' # TODO: [2.3.0, 3.0.0)
 
   # actual nuspec contents
-  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45' # TODO: [2.3.0, 3.0.0)
-  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45' # TODO: [2.3.0, 3.0.0)
+  has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+  has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
 
-  describe 'when dotnet_version is set' do
-    subject do
-      Albacore::NugetModel::Package.from_xxproj_file projfile,
-        known_projects: %w[Sample.Core],
-        dotnet_version: 'mono32'
+  describe "#to_template" do
+    let :template do
+      subject.to_template
     end
-    # actual nuspec contents
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/mono32'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/mono32'
+
+    it "contains all dependencies" do
+      expect(template).to include('dependencies')
+      expect(template).to include('  MassTransit ~> 2.8.0')
+      expect(template).to include('  Magnum ~> 2.1.0')
+      expect(template).to include('  Newtonsoft.Json ~> 5.0.6')
+    end
   end
 end
 
@@ -444,11 +460,11 @@ describe Albacore::NugetModel::Package, "(full) w/ dependent project" do
   describe 'without project_dependencies' do
     # just as the opts in the main describe says
     has_not_dep 'Sample.Core'
-    has_dep 'Magnum', '2.1.0'
-    has_dep 'MassTransit', '2.8.0'
-    has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
+    has_dep 'Magnum', '2.1.0', 'net40'
+    has_dep 'MassTransit', '2.8.0', 'net40'
+    has_dep 'Newtonsoft.Json', '5.0.6', 'net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
     has_not_file 'Library.fs'
   end
 
@@ -461,12 +477,12 @@ describe Albacore::NugetModel::Package, "(full) w/ dependent project" do
     end
 
     # just as the opts in the main describe says
-    has_dep 'Sample.Core', '2.3.0'
-    has_dep 'Magnum', '2.1.0'
-    has_dep 'MassTransit', '2.8.0'
-    has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
+    has_dep 'Sample.Core', '2.3.0', 'net40'
+    has_dep 'Magnum', '2.1.0', 'net40'
+    has_dep 'MassTransit', '2.8.0', 'net40'
+    has_dep 'Newtonsoft.Json', '5.0.6', 'net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
     has_not_file 'Library.fs'
 
   end
@@ -478,43 +494,43 @@ describe Albacore::NugetModel::Package, "(full) w/ dependent project" do
         version:           '2.3.0' }
     end
 
-    has_dep 'Sample.Core', '2.3.0'
+    has_dep 'Sample.Core', '2.3.0', 'net40'
     has_not_dep 'Magnum'
     has_not_dep 'MassTransit'
     has_not_dep 'Newtonsoft.Json'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
     has_not_file 'Library.fs'
   end
 
-  describe 'without symbols' do
+  describe 'without sources' do
     let :opts do
-      { symbols:        false,
+      { sources:        false,
         known_projects: %w[Sample.Core],
         version:       '2.3.0' }
     end
-    has_dep 'Sample.Core', '2.3.0'
-    has_dep 'Magnum', '2.1.0'
-    has_dep 'MassTransit', '2.8.0'
-    has_dep 'Newtonsoft.Json', '5.0.6'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net45'
+    has_dep 'Sample.Core', '2.3.0', 'net40'
+    has_dep 'Magnum', '2.1.0', 'net40'
+    has_dep 'MassTransit', '2.8.0', 'net40'
+    has_dep 'Newtonsoft.Json', '5.0.6', 'net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
     has_not_file 'Library.fs'
   end
 
-  describe 'with symbols' do
+  describe 'with sources' do
     let :opts do
-      { symbols:        true,
+      { sources:        true,
         known_projects: %w[Sample.Core],
         version:        '2.3.0' }
     end
-    has_dep 'Sample.Core', '2.3.0'
-    has_dep 'Magnum', '2.1.0'
-    has_dep 'MassTransit', '2.8.0'
-    has_dep 'Newtonsoft.Json', '5.0.6'
-    has_not_file 'bin/Debug/Sample.Commands.xml'
-    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net45'
-    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net45'
+    has_dep 'Sample.Core', '2.3.0', 'net40'
+    has_dep 'Magnum', '2.1.0', 'net40'
+    has_dep 'MassTransit', '2.8.0', 'net40'
+    has_dep 'Newtonsoft.Json', '5.0.6', 'net40'
+    has_file 'bin/Debug/Sample.Commands.xml', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.dll', 'lib/net40'
+    has_file 'bin/Debug/Sample.Commands.pdb', 'lib/net40'
     has_file 'Library.fs', 'src/Library.fs'
   end
 
@@ -532,6 +548,6 @@ describe Albacore::NugetModel::Package, "(full) w/ dependent project" do
     has_not_file 'bin/Debug/Sample.Commands.dll'
     has_not_file 'bin/Debug/EmptyProject.dll' 
     has_not_file 'bin/Debug/EmptyProject.xml' 
-    has_file 'bin/Release/EmptyProject.dll', 'lib/net45'
+    has_file 'bin/Release/EmptyProject.dll', 'lib/net40'
   end
 end

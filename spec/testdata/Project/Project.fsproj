@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Project</RootNamespace>
     <AssemblyName>Project</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <Name>Project</Name>
     <Authors>Henrik Feldt</Authors>
   </PropertyGroup>

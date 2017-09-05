@@ -55,7 +55,7 @@ describe 'when running with sln' do
     expect(subject.executable).to eq('xbuild')
   end
   it do
-    expect(subject.parameters).to eq(%W|/verbosity:normal #{path 'src/HelloWorld.sln'} /target:Clean;Build|)
+    expect(subject.parameters).to eq(%W|/verbosity:minimal #{path 'src/HelloWorld.sln'} /target:Clean;Build|)
   end
   it do
     expect(subject.is_mono_command?).to be false

@@ -39,7 +39,7 @@ module Albacore
         @name = name
         @opts = Map.new(opts).apply \
           pkg_dir:      'build/pkg',
-          nuget_exe:    'tools/NuGet.exe',
+          paket_exe:    '.paket/paket.exe',
           nuget_source: 'https://www.nuget.org/api/v2/package',
           clr_command:  true,
           depend_on:    :versioning,
@@ -135,7 +135,7 @@ module Albacore
         exe = @opts.get(:nuget_exe)
         (! packages.empty?) or \
           raise("You must have built your packages for version #{nuget_version}, use 'depend_on: :nuget_pkg'")
-        (File.exists?(exe)) or raise("You don't have a NuGet.exe file to push with, expected path: #{exe}")
+        (File.exists?(exe)) or raise("You don't have a paket.exe file to push with, expected path: #{exe}")
       end
 
       def committed?

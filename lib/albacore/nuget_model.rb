@@ -112,7 +112,7 @@ end})
 
       # (v2.5 or above) Specifies the minimum version of the NuGet client that
       # can install this package. This requirement is enforced by both the
-      # NuGet Visual Studio extension and nuget.exe program.
+      # NuGet Visual Studio extension and .paket/paket.exe program.
       nuspec_field :min_client_version
 
       # gets the field symbols that have been set
@@ -142,6 +142,47 @@ end})
         guard_groups_or_not group
         @has_group ||= group
         @framework_assemblies[id] = IdVersion.new id, version, group, target_framework
+      end
+
+      def to_template
+        lines = []
+        lines << 'type file'
+
+        # fields
+        @set_fields.each do |f|
+          lines << "#{Metadata.pascal_case(f)} #{send(f)}"
+        end
+
+        lines << 'dependencies' unless @dependencies.empty?
+        if @has_group
+          groups = @dependencies.group_by { |k, d| d.target_framework }
+          groups.each do |group|
+            fw, deps = group
+            if fw == ''
+              deps.each do |k, d|
+                lines << "  #{d.id} ~> #{d.version}"
+              end
+            else
+              lines << "  framework: #{fw}"
+              deps.each do |k, d|
+                lines << "    #{d.id} ~> #{d.version}"
+              end
+            end
+          end
+        else
+          @dependencies.each do |k, d|
+            lines << "  #{d.id} ~> #{d.version}"
+          end
+        end
+
+        if @framework_assemblies.respond_to?(:each) && @framework_assemblies.length > 0
+          lines << 'frameworkAssemblies'
+          @framework_assemblies.each do |k, d|
+            lines << "  #{d.id}"
+          end
+        end
+
+        lines
       end
 
       def to_xml_builder
@@ -282,6 +323,8 @@ end})
       end
     end
 
+    ############################ PACKAGE
+
     # the nuget package element writer
     class Package
       include Logging
@@ -317,6 +360,20 @@ end})
       def with_metadata &block
         yield @metadata if block_given?
         self
+      end
+
+      def to_template
+        lines = @metadata.to_template
+
+        unless @files.empty?
+          lines << 'files'
+          @files.each do |file|
+            lines << "  #{file.src} ==> #{file.target}" unless file.exclude
+            lines << "  !#{file.src}" if file.exclude
+          end
+        end
+
+        lines.join("\n")
       end
 
       # gets the current package as a xml builder
@@ -392,7 +449,6 @@ end})
       # Read the nuget specification from a xxproj instance (e.g. csproj, fsproj)
       # Options:
       #  - symbols
-      #  - dotnet_version
       #   Specifies the version to use for constructing the nuspec's lib folder
       #  - known_projects
       #  - configuration
@@ -404,18 +460,18 @@ end})
         opts = Map.options(opts || {}).
           apply({
             symbols:                false,
-            dotnet_version:         'net45',
             known_projects:         Set.new,
             configuration:          'Debug',
             project_dependencies:   true,
             verify_files:           false,
             nuget_dependencies:     true,
-            framework_dependencies: true })
+            framework_dependencies: true,
+            metadata:               Metadata.new })
 
         trace { "#from_xxproj proj: '#{proj}' opts: #{opts} [nuget model: package]" }
 
         version = opts.get :version
-        package = Package.new
+        package = Package.new(opts.get(:metadata))
         package.metadata.id      = proj.id if proj.id
         package.metadata.title   = proj.name if proj.name
         package.metadata.version = version if version
@@ -423,11 +479,12 @@ end})
         package.metadata.release_notes = Albacore::Tools.git_release_notes
 
         if opts.get :nuget_dependencies
-          trace "adding nuget dependencies for id #{proj.id}"
+          trace "adding nuget dependencies for id #{proj.id} [nuget model: package]"
           # add declared packages as dependencies
           proj.declared_packages.each do |p|
-            debug "adding package dependency: #{proj.id} => #{p.id} at #{p.version} [nuget model: package]"
-            package.metadata.add_dependency p.id, p.version
+            # p is a Package
+            debug "adding package dependency: #{proj.id} => #{p.id} at #{p.version}, fw #{p.target_framework} [nuget model: package]"
+            package.metadata.add_dependency p.id, p.version, p.target_framework, group=true
           end
         end
 
@@ -437,44 +494,39 @@ end})
             declared_projects.
             keep_if { |p| opts.get(:known_projects).include? p.id }.
             each do |p|
-            debug "adding project dependency: #{proj.id} => #{p.id} at #{version} [nuget model: package]"
-            package.metadata.add_dependency p.id, version
+            # p is a Project
+            debug "adding project dependency: #{proj.id} => #{p.id} at #{version}, fw #{p.target_frameworks.inspect} [nuget model: package]"
+            p.target_frameworks.each do |fw|
+              package.metadata.add_dependency p.id, version, fw, group=true
+            end
           end
         end
-
 
         fd = opts.get :framework_dependencies
         if fd && fd.respond_to?(:each)
           fd.each { |n, p|
-            package.metadata.add_framework_dependency p.id, p.version
+            package.metadata.add_framework_dependency p.id, p.version, p.target_framework, p.group
           }
         end
 
-        output = get_output_path proj, opts
-        target_lib = %W[lib #{opts.get(:dotnet_version)}].join(Albacore::Paths.separator)
+        debug "including files for frameworks #{proj.target_frameworks.inspect}"
+        proj.target_frameworks.each do |fw|
+          conf = opts.get(:configuration)
 
-        if opts.get :symbols
-          compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
+          proj.outputs(conf, fw).each do |output|
+            lib_filepath = %W|lib #{fw}|.join(Albacore::Paths.separator)
+            debug "adding output file #{output.path} => #{lib_filepath} [nuget model: package]"
+            package.add_file output.path, lib_filepath
+          end
 
-          debug "add compiled files: #{compile_files} [nuget model: package]"
-          compile_files.each do |f|
-            target = %W[src #{Albacore::Paths.normalise_slashes(f.include)}].join(Albacore::Paths.separator)
-            package.add_file f.include, target
-          end 
+          if opts.get :sources
+            compile_files = proj.included_files.keep_if { |f| f.item_name == "compile" }
 
-          debug "add dll and pdb files [nuget model: package]"
-          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.pdb'), target_lib)
-          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.dll.mdb'), target_lib)
-          package.add_file(Albacore::Paths.normalise_slashes(output + proj.asmname + '.dll'), target_lib)
-        else
-          # add *.{dll,xml,config}
-          %w[dll xml config pdb dll.mdb].each do |ext|
-            file = %W{#{output} #{proj.asmname}.#{ext}}.
-              map { |f| f.gsub /\\$/, '' }.
-              map { |f| Albacore::Paths.normalise_slashes f }.
-              join(Albacore::Paths.separator)
-            debug "adding binary file #{file} [nuget model: package]"
-            package.add_file file, target_lib
+            debug "add compiled files: #{compile_files} [nuget model: package]"
+            compile_files.each do |f|
+              target = %W[src #{Albacore::Paths.normalise_slashes(f.include)}].join(Albacore::Paths.separator)
+              package.add_file f.include, target
+            end
           end
         end
 

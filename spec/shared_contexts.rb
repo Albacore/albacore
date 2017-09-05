@@ -45,11 +45,10 @@ shared_context 'package_metadata_dsl' do
     src, target = norm(src), norm(target)
     it "has file[#{src}] (should not be nil)" do
       file = subject.files.find { |f| f.src == src }
-     #  puts "## ALL FILES ##"
-     #  subject.files.each do |f|
-     #    puts "subject.files: #{subject.files}, index of: #{subject.files.find_index { |f| f.src == src }}"
-     #    puts "#{f.inspect}"
-     #  end
+      #puts "## ALL FILES ##"
+      #subject.files.each do |f|
+      #  puts "file: #{file.inspect}"
+      #end
       expect(file).to_not be nil
     end
 

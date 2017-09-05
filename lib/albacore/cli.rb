@@ -161,7 +161,7 @@ nugets_pack :create_nugets => ['build/pkg', :versioning, :compile] do |p|
   p.files   = FileList['src/**/*.{csproj,fsproj,nuspec}'].
     exclude(/Tests/)
   p.out     = 'build/pkg'
-  p.exe     = 'packages/NuGet.CommandLine/tools/NuGet.exe'
+  p.exe     = '.paket/paket.exe'
   p.with_metadata do |m|
     # m.id          = 'MyProj'
     m.title       = 'TODO'
@@ -190,7 +190,7 @@ task :default => :create_nugets #, :tests ]
 #Albacore::Tasks::Release.new :release,
 #                             pkg_dir: 'build/pkg',
 #                             depend_on: [:create_nugets, :ensure_nuget_key],
-#                             nuget_exe: 'packages/NuGet.CommandLine/tools/NuGet.exe',
+#                             nuget_exe: '.paket/paket.exe',
 #                             api_key: ENV['NUGET_KEY']
         DATA
       end

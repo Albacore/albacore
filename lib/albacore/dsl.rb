@@ -51,17 +51,8 @@ module Albacore
 
     # restore the nugets to the solution
     def nugets_restore *args, &block
-      require 'albacore/task_types/nugets_restore'
       Albacore.define_task *args do |task_name, own_args|
-        c = Albacore::NugetsRestore::Config.new
-        yield c, own_args
-
-        c.ensure_authentication!
-
-        c.packages.each do |p|
-          command = Albacore::NugetsRestore::Cmd.new(c.work_dir, c.exe, c.opts_for_pkgcfg(p))
-          Albacore::NugetsRestore::Task.new(command).execute
-        end
+        system '.paket/paket.exe', %w|restore|
       end
     end
 
@@ -71,38 +62,7 @@ module Albacore
       Albacore.define_task *args do |task_name, own_args|
         c = Albacore::NugetsPack::Config.new
         yield c, own_args
-        Albacore::NugetsPack::ProjectTask.new(c.opts).execute
-      end
-    end
-
-    # Restore hint paths to registered nugets
-    def restore_hint_paths *args, &block
-      require 'albacore/tools/restore_hint_paths'
-      Albacore.define_task *args do |task_name, own_args|
-        c = Albacore::RestoreHintPaths::Config.new
-        yield c, own_args
-
-        t = Albacore::RestoreHintPaths::Task.new c
-        t.execute
-      end
-    end
-
-    # Generate .rpm or .deb files from .appspec files
-    def appspecs *args, &block
-      if Albacore.windows?
-        require 'albacore/cpack_app_spec'
-        Albacore.define_task *args do |task_name, own_args|
-          c = ::Albacore::CpackAppSpec::Config.new
-          yield c, own_args
-          ::Albacore::CpackAppSpec::Task.new(c.opts).execute
-        end
-      else
-        require 'albacore/fpm_app_spec'
-        Albacore.define_task *args do |task_name, own_args|
-          c = ::Albacore::FpmAppSpec::Config.new
-          yield c, own_args
-          ::Albacore::FpmAppSpec::Task.new(c.opts).execute
-        end
+        Albacore::NugetsPack::Cmd.new(c).execute
       end
     end
 

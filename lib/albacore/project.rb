@@ -4,24 +4,93 @@ require 'albacore/semver'
 require 'albacore/package_repo'
 require 'albacore/paket'
 require 'pathname'
-module Albacore
 
+module Albacore
   # error raised from Project#output_path if the given configuration wasn't
   # found
   class ConfigurationNotFoundError < ::StandardError
   end
 
-  # a project encapsulates the properties from a xxproj file.
+  class OutputArtifact
+    EXECUTABLE = :executable
+    LIBRARY = :dll
+    XMLDOC = :xmldoc
+    SYMBOLS = :symbols
+
+    # E.g. "bin/Debug/lib.dll"
+    # E.g. "bin/Debug/net461/lib.dll"
+    # E.g. "bin/Debug/net461/lib.xml"
+    # E.g. "bin/Debug/net461/lib.dll.pdb"
+    # E.g. "bin/Debug/net461/prog.exe"
+    attr_reader :path
+
+    # E.g. "lib.dll"
+    # E.g. "prog.exe"
+    attr_reader :filename
+
+    # E.g. :dll
+    attr_reader :sort
+
+    # E.g. ".txt"
+    attr_reader :ext
+
+    # Create a new OutputArtifact
+    def initialize path, sort
+      @path, @sort = path, sort
+      @ext = File.extname path
+      @filename = File.basename path
+    end
+
+    # Is the file a DLL file?
+    def library?
+      sort == ::LIBRARY
+    end
+
+    # Is the file a DLL file?
+    def dll?
+      library?
+    end
+
+    # Is the file an executable?
+    def executable?
+      sort == ::EXECUTABLE
+    end
+
+    # Is the file a documentation file?
+    def xmldoc?
+      sort == ::XMLDOC
+    end
+
+    # Is the file a symbol file?
+    def symbols?
+      sort == ::SYMBOLS
+    end
+
+    def ==(o)
+      @path == o.path && @sort == o.sort
+    end
+
+    alias_method :eql?, :==
+  end
+
+  # A project encapsulates the properties from a xxproj file.
   class Project
     include Logging
 
-    attr_reader :proj_path_base, :proj_filename, :proj_xml_node
+    attr_reader \
+      :proj_path_base,
+      :proj_filename,
+      :ext,
+      :proj_filename_noext,
+      :proj_xml_node
 
     def initialize proj_path
       raise ArgumentError, 'project path does not exist' unless File.exists? proj_path.to_s
       proj_path                       = proj_path.to_s unless proj_path.is_a? String
       @proj_xml_node                  = Nokogiri.XML(open(proj_path))
       @proj_path_base, @proj_filename = File.split proj_path
+      @ext = File.extname @proj_filename
+      @proj_filename_noext = File.basename @proj_filename, ext
       sanity_checks
     end
 
@@ -44,20 +113,20 @@ module Albacore
     # the title of the nuspec and, if Id is not specified, also the id of the
     # nuspec.
     def name
-      (read_property 'Name') || asmname || proj_filename
-    end
-
-    # The project is a .Net Core project.
-    def is_netcore
-      ! @proj_xml_node.css('Project').attr('Sdk').nil?
+      read_property('Name') || asmname || proj_filename_noext
     end
 
     # The same as #name
     alias_method :title, :name
 
+    # The project is a .Net Core project.
+    def netcore?
+      ! @proj_xml_node.css('Project').attr('Sdk').nil?
+    end
+
     # get the assembly name specified in the project file
     def asmname
-      read_property 'AssemblyName'
+      read_property('AssemblyName') || proj_filename_noext
     end
 
     # Get the root namespace of the project
@@ -84,14 +153,83 @@ module Albacore
       read_property 'License'
     end
 
+    def xmldoc? conf='Debug', platform='AnyCPU'
+      if netcore?
+        gdf = read_property('GenerateDocumentationFile')
+        !gdf.nil? && gdf == 'true'
+      else
+        ! read_property('DocumentationFile', conf, platform).nil?
+      end
+    end
+
+    def symbols? conf='Debug', platform='AnyCPU'
+      read_property('DebugSymbols', conf) == 'true'
+    end
+
+    # OutputArtifact::LIBRARY
+    # OutputArtifact::EXECUTABLE
+    def output_type
+      ot = read_property 'OutputType'
+      case ot
+      when 'Library'
+        OutputArtifact::LIBRARY
+      when 'Exe'
+        OutputArtifact::EXECUTABLE
+      else
+        ot
+      end
+    end
+
+    # ".exe"?, ".dll"?
+    def output_file_ext
+      case output_type
+      when OutputArtifact::LIBRARY
+        ".dll"
+      when OutputArtifact::EXECUTABLE
+        ".exe"
+      end
+    end
+
+    def default_platform
+      @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
+    end
+
+    def debug_type conf
+      dt = read_property "DebugType", conf
+    end
+
     # the target .NET Framework / .NET version
     def target_framework
-      read_property 'TargetFrameworkVersion'
+      read = read_property('TargetFrameworkVersion')
+      case read
+      when 'v3.5'
+        'net35'
+      when 'v3.5.1'
+        'net351'
+      when 'v4.0'
+        'net40'
+      when 'v4.5'
+        'net45'
+      when 'v4.5.1'
+        'net451'
+      when 'v4.6'
+        'net46'
+      when 'v4.6.1'
+        'net461'
+      when 'v4.6.2'
+        'net462'
+      when 'v5.0'
+        'net50'
+      when 'v5.0.1'
+        'net501'
+      else
+        read
+      end
     end
 
     # Gets the target frameworks as specified by .Net Core syntax
     def target_frameworks
-      if is_netcore
+      if netcore?
         tfw = @proj_xml_node.css('Project PropertyGroup TargetFramework').inner_text
         tfws = @proj_xml_node.css('Project PropertyGroup TargetFrameworks').inner_text
         nfws = if tfw.nil? || tfw == '' then tfws else tfw end
@@ -101,53 +239,45 @@ module Albacore
       end
     end
     
-    # gets the output path of the project given the configuration or raise
-    # an error otherwise
-    def output_path conf
-      try_output_path(conf) || raise(ConfigurationNotFoundError, "could not find configuration '#{conf}'")
-    end
-
-    def try_output_path conf
-      output_paths(conf).first
-    end
-
-    def output_paths conf
-      if is_netcore then
-        type = @proj_xml_node.css('PropertyGroup OutputType').inner_text
-        ext = File.extname proj_filename
-        fn = File.basename proj_filename, ext
-        target_frameworks.map do |fw|
-          if type == 'Library'
-            "bin/#{conf}/#{fw}/#{fn}.dll"
-          else
-            "bin/#{conf}/#{fw}/#{fn}.exe"
-          end
-        end
+    # Returns OutputArtifact[] or throws an error
+    def outputs conf, fw
+      os = try_outputs(conf, fw)
+      if os.empty?
+        raise(ConfigurationNotFoundError, "could not find configuration '#{conf}'")
       else
-        default_platform = @proj_xml_node.css('Project PropertyGroup Platform').first.inner_text || 'AnyCPU'
-        path             = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{default_platform}'] OutputPath")
-        # path = @proj_xml_node.xpath("//Project/PropertyGroup[matches(@Condition, '#{conf}')]/OutputPath")
-
-        debug { "#{name}: output path node[#{conf}]: #{ (path.empty? ? 'empty' : path.inspect) } [albacore: project]" }
-
-        if path.empty? then [] else [ path.inner_text ] end
+        os
       end
     end
 
-    # This is the output path if the project file doesn't have a configured
-    # 'Configuration' condition like all default project files have that come
-    # from Visual Studio/Xamarin Studio.
-    def fallback_output_path
-      fallback  = @proj_xml_node.css("Project PropertyGroup OutputPath").first
-      condition = fallback.parent['Condition'] || 'No \'Condition\' specified'
-      warn "chose an OutputPath in: '#{self}' for Configuration: <#{condition}> [albacore: project]"
-      fallback.inner_text
+    def try_outputs conf, fw
+      outputs = []
+      if netcore? then
+        outputs << OutputArtifact.new("bin/#{conf}/#{fw}/#{asmname}#{output_file_ext}", output_type)
+        outputs << OutputArtifact.new("bin/#{conf}/#{fw}/#{asmname}.xml", OutputArtifact::XMLDOC) if xmldoc?
+      else
+        path = read_property 'OutputPath', conf, default_platform
+        if path != ''
+          full_path = Albacore::Paths.join(path, "#{asmname}#{output_file_ext}").to_s
+          outputs << OutputArtifact.new(full_path, output_type)
+        end
+
+        if xmldoc? conf, default_platform
+          xml_full_path = read_property 'DocumentationFile', conf
+          outputs << OutputArtifact.new(xml_full_path, OutputArtifact::XMLDOC)
+        end
+
+        if symbols? conf, default_platform
+          pdb_full_path = Albacore::Paths.join(path, "#{asmname}.pdb").to_s
+          outputs << OutputArtifact.new(pdb_full_path, OutputArtifact::SYMBOLS)
+        end
+      end
+      outputs
     end
 
     # Gets the relative location (to the project base path) of the dll
     # that it will output
-    def output_dll conf
-      Paths.join(output_path(conf) || fallback_output_path, "#{asmname}.dll")
+    def output_dll conf, fw
+      output_paths(conf, fw).keep_if { |o| o.library? }.first
     end
 
     # find the NodeList reference list
@@ -260,8 +390,6 @@ module Albacore
       p
     end
 
-
-
     # Reads assembly version information
     # Returns 1.0.0.0 if AssemblyVersion is not found
     # @return string
@@ -275,7 +403,6 @@ module Albacore
       rescue
         '1.0.0.0'
       end
-
     end
 
 
@@ -296,10 +423,27 @@ module Albacore
 
     def all_paket_deps
       return @all_paket_deps if @all_paket_deps
-      path = if File.exists?('paket.lock') then 'paket.lock' else File.join(@proj_path_base, "paket.lock") end
+
+      path = if File.exists?('paket.lock') then
+          'paket.lock'
+        else
+          File.join(@proj_path_base, "paket.lock")
+        end
+
       arr = File.open(path, 'r') do |io|
-        Albacore::Paket.parse_paket_lock(io.readlines.map(&:chomp))
+        lines = io.readlines.map(&:chomp)
+        Albacore::Paket.parse_paket_lock(lines)
+          .map { |depid, dep|
+            [ depid,
+              target_frameworks.map { |fw|
+                dep2 = OpenStruct.new dep
+                dep2[:target_framework] = fw
+                dep2
+              }
+            ]
+          }
       end
+
       @all_paket_deps = Hash[arr]
     end
 
@@ -310,7 +454,8 @@ module Albacore
 
       if has_paket_refs?
         File.open paket_refs, 'r' do |io|
-          io.readlines.map(&:chomp).compact.each do |line|
+          lines = io.readlines.map(&:chomp)
+          lines.compact.each do |line|
             paket_package_by_id! line, all_refs, 'referenced'
           end
         end
@@ -318,20 +463,21 @@ module Albacore
 
       if has_paket_deps?
         File.open paket_deps, 'r' do |io|
-          io.readlines.map(&:chomp).compact.each do |line|
+          lines = io.readlines.map(&:chomp)
+          Albacore::Paket.parse_dependencies_file(lines).each do |line|
             paket_package_by_id! line, all_refs, 'dependent'
           end
         end
       end
 
-      all_refs
+      all_refs.uniq
     end
 
     def paket_package_by_id! id, arr, ref_type
-      pkg = all_paket_deps[id]
-      if pkg
+      pkgs = all_paket_deps[id]
+      if ! pkgs.nil? && pkgs.length > 0
         debug { "found #{ref_type} package '#{id}' [project: paket_packages]" }
-        arr << pkg
+        arr.concat(pkgs)
       else
         warn { "found #{ref_type} package '#{id}' not in paket.lock [project: paket_packages]" }
       end
@@ -341,9 +487,11 @@ module Albacore
       warn { "project '#{@proj_filename}' has no name" } unless name
     end
 
-    def read_property prop_name
-      txt = @proj_xml_node.css("Project PropertyGroup #{prop_name}").inner_text
-      txt.length == 0 ? nil : txt.strip
+    def read_property prop_name, conf='Debug', platform='AnyCPU'
+      specific = @proj_xml_node.css("Project PropertyGroup[Condition*='#{conf}|#{platform}'] #{prop_name}")
+      chosen = if specific.empty? then @proj_xml_node.css("Project PropertyGroup #{prop_name}") else specific end
+      first = chosen.first
+      if first.nil? then nil else first.inner_text end
     end
 
     # find the node of pkg_id

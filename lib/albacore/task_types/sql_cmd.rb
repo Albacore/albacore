@@ -63,7 +63,7 @@ module Albacore
 
       attr_path_accessor :database do |d|
         @parameters.add("-d#{d}")
-      end      
+      end
 
       attr_path_accessor :username do |u|
         @parameters.add("-U#{u}")
