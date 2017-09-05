@@ -150,7 +150,15 @@ end})
 
         # fields
         @set_fields.each do |f|
-          lines << "#{Metadata.pascal_case(f)} #{send(f)}"
+          key, value = Metadata.pascal_case(f), send(f)
+          if value.include?("\n")
+            lines << "#{key}"
+            value.split(/\r\n|\n/).map{ |line| "  #{line}"}.each do |line|
+              lines << line
+            end
+          else
+            lines << "#{key} #{value}"
+          end
         end
 
         lines << 'dependencies' unless @dependencies.empty?
@@ -476,7 +484,6 @@ end})
         package.metadata.title   = proj.name if proj.name
         package.metadata.version = version if version
         package.metadata.authors = proj.authors if proj.authors
-        package.metadata.release_notes = Albacore::Tools.git_release_notes
 
         if opts.get :nuget_dependencies
           trace "adding nuget dependencies for id #{proj.id} [nuget model: package]"

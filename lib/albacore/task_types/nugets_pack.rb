@@ -65,6 +65,13 @@ module Albacore
           raise '"version" is a required property'
         end
       end
+
+      def fallbacks!
+        if @metadata.release_notes.nil?
+          notes = Albacore::Tools.git_release_notes
+          @metadata.release_notes = notes
+        end
+      end
     end
 
     class Cmd
@@ -77,6 +84,7 @@ module Albacore
 
       def execute
         @config.validate
+        @config.fallbacks!
         invocations(@config).each do |parameters|
           system @executable, parameters, clr_command: true
         end
