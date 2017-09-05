@@ -119,7 +119,9 @@ module Albacore
             path = File.join(proj.proj_path_base, "paket.template")
 
             File.open(path, 'w') do |template|
-              template.write package.to_template
+              contents = package.to_template.join("\n")
+              template.write contents
+              debug { "Wrote paket.template file:\n#{contents}" }
             end
 
             parameters = defaults config

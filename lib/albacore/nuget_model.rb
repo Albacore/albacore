@@ -151,9 +151,9 @@ end})
         # fields
         @set_fields.each do |f|
           key, value = Metadata.pascal_case(f), send(f)
-          if value.include?("\n")
+          if value.is_a?(Array)
             lines << "#{key}"
-            value.split(/\r\n|\n/).map{ |line| "  #{line}"}.each do |line|
+            value.map{ |line| "  #{line}" }.each do |line|
               lines << line
             end
           else
@@ -381,7 +381,7 @@ end})
           end
         end
 
-        lines.join("\n")
+        lines
       end
 
       # gets the current package as a xml builder
