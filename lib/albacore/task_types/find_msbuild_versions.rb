@@ -1,5 +1,9 @@
 require 'rake'
+require 'albacore/logging'
+
 module Albacore
+  extend Logging
+
   def self.find_msbuild_versions
     return nil unless ::Rake::Win32.windows?
     require 'win32/registry'
