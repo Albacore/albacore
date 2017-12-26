@@ -267,8 +267,7 @@ module Albacore
         end
 
         if symbols? conf, default_platform
-          ext = ::Rake::Win32.windows? ? '.pdb' : (netcore? ? '.pdb' : '.dll.mdb')
-          pdb_full_path = Albacore::Paths.join(path, "#{asmname}#{ext}").to_s
+          pdb_full_path = Albacore::Paths.join(path, "#{asmname}.pdb").to_s
           outputs << OutputArtifact.new(pdb_full_path, OutputArtifact::SYMBOLS)
         end
       end
